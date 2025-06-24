@@ -1,1 +1,51 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'style/equaly_theme' as *;
+
+// Centraliza verticalmente a coluna no viewport
+:host {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; // altura total da tela
+    background-color: $background-color;
+}
+
+.col-3 {
+    background-color: $surface-color;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba($text-color, 0.1);
+
+    // Inputs com bordas na cor da paleta
+    input.form-control {
+        border: 1px solid $border-color;
+        margin-bottom: 1rem;
+        font-size: $font-size-base;
+        color: $text-color;
+
+        &:focus {
+            border-color: $primary-color;
+            box-shadow: 0 0 5px rgba($primary-color, 0.5);
+            outline: none;
+        }
+    }
+
+    // Botão com cor primaria definida
+    button.btn-primary {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        font-weight: 600;
+
+        &:hover {
+            background-color: $primary-hover;
+            border-color: $primary-hover;
+        }
+    }
+}
+
+input.form-control {
+    margin-bottom: 1rem;
+}
+
+button.btn-primary {
+    margin-top: 1rem;
+}

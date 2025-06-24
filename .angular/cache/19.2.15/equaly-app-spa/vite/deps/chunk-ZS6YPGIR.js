@@ -2534,12 +2534,12 @@ function appendMissingHeadersDetection(url, headers, headersToInclude) {
 }
 
 export {
-  DOCUMENT,
   parseCookieValue,
   PLATFORM_BROWSER_ID,
   isPlatformBrowser,
   isPlatformServer,
   XhrFactory,
+  DOCUMENT,
   HttpHandler,
   HttpBackend,
   HttpHeaders,
@@ -2592,4 +2592,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-3NMOLOP4.js.map
+//# sourceMappingURL=chunk-ZS6YPGIR.js.map

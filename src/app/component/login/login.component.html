@@ -1,8 +1,84 @@
-<div class="col-3 mx-auto">
-    <div class="text-center">
-      <input type="text" class="form-control" placeholder="Login" /><br />
-      <input type="password" class="form-control" placeholder="Senha" /><br />
+<div class="login-div">
+  <div class="col-4 mx-auto login-container">
+    <div class="login-container-header">
+      <img
+        alt="Logo da Empresa"
+        id="equaly-logo"
+        src="https://equalymessengerstorage.blob.core.windows.net/public-assets/logo_white.png"
+      />
+    </div>
+    <br />
+    <div class="text-center login-container-body" id="common-login">
+      <input type="text" class="form-control" placeholder="Login ou E-mail" />
+      <input type="password" class="form-control" placeholder="Senha" />
       <button class="btn btn-primary">Entrar</button>
+      <p>ou</p>
+      <button class="btn btn-outline-primary">Entrar com Empresa</button>
+    </div>
+    <div class="text-center login-container-body" id="company-login">
+      <div class="company-search input-group">
+        <input type="text" class="form-control mt-3" placeholder="CPF ou RNE" />
+        <button class="bi bi-search btn btn-primary mb-3"></button>
+      </div>
+      <div class="company-list">
+        <table class="table table-striped">
+          <tbody>
+            <tr>
+              <td class="col-9">
+                <p>eQualy Soluções Tecnológicas</p>
+                <p>EQUALY SOFTWARE LTDA</p>
+                <p>52392194000111</p>
+              </td>
+              <td><button class="btn btn-primary col">Acessar</button></td>
+            </tr>
+            <tr>
+              <td class="col-9">
+                <p>Pastoriza Comercio e Ind de Prod Alim Eireli</p>
+                <p>CONFEITEIRO PRO LTDA</p>
+                <p>52392194000111</p>
+              </td>
+              <td><button class="btn btn-primary col">Acessar</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="company-form">
+        <div class="login-container-header">
+          <img
+            class="company-logo"
+            src="https://equaly.blob.core.windows.net/company-logo/a275fe7f-8461-43d2-8c60-33274a5eed42"
+          />
+        </div>
+        <br />
+        <div class="company-info">
+          <p>
+            <i><b>Usuário: </b>50598786864</i>
+          </p>
+          <p>
+            <i><b>Empresa: </b>eQualy Soluções Tecnológicas</i>
+          </p>
+          <p>
+            <i><b>Razão Social: </b>EQUALY SOFTWARE LTDA</i>
+          </p>
+          <p>
+            <i><b>CNPJ: </b>52392194000111</i>
+          </p>
+          <p>
+            <i><b>Código da Empresa: </b>equaly</i>
+          </p>
+        </div>
+        <br/>
+        <div class="login-container-body">
+          <input class="form-control" type="password" placeholder="Senha" />
+        </div>
+      </div>
+      <button class="btn btn-primary">Entrar</button>
+      <p>ou</p>
+      <button class="btn btn-outline-primary">Entrar com Login</button>
+    </div>
+    <br />
+    <div class="text-center">
+      <b><p>Primeiro Acesso ou Recuperar Conta</p></b>
     </div>
   </div>
-  
+</div>

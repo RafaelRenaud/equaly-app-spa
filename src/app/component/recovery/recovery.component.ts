@@ -4,7 +4,8 @@ import { Component } from '@angular/core';
   selector: 'app-recovery',
   imports: [],
   templateUrl: './recovery.component.html',
-  styleUrl: './recovery.component.scss'
+  styleUrl: './recovery.component.scss',
+  standalone: true
 })
 export class RecoveryComponent {
 

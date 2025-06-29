@@ -5,6 +5,7 @@ import { Observable } from "rxjs";
 import { LoginResponse } from "../model/login-response.model";
 import { LoginCompanySearchRequest } from "../model/login-company-search-request.model";
 import { LoginCompanySearchResponse } from "../model/login-company-search-response.model";
+import { Router } from "@angular/router";
 
 @Injectable({
   providedIn: "root",
@@ -12,6 +13,8 @@ import { LoginCompanySearchResponse } from "../model/login-company-search-respon
 export class LoginService {
   private http = inject(HttpClient);
   private readonly authEndpoint = "/authentication/v2/oauth/token";
+
+  constructor(private router: Router) {}
 
   login(data: LoginRequest, loginType: string): Observable<LoginResponse> {
     let body;
@@ -51,5 +54,10 @@ export class LoginService {
         headers,
       }
     );
+  }
+
+  logout(): Promise<boolean> {
+    sessionStorage.clear();
+    return this.router.navigateByUrl("/login", { replaceUrl: true });
   }
 }

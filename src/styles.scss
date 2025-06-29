@@ -3,40 +3,44 @@
 // ========================================
 
 // Backgrounds
-$background-color: #f0f0f0;
-$surface-color: #ffffff; // (superfícies internas, cards)
+:root {
+    --background-color: #f0f0f0;
+    --surface-color: #ffffff; // (superfícies internas, cards)
+    
+    // Primary Theme Colors
+    --primary-color: #203340; // (Cor de destaque - botões principais, links)
+    //--primary-color: #8fabbf; // (Cor de destaque - botões principais, links)
+    --primary-hover: #5f737f; // (Hover do primário)
+    
+    // Secondary / Accent Colors
+    --secondary-color: #97a9a0; // (Botões secundários, badges)
+    
+    // Neutrals
+    --text-color: #203340; // (Texto principal - escuro para contraste)
+    --text-secondary: #5f737f; // (Texto secundário / menos importante)
+    --text-muted: #97a9a0; // (Textos de apoio, legendas)
+    
+    // Borders
+    --border-color: #dee2e6; // (Tom de cinza claro padrão para bordas)
+    
+    // States (Success, Warning, Error) → Adicionei tons neutros suaves dentro da paleta
+    --success-color: #8fc19f; // Verde acinzentado (suave)
+    --warning-color: #e0c080; // Amarelado sutil (opcional)
+    --error-color: #d08080; // Vermelho rosado (não muito vibrante, seguindo sua paleta)
+    
+    
+    // Typography sizes (opcional, para padronizar)
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-lg: 18px;
+    
+    // Centraliza verticalmente a coluna no viewport
+}
 
-// Primary Theme Colors
-$primary-color: #203340; // (Cor de destaque - botões principais, links)
-//$primary-color: #8fabbf; // (Cor de destaque - botões principais, links)
-$primary-hover: #5f737f; // (Hover do primário)
-
-// Secondary / Accent Colors
-$secondary-color: #97a9a0; // (Botões secundários, badges)
-
-// Neutrals
-$text-color: #203340; // (Texto principal - escuro para contraste)
-$text-secondary: #5f737f; // (Texto secundário / menos importante)
-$text-muted: #97a9a0; // (Textos de apoio, legendas)
-
-// Borders
-$border-color: #dee2e6; // (Tom de cinza claro padrão para bordas)
-
-// States (Success, Warning, Error) → Adicionei tons neutros suaves dentro da paleta
-$success-color: #8fc19f; // Verde acinzentado (suave)
-$warning-color: #e0c080; // Amarelado sutil (opcional)
-$error-color: #d08080; // Vermelho rosado (não muito vibrante, seguindo sua paleta)
-
-
-// Typography sizes (opcional, para padronizar)
-$font-size-base: 16px;
-$font-size-sm: 14px;
-$font-size-lg: 18px;
-
-// Centraliza verticalmente a coluna no viewport
 
 body {
-    background-color: $background-color;
+    background-color: var(--background-color);
+    font-family: 'Inter', sans-serif;
 }
 
 :host {
@@ -44,52 +48,52 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh; // altura total da tela
-    background-color: $background-color;
+    background-color: --background-color;
 }
 
 input.form-control {
-    border: 1px solid $border-color;
+    border: 1px solid var(--border-color);
     margin-bottom: 1rem;
-    font-size: $font-size-base;
-    color: $text-color;
+    font-size: var(--font-size-base);
+    color: var(--text-color);
 
     &:focus {
-        border-color: $primary-color;
-        box-shadow: 0 0 5px rgba($primary-color, 0.5);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 5px rgba(var(--primary-color), 0.5);
         outline: none;
     }
 }
 
 // Botão com cor primaria definida
-button.btn-primary{
-    background-color: $primary-color;
-    border-color: $primary-color;
+button.btn-primary, i.btn-primary{
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 
     &:hover {
-        background-color: $primary-hover;
-        border-color: $primary-hover;
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
     }
 }
 
-button.btn-outline-primary{
+button.btn-outline-primary, i.btn-outline-primary{
     background-color: white;
-    border-color: $primary-color;
-    color: $primary-color;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 
     &:hover {
-        background-color: $primary-hover;
-        border-color: $primary-hover;
+        background-color: var(--primary-hover);
+        border-color: var(--primary-hover);
     }
 }
 
 .page-link{
     background-color: white !important;
-    border-color: $primary-color !important;
-    color: $primary-color !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
 
     &:hover {
-        background-color: $primary-hover !important;
-        border-color: $primary-hover !important;
+        background-color: var(--primary-hover) !important;
+        border-color: var(--primary-hover) !important;
         color: white !important;
     }
 }
@@ -99,14 +103,25 @@ button.btn-outline-primary{
 }
 
 .surface-container {
-    background-color: $surface-color;
+    background-color: var(--surface-color);
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba($text-color, 0.1);    
-}
+    box-shadow: 0 0 10px rgba(var(--text-color), 0.1);
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Ajuste padrão para telas maiores (desktop) */
+  @media (min-width: 768px) {
+    .surface-container {
+      max-width: 480px;
+      margin: 0 auto; /* centraliza horizontalmente */
+    }
+  }
+  
 
 .surface-container-header {
     text-align: center;
-    background-color: $primary-color;
+    background-color: var(--primary-color);
     width: 100%;
     border-radius: 8px 8px 0 0;
     overflow: hidden;
@@ -117,5 +132,5 @@ button.btn-outline-primary{
 }
 
 a{
-    color: $primary-color;
+    color: var(--primary-color);
 }

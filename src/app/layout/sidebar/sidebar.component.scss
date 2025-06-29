@@ -1,0 +1,45 @@
+#main-sidebar {
+  background-color: var(--primary-color) !important;
+  height: 100vh;
+  padding: 20px;
+}
+
+#navbarToggler {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+.navbar-toggler-icon {
+  color: white;
+}
+
+#company-logo {
+  width: 200px;
+  height: auto;
+  display: block;
+  margin: 0 auto 1rem auto;
+}
+
+.nav-link.active {
+  background-color: var(--secondary-color);
+}
+
+.nav-link.active:hover {
+  color: var(--text-color);
+}
+
+.nav-link {
+  color: white;
+}
+
+.nav-link:hover {
+  background-color: var(--primary-hover);
+}
+
+hr {
+  color: white;
+}

@@ -12,10 +12,9 @@ import { LoginService } from "../../core/service/login.service";
 import { SessionService } from "../../core/service/session.service";
 import { SendRecovery } from "../../core/model/send-recovery.model";
 import { RecoveryService } from "../../core/service/recovery.service";
-import { isCPF } from "brazilian-values";
 import { LoginCompanySearchRequest } from "../../core/model/login-company-search-request.model";
 import { Company } from "../../core/model/login-company.model";
-import { log } from "console";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-login",
@@ -51,7 +50,8 @@ export class LoginComponent {
     private formBuilder: FormBuilder,
     private loginService: LoginService,
     private sessionService: SessionService,
-    private recoveryService: RecoveryService
+    private recoveryService: RecoveryService,
+    private router: Router
   ) {
     this.loginForm = this.formBuilder.group({
       login: ["", [Validators.minLength(4), Validators.maxLength(32)]],
@@ -100,17 +100,17 @@ export class LoginComponent {
     this.loadingService.show();
     let credentials: LoginRequest;
 
-    if(loginType === 'COMPANY_LOGIN'){
+    if (loginType === "COMPANY_LOGIN") {
       credentials = this.companyLoginForm.value as LoginRequest;
       credentials.companyId = this.selectedCompany!.id;
       credentials.document = this.selectedUserDocument!;
 
-      if (this.loginForm.invalid) {
+      if (this.companyLoginForm.invalid) {
         this.invalidLogin = true;
       } else {
         this.invalidLogin = false;
       }
-    }else{
+    } else {
       credentials = this.loginForm.value as LoginRequest;
 
       if (this.loginForm.invalid) {
@@ -129,6 +129,7 @@ export class LoginComponent {
           res.expires_in
         );
         this.loadingService.hide();
+        this.router.navigate(["/home"]);
       },
       error: (err) => {
         console.error("Erro ao chamar API de Autenticação: ", err);

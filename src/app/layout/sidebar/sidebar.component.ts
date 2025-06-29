@@ -1,11 +1,42 @@
-import { Component } from '@angular/core';
+import { Component } from "@angular/core";
+import { SessionService } from "../../core/service/session.service";
+import { Router, RouterModule } from "@angular/router";
+import { LoginService } from "../../core/service/login.service";
+import { LoadingService } from "../../core/service/loading.service";
 
 @Component({
-  selector: 'app-sidebar',
-  imports: [],
-  templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.scss'
+  selector: "app-sidebar",
+  standalone: true,
+  templateUrl: "./sidebar.component.html",
+  styleUrl: "./sidebar.component.scss",
+  imports: [RouterModule],
 })
 export class SidebarComponent {
+  companyLogo: string | null = null;
+  userAvatar: string | null = null;
+  userDisplayName: string | null = null;
+  companyDisplayName: string | null = null;
 
+  constructor(
+    public sessionService: SessionService,
+    private loginService: LoginService,
+    private loadingService: LoadingService
+  ) {}
+
+  ngOnInit(): void {
+    this.companyLogo = this.sessionService.getItem("companyLogoUrl");
+    this.userAvatar = this.sessionService.getItem("userAvatar");
+    this.userDisplayName = this.sessionService.getItem("username");
+    this.companyDisplayName = this.sessionService.getItem("companyDisplayName");
+  }
+
+  logout(event: Event): void {
+    event.preventDefault();
+    this.loadingService.show();
+    this.loginService.logout().then(() => {
+      setTimeout(() => {
+        this.loadingService.hide();
+      }, 500);
+    });
+  }
 }

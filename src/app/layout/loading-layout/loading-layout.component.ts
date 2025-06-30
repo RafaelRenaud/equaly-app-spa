@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { LoadingService } from "../../core/service/loading.service";
+import { LoadingService } from "../../core/service/loading/loading.service";
 import { CommonModule } from "@angular/common";
 
 @Component({

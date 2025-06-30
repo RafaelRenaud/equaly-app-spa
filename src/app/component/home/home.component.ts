@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SessionService } from '../../core/service/session.service';
+import { SessionService } from '../../core/service/session/session.service';
 
 @Component({
   selector: 'app-home',
@@ -16,5 +16,4 @@ export class HomeComponent {
   ngOnInit(): void{
     this.userNickname = this.sessionService.getItem("nickname");
   }
-
 }

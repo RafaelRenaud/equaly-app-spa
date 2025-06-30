@@ -1,10 +1,10 @@
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { LoginRequest } from "../model/login-request.model";
+import { LoginRequest } from "../../model/login/login-request.model";
 import { Observable } from "rxjs";
-import { LoginResponse } from "../model/login-response.model";
-import { LoginCompanySearchRequest } from "../model/login-company-search-request.model";
-import { LoginCompanySearchResponse } from "../model/login-company-search-response.model";
+import { LoginResponse } from "../../model/login/login-response.model";
+import { LoginCompanySearchRequest } from "../../model/login/login-company-search-request.model";
+import { LoginCompanySearchResponse } from "../../model/login/login-company-search-response.model";
 import { Router } from "@angular/router";
 
 @Injectable({

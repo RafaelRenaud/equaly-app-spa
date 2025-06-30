@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { LoadingService } from "../../core/service/loading.service";
+import { LoadingService } from "../../core/service/loading/loading.service";
 import { CommonModule } from "@angular/common";
 import {
   ReactiveFormsModule,
@@ -7,14 +7,14 @@ import {
   Validators,
   FormGroup,
 } from "@angular/forms";
-import { LoginRequest } from "../../core/model/login-request.model";
-import { LoginService } from "../../core/service/login.service";
-import { SessionService } from "../../core/service/session.service";
-import { SendRecovery } from "../../core/model/send-recovery.model";
-import { RecoveryService } from "../../core/service/recovery.service";
-import { LoginCompanySearchRequest } from "../../core/model/login-company-search-request.model";
-import { Company } from "../../core/model/login-company.model";
+import { LoginRequest } from "../../core/model/login/login-request.model";
+import { LoginService } from "../../core/service/login/login.service";
+import { SessionService } from "../../core/service/session/session.service";
+import { SendRecovery } from "../../core/model/recovery/send-recovery.model";
+import { LoginCompanySearchRequest } from "../../core/model/login/login-company-search-request.model";
+import { Company } from "../../core/model/login/login-company.model";
 import { Router } from "@angular/router";
+import { RecoveryService } from "../../core/service/recovery/recovery.service";
 
 @Component({
   selector: "app-login",
@@ -129,7 +129,7 @@ export class LoginComponent {
           res.expires_in
         );
         this.loadingService.hide();
-        this.router.navigate(["/home"]);
+        this.router.navigate(["/"]);
       },
       error: (err) => {
         console.error("Erro ao chamar API de Autenticação: ", err);

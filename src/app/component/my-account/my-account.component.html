@@ -1,0 +1,204 @@
+<div>
+  <div class="surface-container">
+    <div class="surface-container-header">
+      <br />
+      <h3 class="text-white">Meu Perfil</h3>
+    </div>
+    <div class="surface-container-body">
+      <div class="text-center mt-3 mb-3">
+        <img
+          [src]="myUser?.avatarUri || 'avatar.png'"
+          alt="Imagem de Perfil"
+          id="user-avatar"
+          class="rounded"
+        />
+      </div>
+      @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
+      sessionService.hasRole("MASTER_ADMIN") ||
+      sessionService.hasRole("COMMON_ADMIN")){
+      <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Não é possível realizar algumas alterações por aqui, mesmo sendo
+        administrador. Para editar informações bloqueadas acesse diretamente o
+        menu de usuários.
+      </div>
+      }
+      <form>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="number"
+              class="form-control"
+              id="floatingId"
+              disabled
+              [value]="myUser?.id"
+            />
+            <label for="floatingId" class="ps-4">ID de Usuário</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUniversalUsername"
+              disabled
+              [value]="myUser?.universalUser?.name"
+            />
+            <label for="floatingUniversalUsername" class="ps-4">Nome</label>
+          </div>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingCompany"
+            disabled
+            [value]="
+              myUser?.company?.id
+                ?.toString()
+                ?.concat(' - ')
+                ?.concat(myUser?.company?.name!)
+            "
+          />
+          <label for="floatingCompany">Empresa</label>
+        </div>
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingDepartment"
+            disabled
+            [value]="
+              myUser?.department?.id
+                ?.toString()
+                ?.concat(' - ')
+                ?.concat(myUser?.department?.name!)
+            "
+          />
+          <label for="floatingDepartment">Departamento</label>
+        </div>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUsername"
+              [value]="myUser?.username"
+            />
+            <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              [value]="myUser?.nickname"
+              id="floatingNickname"
+            />
+            <label for="floatingNickname" class="ps-4">Apelido</label>
+          </div>
+        </div>
+        <div class="form-floating">
+          <input
+            type="email"
+            class="form-control"
+            id="floatingEmail"
+            [value]="myUser?.email"
+            disabled
+          />
+          <label for="floatingEmail">E-Mail</label>
+        </div>
+        <div class="form-floating">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingRoles"
+              [value]="getRolesAsText()"
+              disabled
+            />
+            <label for="floatingRoles">Permissões</label>
+          </div>
+          
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingLastLogin"
+            disabled
+            [value]="myUser?.lastLoginAt"
+          />
+          <label for="floatingLastLogin">Último Login em</label>
+        </div>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedAt"
+              disabled
+              [value]="myUser?.audit?.createdAt"
+            />
+            <label for="floatingCreatedAt" class="ps-4">Criado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedBy"
+              disabled
+              [value]="myUser?.audit?.createdBy"
+            />
+            <label for="floatingCreatedBy" class="ps-4">Criado por</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedAt"
+              disabled
+              [value]="myUser?.audit?.updatedAt! || 'Não se aplica'"
+            />
+            <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedBy"
+              disabled
+              [value]="myUser?.audit?.updatedBy! || 'Não se aplica'"
+            />
+            <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactive"
+              disabled
+              [value]="myUser?.audit?.disabledAt! || 'Não se aplica'"
+            />
+            <label for="floatingLastInactive" class="ps-4"
+              >Inativo pela última vez em</label
+            >
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactiveBy"
+              disabled
+              [value]="myUser?.audit?.disabledBy! || 'Não se aplica'"
+            />
+            <label for="floatingLastInactiveBy" class="ps-4"
+              >Inativo pela última vez por</label
+            >
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

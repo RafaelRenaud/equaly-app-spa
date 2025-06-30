@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { CanActivate, Router } from "@angular/router";
-import { SessionService } from "../service/session.service";
+import { SessionService } from "../service/session/session.service";
 
 @Injectable({
   providedIn: "root",
@@ -12,7 +12,7 @@ export class LoginGuard implements CanActivate {
     const token = this.session.getItem("Authorization");
 
     if (token) {
-      this.router.navigate(["/home"]);
+      this.router.navigate(["/"]);
       return false;
     }
 

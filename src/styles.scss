@@ -41,6 +41,7 @@
 body {
     background-color: var(--background-color);
     font-family: 'Inter', sans-serif;
+    height: 100vh;
 }
 
 :host {
@@ -102,22 +103,25 @@ button.btn-outline-primary, i.btn-outline-primary{
     margin: 16px;
 }
 
-.surface-container {
+.surface-container, .surface-container-centered{
     background-color: var(--surface-color);
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(var(--text-color), 0.1);
+    box-shadow: 0 0 10px rgba(black, 0.1);
     width: 100%;
     max-width: 100%;
   }
   
-  /* Ajuste padrão para telas maiores (desktop) */
-  @media (min-width: 768px) {
-    .surface-container {
+/* Ajuste padrão para telas maiores (desktop) */
+@media (min-width: 768px) {
+    .surface-container-centered {
       max-width: 480px;
       margin: 0 auto; /* centraliza horizontalmente */
     }
-  }
-  
+    .surface-container {
+        max-width: 90%;
+        margin: 0 auto; /* centraliza horizontalmente */
+    }
+}
 
 .surface-container-header {
     text-align: center;

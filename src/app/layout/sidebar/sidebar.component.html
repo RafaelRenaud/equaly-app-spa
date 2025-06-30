@@ -17,7 +17,7 @@
   >
     <!-- TOPO: Logo -->
     <div>
-      <a href="/home" class="mx-auto navbar-brand">
+      <a href="/" class="mx-auto navbar-brand">
         <img
           alt="Logo da Empresa"
           id="company-logo"
@@ -30,9 +30,9 @@
       <ul class="navbar-nav nav-pills flex-column" >
         <li class="nav-item p-1">
           <a
-            href="/home"
+            href="/"
             class="nav-link"
-            [routerLink]="['/home']"
+            [routerLink]="['/']"
             routerLinkActive="active"
           >
             <i class="bi bi-house-fill p-2"></i>
@@ -155,15 +155,15 @@
           alt=""
           width="64"
           height="64"
-          class="rounded-circle"
+          class="rounded"
         />
       </div>
       <div class="col-8">
         <strong>{{ userDisplayName }}</strong><br />
         <i><small>{{ companyDisplayName }}</small></i><br />
         <small>
-          <a href="#" class="text-white text-decoration-none">
-            Editar Perfil
+          <a href="/my-account" class="text-white text-decoration-none">
+            Meu Perfil
           </a>
           |
           <a

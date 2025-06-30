@@ -1,8 +1,8 @@
 import { Component } from "@angular/core";
-import { SessionService } from "../../core/service/session.service";
+import { SessionService } from "../../core/service/session/session.service";
 import { Router, RouterModule } from "@angular/router";
-import { LoginService } from "../../core/service/login.service";
-import { LoadingService } from "../../core/service/loading.service";
+import { LoginService } from "../../core/service/login/login.service";
+import { LoadingService } from "../../core/service/loading/loading.service";
 
 @Component({
   selector: "app-sidebar",

@@ -1,28 +1,36 @@
 import { Routes } from "@angular/router";
-import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
-import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
+import { HomeComponent } from "./component/home/home.component";
 import { LoginComponent } from "./component/login/login.component";
 import { RecoveryComponent } from "./component/recovery/recovery.component";
 import { AuthGuard } from "./core/guard/auth.guard";
-import { HomeComponent } from "./component/home/home.component";
 import { LoginGuard } from "./core/guard/login.guard";
+import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
+import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
+import { MyAccountComponent } from "./component/my-account/my-account.component";
 
 export const routes: Routes = [
   {
-    path: "",
+    path: "login",
     component: AuthLayoutComponent,
     children: [
-      { path: "login", component: LoginComponent, canActivate: [LoginGuard] },
-      { path: "recovery", component: RecoveryComponent },
+      { path: "", component: LoginComponent, canActivate: [LoginGuard] },
     ],
+  },
+  {
+    path: "recovery",
+    component: AuthLayoutComponent,
+    children: [{ path: "", component: RecoveryComponent }],
   },
   {
     path: "",
     component: MainLayoutComponent,
     canActivateChild: [AuthGuard],
     children: [
-      { path: "home", component: HomeComponent }, 
-      // outras rotas protegidas aqui
+      { path: "", component: HomeComponent, pathMatch: "full" },
+      { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
     ],
-  }
+  },
+
+  // Rota coringa
+  // { path: "**", redirectTo: "" },
 ];

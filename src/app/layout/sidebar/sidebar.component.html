@@ -11,23 +11,20 @@
     <span class="navbar-toggler-icon"></span>
   </button>
 
-  <div
-    class="collapse navbar-collapse"
-    id="navbarToggler"
-  >
-    <!-- TOPO: Logo -->
-    <div>
+  <div class="collapse navbar-collapse" id="navbarToggler">
+    <div class="sidebar-content">
+      <!-- LOGO -->
       <a href="/" class="mx-auto navbar-brand">
         <img
           alt="Logo da Empresa"
           id="company-logo"
           [src]="companyLogo || 'logo_white.png'"
         />
-        <hr/>
+        <hr />
       </a>
 
       <!-- MENU -->
-      <ul class="navbar-nav nav-pills flex-column" >
+      <ul class="navbar-nav nav-pills flex-column">
         <li class="nav-item p-1">
           <a
             href="/"
@@ -148,7 +145,7 @@
     </div>
 
     <!-- RODAPÉ: perfil -->
-    <div class="row text-white mt-3">
+    <div class="sidebar-footer row text-white">
       <div class="col-4">
         <img
           [src]="userAvatar || 'avatar.png'"
@@ -159,8 +156,11 @@
         />
       </div>
       <div class="col-8">
-        <strong>{{ userDisplayName }}</strong><br />
-        <i><small>{{ companyDisplayName }}</small></i><br />
+        <strong>{{ userDisplayName }}</strong
+        ><br />
+        <i
+          ><small>{{ companyDisplayName }}</small></i
+        ><br />
         <small>
           <a href="/my-account" class="text-white text-decoration-none">
             Meu Perfil

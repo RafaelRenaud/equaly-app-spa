@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { UserResponse } from "../../model/user/user-response.model";
 import { RolesResponse } from "../../model/role/roles-response.model";
+import { MainProfile } from "../../model/user/main-profile.model";
 
 @Injectable({
   providedIn: "root",
@@ -35,6 +36,22 @@ export class UserService {
 
     return this.http.get<RolesResponse>(
       this.endpoint.concat("/").concat(id).concat("/roles"),
+      {
+        headers,
+      }
+    );
+  }
+
+  updateUserProfile(id: string, profileDto: MainProfile): Observable<void> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.patch<void>(
+      this.endpoint.concat("/").concat(id),
+      JSON.stringify(profileDto),
       {
         headers,
       }

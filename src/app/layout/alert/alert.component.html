@@ -1,0 +1,22 @@
+@if (payload) {
+<div
+  class="alert position-fixed bottom-0 end-0 m-4 shadow temp-alert"
+  [ngClass]="{
+    'alert-success': payload.type === 'SUCCESS',
+    'alert-danger': payload.type === 'ERROR',
+    'alert-warning': payload.type === 'WARNING',
+    'fade-out': !visible
+  }"
+  style="z-index: 1080; min-width: 300px"
+>
+  <i
+    class="bi me-2"
+    [ngClass]="{
+      'bi-check-square-fill': payload.type === 'SUCCESS',
+      'bi-exclamation-square-fill': payload.type === 'WARNING',
+      'bi-x-square-fill': payload.type === 'ERROR'
+    }"
+  ></i>
+  {{ payload.message || getDefaultMessage(payload.type) }}
+</div>
+}

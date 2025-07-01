@@ -1,3 +1,48 @@
-#user-avatar{
-    width: 200px;
+#user-avatar {
+  width: 200px;
+  height: 200px;
+}
+
+.profile-image-container {
+  position: relative;
+}
+
+.profile-image {
+  object-fit: cover;
+  border-radius: 50%;
+  transition: 0.3s ease;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.profile-image-container:hover .overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog.modal-lg {
+  max-width: 600px;
+}
+
+image-cropper {
+  display: block;
+  max-width: 100%;
+  margin: 0 auto;
 }

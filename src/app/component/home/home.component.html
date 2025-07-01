@@ -2,3 +2,9 @@
   <h1>Olá, {{ userNickname }}</h1>
   <hr />
 </div>
+@if (successIndicator) {
+  <div class="alert alert-success fade-temporarily w-25 bottom-0 end-0 m-4 shadow position-fixed">
+    <i class="bi bi-check-square-fill"></i>
+    Operação realizada com sucesso.
+  </div>
+}

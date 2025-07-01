@@ -6,12 +6,80 @@
     </div>
     <div class="surface-container-body">
       <div class="text-center mt-3 mb-3">
-        <img
-          [src]="myUser?.avatarUri || 'avatar.png'"
-          alt="Imagem de Perfil"
-          id="user-avatar"
-          class="rounded"
-        />
+        <div class="position-relative d-inline-block profile-image-container">
+          <img
+            [src]="croppedImage || myUser?.avatarUri || 'avatar.png'"
+            alt="Imagem de Perfil"
+            id="user-avatar"
+            class="rounded profile-image"
+          />
+          <div class="overlay rounded" (click)="fileInput.click()">
+            <span>Alterar foto de perfil</span>
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            #fileInput
+            style="display: none"
+            (change)="fileChangeEvent($event)"
+          />
+        </div>
+      </div>
+
+      <!-- Modal ngx-image-cropper -->
+      <div
+        class="modal fade"
+        id="cropperModal"
+        tabindex="-1"
+        aria-labelledby="cropperModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="cropperModalLabel">
+                Recortar Imagem
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+                (click)="cancelCrop()"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <image-cropper
+                [imageChangedEvent]="imageChangedEvent"
+                [maintainAspectRatio]="true"
+                [aspectRatio]="1"
+                [resizeToWidth]="200"
+                format="png"
+                (imageCropped)="imageCropped($event)"
+                (imageLoaded)="imageLoaded()"
+                (cropperReady)="cropperReady()"
+                (loadImageFailed)="loadImageFailed()"
+              ></image-cropper>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                (click)="cancelCrop()"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="confirmCrop()"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
       @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
       sessionService.hasRole("MASTER_ADMIN") ||
@@ -22,8 +90,19 @@
         administrador. Para editar informações bloqueadas acesse diretamente o
         menu de usuários.
       </div>
+      } @else {
+      <div class="alert alert-primary" role="alert">
+        <i class="bi bi-info-square-fill"></i>
+        Algumas informações não são permitidas para alterações. Se necessário,
+        solicite ao administrador master do sistema.
+      </div>
+      } @if(this.mainProfileForm.invalid){
+      <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Uma ou mais informações estão incorretas, corrija e tente novamente.
+      </div>
       }
-      <form>
+      <form [formGroup]="mainProfileForm">
         <div class="row">
           <div class="form-floating col">
             <input
@@ -84,6 +163,8 @@
               class="form-control"
               id="floatingUsername"
               [value]="myUser?.username"
+              formControlName="username"
+              [class.is-invalid]="invalidUsername"
             />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
           </div>
@@ -93,6 +174,8 @@
               class="form-control"
               [value]="myUser?.nickname"
               id="floatingNickname"
+              formControlName="nickname"
+              [class.is-invalid]="invalidNickname"
             />
             <label for="floatingNickname" class="ps-4">Apelido</label>
           </div>
@@ -108,16 +191,16 @@
           <label for="floatingEmail">E-Mail</label>
         </div>
         <div class="form-floating">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingRoles"
-              [value]="getRolesAsText()"
-              disabled
-            />
-            <label for="floatingRoles">Permissões</label>
-          </div>
-          
+          <input
+            type="text"
+            class="form-control"
+            id="floatingRoles"
+            [value]="getRolesAsText()"
+            disabled
+          />
+          <label for="floatingRoles">Permissões</label>
+        </div>
+
         <div class="form-floating">
           <input
             type="text"
@@ -198,7 +281,113 @@
             >
           </div>
         </div>
+        <div class="text-center">
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            [routerLink]="['']"
+          >
+            <i class="bi bi-arrow-left-square-fill"></i>
+            Voltar
+          </button>
+          <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmationModal"
+          >
+            <i class="bi bi-floppy-fill"></i>
+            Salvar
+          </button>
+        </div>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmação -->
+
+<div
+  class="modal fade"
+  id="confirmationModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="confirmationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">
+          Deseja prosseguir com as atualizações?
+        </h5>
+      </div>
+      <div class="modal-body">
+        <p>
+          Para fins de atualizações na sessão, ao confirmar você será deslogado
+          e deverá entrar novamente. Deseja continuar?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          <i class="bi bi-x-square-fill"></i>
+          Fechar
+        </button>
+        <button type="button" class="btn btn-success" (click)="updateProfile()">
+          <i class="bi bi-floppy-fill"></i>
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ngx-image-cropper -->
+<div
+  class="modal fade"
+  id="cropperModal"
+  tabindex="-1"
+  aria-labelledby="cropperModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cropperModalLabel">Recortar Imagem</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+          (click)="cancelCrop()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <image-cropper
+          [imageChangedEvent]="imageChangedEvent"
+          [maintainAspectRatio]="true"
+          [aspectRatio]="1"
+          [resizeToWidth]="200"
+          format="png"
+          (imageCropped)="imageCropped($event)"
+          (imageLoaded)="imageLoaded()"
+          (cropperReady)="cropperReady()"
+          (loadImageFailed)="loadImageFailed()"
+        ></image-cropper>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="cancelCrop()"
+        >
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirmCrop()">
+          Confirmar
+        </button>
+      </div>
     </div>
   </div>
 </div>

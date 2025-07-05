@@ -8,7 +8,7 @@
       <div class="text-center mt-3 mb-3">
         <div class="position-relative d-inline-block profile-image-container">
           <img
-            [src]="croppedImage || myUser?.avatarUri || 'avatar.png'"
+            [src]="myUser?.avatarUri || 'avatar.png'"
             alt="Imagem de Perfil"
             id="user-avatar"
             class="rounded profile-image"
@@ -16,92 +16,47 @@
           <div class="overlay rounded" (click)="fileInput.click()">
             <span>Alterar foto de perfil</span>
           </div>
+
           <input
+            #fileInput
             type="file"
             accept="image/*"
-            #fileInput
-            style="display: none"
             (change)="fileChangeEvent($event)"
+            hidden
           />
         </div>
       </div>
 
-      <!-- Modal ngx-image-cropper -->
-      <div
-        class="modal fade"
-        id="cropperModal"
-        tabindex="-1"
-        aria-labelledby="cropperModalLabel"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="cropperModalLabel">
-                Recortar Imagem
-              </h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-                (click)="cancelCrop()"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <image-cropper
-                [imageChangedEvent]="imageChangedEvent"
-                [maintainAspectRatio]="true"
-                [aspectRatio]="1"
-                [resizeToWidth]="200"
-                format="png"
-                (imageCropped)="imageCropped($event)"
-                (imageLoaded)="imageLoaded()"
-                (cropperReady)="cropperReady()"
-                (loadImageFailed)="loadImageFailed()"
-              ></image-cropper>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-                (click)="cancelCrop()"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                class="btn btn-primary"
-                (click)="confirmCrop()"
-              >
-                Confirmar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
-      sessionService.hasRole("MASTER_ADMIN") ||
-      sessionService.hasRole("COMMON_ADMIN")){
+      @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+      sessionService.hasRole('MASTER_ADMIN') ||
+      sessionService.hasRole('COMMON_ADMIN') ) {
       <div class="alert alert-warning" role="alert">
         <i class="bi bi-exclamation-square-fill"></i>
         Não é possível realizar algumas alterações por aqui, mesmo sendo
         administrador. Para editar informações bloqueadas acesse diretamente o
         menu de usuários.
       </div>
-      } @else {
+      } @if (!( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+      sessionService.hasRole('MASTER_ADMIN') ||
+      sessionService.hasRole('COMMON_ADMIN') )) {
       <div class="alert alert-primary" role="alert">
         <i class="bi bi-info-square-fill"></i>
         Algumas informações não são permitidas para alterações. Se necessário,
         solicite ao administrador master do sistema.
       </div>
-      } @if(this.mainProfileForm.invalid){
+      } @if (mainProfileForm.invalid) {
       <div class="alert alert-danger" role="alert">
         <i class="bi bi-exclamation-square-fill"></i>
         Uma ou mais informações estão incorretas, corrija e tente novamente.
       </div>
+      } @if (invalidAvatar) {
+      <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Não foi possível atualizar a imagem de perfil, entre em contato com o
+        administrador do sistema.
+      </div>
       }
+
       <form [formGroup]="mainProfileForm">
         <div class="row">
           <div class="form-floating col">
@@ -141,6 +96,7 @@
           />
           <label for="floatingCompany">Empresa</label>
         </div>
+
         <div class="form-floating">
           <input
             type="text"
@@ -156,14 +112,15 @@
           />
           <label for="floatingDepartment">Departamento</label>
         </div>
+
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
               id="floatingUsername"
-              [value]="myUser?.username"
               formControlName="username"
+              [value]="myUser?.username"
               [class.is-invalid]="invalidUsername"
             />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
@@ -172,14 +129,15 @@
             <input
               type="text"
               class="form-control"
-              [value]="myUser?.nickname"
               id="floatingNickname"
               formControlName="nickname"
+              [value]="myUser?.nickname"
               [class.is-invalid]="invalidNickname"
             />
             <label for="floatingNickname" class="ps-4">Apelido</label>
           </div>
         </div>
+
         <div class="form-floating">
           <input
             type="email"
@@ -190,6 +148,7 @@
           />
           <label for="floatingEmail">E-Mail</label>
         </div>
+
         <div class="form-floating">
           <input
             type="text"
@@ -206,19 +165,20 @@
             type="text"
             class="form-control"
             id="floatingLastLogin"
-            disabled
             [value]="myUser?.lastLoginAt"
+            disabled
           />
           <label for="floatingLastLogin">Último Login em</label>
         </div>
+
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
               id="floatingCreatedAt"
-              disabled
               [value]="myUser?.audit?.createdAt"
+              disabled
             />
             <label for="floatingCreatedAt" class="ps-4">Criado em</label>
           </div>
@@ -227,20 +187,21 @@
               type="text"
               class="form-control"
               id="floatingCreatedBy"
-              disabled
               [value]="myUser?.audit?.createdBy"
+              disabled
             />
             <label for="floatingCreatedBy" class="ps-4">Criado por</label>
           </div>
         </div>
+
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
               id="floatingUpdatedAt"
+              [value]="myUser?.audit?.updatedAt || 'Não se aplica'"
               disabled
-              [value]="myUser?.audit?.updatedAt! || 'Não se aplica'"
             />
             <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
           </div>
@@ -249,20 +210,21 @@
               type="text"
               class="form-control"
               id="floatingUpdatedBy"
+              [value]="myUser?.audit?.updatedBy || 'Não se aplica'"
               disabled
-              [value]="myUser?.audit?.updatedBy! || 'Não se aplica'"
             />
             <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
           </div>
         </div>
+
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
               id="floatingLastInactive"
+              [value]="myUser?.audit?.disabledAt || 'Não se aplica'"
               disabled
-              [value]="myUser?.audit?.disabledAt! || 'Não se aplica'"
             />
             <label for="floatingLastInactive" class="ps-4"
               >Inativo pela última vez em</label
@@ -273,22 +235,22 @@
               type="text"
               class="form-control"
               id="floatingLastInactiveBy"
+              [value]="myUser?.audit?.disabledBy || 'Não se aplica'"
               disabled
-              [value]="myUser?.audit?.disabledBy! || 'Não se aplica'"
             />
             <label for="floatingLastInactiveBy" class="ps-4"
               >Inativo pela última vez por</label
             >
           </div>
         </div>
+
         <div class="text-center">
           <button
             type="button"
             class="btn btn-outline-primary"
             [routerLink]="['']"
           >
-            <i class="bi bi-arrow-left-square-fill"></i>
-            Voltar
+            <i class="bi bi-arrow-left-square-fill"></i> Voltar
           </button>
           <button
             type="button"
@@ -296,8 +258,7 @@
             data-bs-toggle="modal"
             data-bs-target="#confirmationModal"
           >
-            <i class="bi bi-floppy-fill"></i>
-            Salvar
+            <i class="bi bi-floppy-fill"></i> Salvar
           </button>
         </div>
       </form>
@@ -306,7 +267,6 @@
 </div>
 
 <!-- Modal de Confirmação -->
-
 <div
   class="modal fade"
   id="confirmationModal"
@@ -330,62 +290,72 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          <i class="bi bi-x-square-fill"></i>
-          Fechar
+          <i class="bi bi-x-square-fill"></i> Fechar
         </button>
         <button type="button" class="btn btn-success" (click)="updateProfile()">
-          <i class="bi bi-floppy-fill"></i>
-          Salvar
+          <i class="bi bi-floppy-fill"></i> Salvar
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal ngx-image-cropper -->
+<!-- Model do Cropper -->
 <div
+  #cropperModal
   class="modal fade"
   id="cropperModal"
   tabindex="-1"
   aria-labelledby="cropperModalLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="cropperModalLabel">Recortar Imagem</h5>
+        <h5 class="modal-title" id="cropperModalLabel">
+          Ajustar foto de perfil
+        </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
-          aria-label="Close"
-          (click)="cancelCrop()"
+          aria-label="Fechar"
+          (click)="closeCropperModal()"
         ></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body text-center">
+        <div class="alert alert-primary" role="alert">
+          <i class="bi bi-info-square-fill"></i>
+          A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB
+        </div>
+        @if (isCropperVisible) {
         <image-cropper
           [imageChangedEvent]="imageChangedEvent"
           [maintainAspectRatio]="true"
-          [aspectRatio]="1"
-          [resizeToWidth]="200"
-          format="png"
+          [aspectRatio]="1 / 1"
+          [format]="fileType"
           (imageCropped)="imageCropped($event)"
-          (imageLoaded)="imageLoaded()"
-          (cropperReady)="cropperReady()"
           (loadImageFailed)="loadImageFailed()"
+          [resizeToWidth]="256"
         ></image-cropper>
+        }
       </div>
       <div class="modal-footer">
         <button
           type="button"
           class="btn btn-secondary"
           data-bs-dismiss="modal"
-          (click)="cancelCrop()"
+          (click)="closeCropperModal()"
         >
           Cancelar
         </button>
-        <button type="button" class="btn btn-primary" (click)="confirmCrop()">
-          Confirmar
+        <button
+          type="button"
+          class="btn btn-success"
+          data-bs-dismiss="modal"
+          (click)="saveCroppedImage()"
+        >
+          Salvar
         </button>
       </div>
     </div>

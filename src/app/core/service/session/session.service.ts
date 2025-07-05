@@ -26,6 +26,10 @@ export class SessionService {
     return this.isBrowser ? sessionStorage.getItem(key) : null;
   }
 
+  updateSessionAvatar(url: string) {
+    this.safeSetItem("userAvatar", url);
+  }
+
   saveSessionData(
     tokenType: string,
     accessToken: string,
@@ -72,7 +76,7 @@ export class SessionService {
     const roles = rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];
     if (roles.includes(role)) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }

@@ -254,6 +254,14 @@
           </button>
           <button
             type="button"
+            class="btn btn-outline-danger"
+            data-bs-toggle="modal"
+            data-bs-target="#passwordChangeModal"
+          >
+            <i class="bi bi-lock-fill"></i> Alterar Senha
+          </button>
+          <button
+            type="button"
             class="btn btn-success"
             data-bs-toggle="modal"
             data-bs-target="#confirmationModal"
@@ -294,6 +302,56 @@
         </button>
         <button type="button" class="btn btn-success" (click)="updateProfile()">
           <i class="bi bi-floppy-fill"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Alteração de Senha -->
+<div
+  class="modal fade"
+  id="passwordChangeModal"
+  aria-labelledby="passwordChangeModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordChangeModalLabel">
+          Deseja prosseguir com a alteração de senha?
+        </h5>
+      </div>
+      <div class="modal-body">
+        <p>
+          Para fins de atualizações na sessão, ao confirmar, um código de
+          alteração de senha será enviado ao seu e-mail
+          <i
+            ><b>{{ myUser?.email }}</b></i
+          >
+          e sua sessão será encerrada neste navegador. Deseja prosseguir?
+        </p>
+        <div class="text-center">
+          <img src="assets/confirmation.svg" alt="Tarefas em dia" class="w-50"/>
+        </div>
+        @if(invalidRecovery){
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-x-square-fill"></i>
+          Houve um erro tentar alterar a senha, tente novamente mais tarde.
+        </div>
+        }
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          <i class="bi bi-x-square-fill"></i> Fechar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="sendRAC()"
+          data-bs-dismiss="modal"
+        >
+          <i class="bi bi-send-fill"></i> Enviar Código de Recuperação
         </button>
       </div>
     </div>

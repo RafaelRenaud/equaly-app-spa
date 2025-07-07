@@ -56,7 +56,7 @@ export class RecoveryComponent {
 
     this.loadingService.show();
 
-    if (recoveryDto.password1 === recoveryDto.password2) {
+    if (recoveryDto.password1 === recoveryDto.password2 && recoveryDto.password1 != "") {
       const recoveryData: RecoveryData = {
         rac: recoveryDto.racCode,
         email: this.recoveryEmail!,

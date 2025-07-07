@@ -26,6 +26,7 @@ import {
   LoadedImage,
 } from "ngx-image-cropper";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { RecoveryService } from "../../core/service/recovery/recovery.service";
 
 @Component({
   selector: "app-my-account",
@@ -44,6 +45,7 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
   invalidUsername: boolean = false;
   invalidNickname: boolean = false;
   invalidAvatar: boolean = false;
+  invalidRecovery: boolean = false;
 
   imageChangedEvent: Event | null = null;
   imageName: string | null = null;
@@ -64,6 +66,7 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
     private loadingService: LoadingService,
     private formBuilder: FormBuilder,
     private loginService: LoginService,
+    private recoveryService: RecoveryService,
     private router: Router,
     private sanitizer: DomSanitizer
   ) {
@@ -112,9 +115,31 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  sendRAC() {
+    this.invalidRecovery = false;
+    this.loadingService.show();
+    this.recoveryService
+      .sendRAC({
+        companyAlias: this.sessionService.getItem("companyAlias")!,
+        login: this.myUser?.login!,
+      })
+      .subscribe({
+        next: () => {
+          this.loginService.logout();
+        },
+        error: (err) => {
+          console.error("Erro ao enviar RAC:", err);
+          this.invalidRecovery = true;
+        },
+        complete: () => {
+          this.loadingService.hide();
+        },
+      });
+  }
+
   // Abre input file quando clica no overlay
   triggerFileInput() {
-    this.fileInput.nativeElement.value = ""; 
+    this.fileInput.nativeElement.value = "";
     this.fileInput.nativeElement.click();
   }
 
@@ -181,8 +206,14 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
       )
       .subscribe({
         next: (res) => {
+          const params = new URLSearchParams({
+            action: "SUCCESS",
+            message: "Foto de perfil atualizada com sucesso.",
+          });
+
           this.sessionService.updateSessionAvatar(res.uri);
-          window.location.reload();
+          window.location.href =
+            window.location.pathname + "?" + params.toString();
           this.loadingService.hide();
         },
         error: (err) => {

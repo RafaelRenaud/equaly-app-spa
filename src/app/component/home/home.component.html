@@ -1,10 +1,10 @@
 <div id="home-component">
   <h1>Olá, {{ userNickname }}</h1>
   <hr />
-</div>
-@if (successIndicator) {
-  <div class="alert alert-success fade-temporarily w-25 bottom-0 end-0 m-4 shadow position-fixed">
-    <i class="bi bi-check-square-fill"></i>
-    Operação realizada com sucesso.
+
+  <div class="text-center" id="everything-ok">
+    <img src="assets/relax.svg" alt="Tarefas em dia"/>
+    <br/><br/>
+    <h3>Tudo certo por aqui! Não existem pendências atualmente.</h3>
   </div>
-}
+</div>

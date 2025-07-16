@@ -1,20 +1,20 @@
 import { createRequire } from 'module';const require = createRequire(import.meta.url);
 import {
-  withHttpTransferCache
-} from "./chunk-EA4LEH3O.js";
-import {
   CommonModule,
   DomAdapter,
   getDOM,
   setRootDomAdapter
-} from "./chunk-SNS7UOYO.js";
+} from "./chunk-SZ3GY3FS.js";
+import {
+  withHttpTransferCache
+} from "./chunk-QHMMTO2I.js";
 import {
   DOCUMENT,
   PLATFORM_BROWSER_ID,
   XhrFactory,
   isPlatformServer,
   parseCookieValue
-} from "./chunk-GV22NJRN.js";
+} from "./chunk-EUYAHB2B.js";
 import {
   APP_ID,
   ApplicationModule,
@@ -73,11 +73,11 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-SWIVHK54.js";
+} from "./chunk-FWYIBGDQ.js";
 import {
   __spreadProps,
   __spreadValues
-} from "./chunk-YHCV7DAQ.js";
+} from "./chunk-ANGF2IQY.js";
 
 // node_modules/@angular/platform-browser/fesm2022/dom_renderer-DGKzginR.mjs
 var EVENT_MANAGER_PLUGINS = new InjectionToken(ngDevMode ? "EventManagerPlugins" : "");
@@ -2016,4 +2016,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-P3HGAUSM.js.map
+//# sourceMappingURL=chunk-OVX5EZU2.js.map

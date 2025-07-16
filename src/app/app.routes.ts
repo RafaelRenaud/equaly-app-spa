@@ -7,6 +7,7 @@ import { LoginGuard } from "./core/guard/login.guard";
 import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
 import { MyAccountComponent } from "./component/my-account/my-account.component";
+import { CompanyHubComponent } from "./component/company/hub/company-hub.component";
 
 export const routes: Routes = [
   {
@@ -28,6 +29,12 @@ export const routes: Routes = [
     children: [
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
+      {
+        path: "companies",
+        component: CompanyHubComponent,
+        pathMatch: "full",
+        data: { roles: ["EQUALY_MASTER_ADMIN"] },
+      }
     ],
   },
 

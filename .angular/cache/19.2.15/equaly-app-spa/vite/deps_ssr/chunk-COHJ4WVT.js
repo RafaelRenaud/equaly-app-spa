@@ -4,22 +4,22 @@ import {
   BrowserModule,
   EVENT_MANAGER_PLUGINS,
   EventManagerPlugin
-} from "./chunk-P3HGAUSM.js";
-import {
-  HTTP_ROOT_INTERCEPTOR_FNS
-} from "./chunk-EA4LEH3O.js";
+} from "./chunk-OVX5EZU2.js";
 import {
   NullViewportScroller,
   PlatformLocation,
   ViewportScroller,
   getDOM,
   setRootDomAdapter
-} from "./chunk-SNS7UOYO.js";
+} from "./chunk-SZ3GY3FS.js";
+import {
+  HTTP_ROOT_INTERCEPTOR_FNS
+} from "./chunk-QHMMTO2I.js";
 import {
   DOCUMENT,
   PLATFORM_SERVER_ID,
   XhrFactory
-} from "./chunk-GV22NJRN.js";
+} from "./chunk-EUYAHB2B.js";
 import {
   ALLOW_MULTIPLE_PLATFORMS,
   APP_ID,
@@ -53,14 +53,14 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵinject
-} from "./chunk-SWIVHK54.js";
+} from "./chunk-FWYIBGDQ.js";
 import {
   require_cjs
-} from "./chunk-AQYIT73X.js";
+} from "./chunk-2K3BKASH.js";
 import {
   __async,
   __toESM
-} from "./chunk-YHCV7DAQ.js";
+} from "./chunk-ANGF2IQY.js";
 
 // node_modules/@angular/platform-server/fesm2022/server-_br4z1cG.mjs
 var import_rxjs = __toESM(require_cjs(), 1);
@@ -16259,7 +16259,7 @@ var ServerXhr = class _ServerXhr {
       if (!this.xhrImpl) {
         const {
           default: xhr
-        } = yield import("./xhr2-TXIMV6CV.js");
+        } = yield import("./xhr2-HQX5CY5B.js");
         this.xhrImpl = xhr;
       }
     });
@@ -16840,4 +16840,4 @@ export {
    * License: MIT
    *)
 */
-//# sourceMappingURL=chunk-SBWLSCLQ.js.map
+//# sourceMappingURL=chunk-COHJ4WVT.js.map

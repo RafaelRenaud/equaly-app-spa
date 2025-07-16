@@ -152,6 +152,16 @@ i.btn-outline-primary {
   padding: 2rem;
 }
 
+.surface-banner{
+  padding-top: 5%;
+  color: grey;
+  text-align: center;
+}
+
+.surface-banner > img{
+  width: 40%;
+}
+
 a {
   color: var(--primary-color);
 }

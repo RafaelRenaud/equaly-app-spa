@@ -10,6 +10,6 @@ export interface CompanyResponse {
   document: string;
   contact: string;
   status: "ACTIVE" | "INACTIVE" | string;
-  logoUri: string;
+  logoUri: string | null;
   audit: Audit;
 }

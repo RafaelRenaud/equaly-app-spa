@@ -1,20 +1,20 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { CompanyService } from "../../../core/service/company/company.service";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Modal } from "bootstrap";
-import { isPlatformBrowser } from "@angular/common";
-import { Router, RouterModule } from "@angular/router";
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { CredentialResponse } from '../../../core/model/credential/credential-response.model';
+import { Modal } from 'bootstrap';
+import { LoadingService } from '../../../core/service/loading/loading.service';
+import { CredentialService } from '../../../core/service/credential/credential.service';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
-  selector: "company-hub",
-  standalone: true,
+  selector: "credential-hub",
   imports: [FormsModule, RouterModule],
-  templateUrl: "./company-hub.component.html",
-  styleUrl: "./company-hub.component.scss",
+  templateUrl: "./credential-hub.component.html",
+  styleUrl: "./credential-hub.component.scss",
+  standalone: true,
 })
-export class CompanyHubComponent implements OnInit {
+export class CredentialHubComponent {
   notFoundIndicator = false;
 
   // Filtros
@@ -23,8 +23,8 @@ export class CompanyHubComponent implements OnInit {
   selectedStatus = "NONE";
 
   // Dados
-  companies: CompanyResponse[] = [];
-  selectedCompany: CompanyResponse | null = null;
+  credentials: CredentialResponse[] = [];
+  selectedCredential: CredentialResponse | null = null;
 
   // Paginação
   currentPage = 0;
@@ -32,20 +32,20 @@ export class CompanyHubComponent implements OnInit {
   pageSize = 10;
 
   //Modal
-  companyToUpdate: CompanyResponse | null = null;
+  credentialToUpdate: CredentialResponse | null = null;
   statusToUpdate: "ACTIVE" | "INACTIVE" | null = null;
   confirmModal!: Modal;
   isBrowser = false;
 
   constructor(
-    private companyService: CompanyService,
+    private credentialService: CredentialService,
     public loadingService: LoadingService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
-    this.searchCompanies();
+    this.searchCredentials();
     this.isBrowser = isPlatformBrowser(this.platformId);
 
     if (this.isBrowser) {
@@ -58,10 +58,10 @@ export class CompanyHubComponent implements OnInit {
     }
   }
 
-  searchCompanies(): void {
+  searchCredentials(): void {
     this.loadingService.show();
-    this.companyService
-      .getCompanies(
+    this.credentialService
+      .getCredentials(
         this.selectedFilter,
         this.searchValue,
         this.selectedStatus,
@@ -69,9 +69,9 @@ export class CompanyHubComponent implements OnInit {
         this.pageSize
       )
       .subscribe((response) => {
-        this.companies = response.companies;
+        this.credentials = response.credentials;
         this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.companies.length === 0;
+        this.notFoundIndicator = this.credentials.length === 0;
         this.loadingService.hide();
       });
   }
@@ -81,65 +81,65 @@ export class CompanyHubComponent implements OnInit {
     this.searchValue = "";
     this.selectedStatus = "NONE";
     this.currentPage = 0;
-    this.searchCompanies();
+    this.searchCredentials();
   }
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages) {
       this.currentPage = page;
-      this.searchCompanies();
+      this.searchCredentials();
     }
   }
 
   openConfirmModal(
-    company: CompanyResponse,
+    credential: CredentialResponse,
     status: "ACTIVE" | "INACTIVE"
   ): void {
-    this.companyToUpdate = company;
+    this.credentialToUpdate = credential;
     this.statusToUpdate = status;
     this.confirmModal.show();
   }
 
   confirmUpdateStatus(): void {
-    if (!this.companyToUpdate || !this.statusToUpdate) return;
+    if (!this.credentialToUpdate || !this.statusToUpdate) return;
 
     this.loadingService.show();
-    this.companyService
-      .updateCompanyStatus(this.companyToUpdate.id, this.statusToUpdate)
+    this.credentialService
+      .updateCredentialStatus(this.credentialToUpdate.id, this.statusToUpdate)
       .subscribe({
         next: () => {
           this.confirmModal.hide();
-          this.router.navigate(["/companies"], {
+          this.router.navigate(["/credentials"], {
             queryParams: {
               action: "SUCCESS",
               message:
                 this.statusToUpdate === "ACTIVE"
-                  ? "Empresa reativada com sucesso"
-                  : "Empresa inativada com sucesso"
+                  ? "Credencial reativada com sucesso"
+                  : "Credencial inativada com sucesso",
             },
           });
-          this.companyToUpdate = null;
+          this.credentialToUpdate = null;
           this.statusToUpdate = null;
-          this.searchCompanies();
+          this.searchCredentials();
           this.loadingService.hide();
         },
         error: (error) => {
           this.confirmModal.hide();
-          this.router.navigate(["/companies"], {
+          this.router.navigate(["/credentials"], {
             queryParams: {
               action: "ERROR",
-              message: "Erro ao inativar empresa",
+              message: "Erro ao inativar credencial",
             },
           });
-          this.companyToUpdate = null;
+          this.credentialToUpdate = null;
           this.statusToUpdate = null;
-          this.searchCompanies();
+          this.searchCredentials();
           this.loadingService.hide();
         },
       });
   }
 
-  selectCompanyView(company: CompanyResponse){
-    this.selectedCompany = company;
+  selectCredentialView(credential: CredentialResponse) {
+    this.selectedCredential = credential;
   }
 }

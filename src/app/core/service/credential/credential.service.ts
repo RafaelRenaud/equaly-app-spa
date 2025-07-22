@@ -66,18 +66,15 @@ export class CredentialService {
     );
   }
 
-  updateCredentialStatus(id: number, status: string): Observable<CredentialResponse> {
+  inactiveCredential(id: number): Observable<void> {
     const headers = new HttpHeaders({
       "Content-Type": "application/json",
       "X-Application-Key": this.session.getItem("clientKey")!,
       Authorization: this.session.getItem("Authorization")!,
     });
 
-    return this.http.patch<CredentialResponse>(
+    return this.http.delete<void>(
       this.endpoint.concat("/").concat(id.toString()),
-      JSON.stringify({
-        status: status,
-      }),
       {
         headers,
       }

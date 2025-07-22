@@ -65,13 +65,12 @@
         </div>
       </div>
       <div class="col-6 text-end">
-        <button class="btn btn-success">
+        <button class="btn btn-success" [routerLink]="['/companies/create']">
           <i class="bi bi-plus-square-fill"></i>
           Cadastrar Empresa
         </button>
       </div>
     </div>
-
     <div class="row mt-4">
       <div class="col">
         @if (companies.length > 0) {
@@ -98,7 +97,7 @@
                 <td class="align-middle">{{ company.document }}</td>
                 <td class="align-middle">
                   <span
-                    class="badge rounded-pill"
+                    class="badge"
                     [class.bg-success]="company.status === 'ACTIVE'"
                     [class.bg-danger]="company.status === 'INACTIVE'"
                   >

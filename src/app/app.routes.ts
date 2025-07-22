@@ -9,6 +9,7 @@ import { MainLayoutComponent } from "./layout/main-layout/main-layout.component"
 import { MyAccountComponent } from "./component/my-account/my-account.component";
 import { CompanyHubComponent } from "./component/company/hub/company-hub.component";
 import { CredentialHubComponent } from "./component/credential/hub/credential-hub.component";
+import { CompanyCreateComponent } from "./component/company/create/company-create.component";
 
 export const routes: Routes = [
   {
@@ -31,11 +32,20 @@ export const routes: Routes = [
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
       {
-        path: "companies",
-        component: CompanyHubComponent,
-        pathMatch: "full",
-        data: { roles: ["EQUALY_MASTER_ADMIN"] },
-      },
+        path: 'companies',
+        canActivateChild: [AuthGuard],
+        data: { roles: ['EQUALY_MASTER_ADMIN'] },
+        children: [
+          {
+            path: '',
+            component: CompanyHubComponent,
+          },
+          {
+            path: 'create',
+            component: CompanyCreateComponent,
+          },
+        ]
+      },      
       {
         path: "credentials",
         component: CredentialHubComponent,

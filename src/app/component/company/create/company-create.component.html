@@ -1,0 +1,76 @@
+<br />
+<div class="surface-container">
+  <div class="surface-container-header">
+    <h3 class="text-white pt-3 pb-2">Cadastrar Empresa</h3>
+  </div>
+  <div class="surface-container-body">
+    <div class="row">
+      <div class="col text-end">
+          <img
+            src="assets/upload_file.svg"
+            alt="Upload do Logo da Empresa"
+            id="company-logo-upload-image"
+          />
+        </div>
+        <div class="col text-start">
+          <button class="btn btn-primary mt-5">
+            <i class="bi bi-upload"></i>
+            Upload do Logo da Empresa
+          </button>
+      </div>
+    </div>
+    <br />
+    <div class="row">
+      <div class="form-floating col">
+        <input type="text" class="form-control" placeholder="Nome Fantasia" />
+        <label class="ps-4">Nome Fantasia</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-floating col">
+        <input type="text" class="form-control" placeholder="Nome da Empresa" />
+        <label class="ps-4">Nome da Empresa</label>
+      </div>
+      <div class="form-floating col">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Código da Empresa"
+        />
+        <label class="ps-4">Código da Empresa</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-floating col">
+        <input type="text" class="form-control" placeholder="Razão Social" />
+        <label class="ps-4">Razão Social</label>
+      </div>
+      <div class="form-floating col">
+        <input type="text" class="form-control" placeholder="CNPJ" />
+        <label class="ps-4">CNPJ</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-floating col">
+        <input
+          type="email"
+          class="form-control"
+          placeholder="E-Mail de Contato Principal"
+        />
+        <label class="ps-4">E-Mail de Contato Principal</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-center">
+        <button class="btn btn-primary" [routerLink]="['/companies']">
+          <i class="bi bi-arrow-left-square-fill"></i>
+          Voltar
+        </button>
+        <button class="btn btn-success">
+          <i class="bi bi-plus-square-fill"></i>
+          Cadastrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

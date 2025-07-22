@@ -1,11 +1,11 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { CredentialResponse } from '../../../core/model/credential/credential-response.model';
-import { Modal } from 'bootstrap';
-import { LoadingService } from '../../../core/service/loading/loading.service';
-import { CredentialService } from '../../../core/service/credential/credential.service';
-import { isPlatformBrowser } from '@angular/common';
+import { Component, Inject, PLATFORM_ID } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { CredentialResponse } from "../../../core/model/credential/credential-response.model";
+import { Modal } from "bootstrap";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { CredentialService } from "../../../core/service/credential/credential.service";
+import { isPlatformBrowser } from "@angular/common";
 
 @Component({
   selector: "credential-hub",
@@ -32,8 +32,7 @@ export class CredentialHubComponent {
   pageSize = 10;
 
   //Modal
-  credentialToUpdate: CredentialResponse | null = null;
-  statusToUpdate: "ACTIVE" | "INACTIVE" | null = null;
+  credentialToInactive: CredentialResponse | null = null;
   confirmModal!: Modal;
   isBrowser = false;
 
@@ -91,35 +90,27 @@ export class CredentialHubComponent {
     }
   }
 
-  openConfirmModal(
-    credential: CredentialResponse,
-    status: "ACTIVE" | "INACTIVE"
-  ): void {
-    this.credentialToUpdate = credential;
-    this.statusToUpdate = status;
+  openConfirmModal(credential: CredentialResponse): void {
+    this.credentialToInactive = credential;
     this.confirmModal.show();
   }
 
-  confirmUpdateStatus(): void {
-    if (!this.credentialToUpdate || !this.statusToUpdate) return;
+  confirmInactiveStatus(): void {
+    if (!this.credentialToInactive) return;
 
     this.loadingService.show();
     this.credentialService
-      .updateCredentialStatus(this.credentialToUpdate.id, this.statusToUpdate)
+      .inactiveCredential(this.credentialToInactive.id)
       .subscribe({
         next: () => {
           this.confirmModal.hide();
           this.router.navigate(["/credentials"], {
             queryParams: {
               action: "SUCCESS",
-              message:
-                this.statusToUpdate === "ACTIVE"
-                  ? "Credencial reativada com sucesso"
-                  : "Credencial inativada com sucesso",
+              message: "Credencial inativada com sucesso",
             },
           });
-          this.credentialToUpdate = null;
-          this.statusToUpdate = null;
+          this.credentialToInactive = null;
           this.searchCredentials();
           this.loadingService.hide();
         },
@@ -131,8 +122,7 @@ export class CredentialHubComponent {
               message: "Erro ao inativar credencial",
             },
           });
-          this.credentialToUpdate = null;
-          this.statusToUpdate = null;
+          this.credentialToInactive = null;
           this.searchCredentials();
           this.loadingService.hide();
         },

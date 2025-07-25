@@ -105,7 +105,13 @@
                   </span>
                 </td>
                 <td class="text-nowrap align-middle">
-                  <button class="btn btn-primary me-1" title="Mais Detalhes" (click)="selectCompanyView(company)" data-bs-toggle="modal" data-bs-target="#viewModal">
+                  <button
+                    class="btn btn-primary me-1"
+                    title="Mais Detalhes"
+                    (click)="selectCompanyView(company)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#viewModal"
+                  >
                     <i class="bi bi-eye-fill"></i>
                   </button>
                   <button class="btn btn-secondary me-1" title="Editar">
@@ -204,11 +210,15 @@
         }}</strong>
         a empresa <strong>{{ companyToUpdate?.name }}</strong
         >?
-        <p>{{statusToUpdate === "ACTIVE" ?
-         "Essa ação poderá reabilitar o acesso de usuários e funcionários atrelados a empresa e seus departamentos." 
-         : "Essa ação poderá desabilitar o acesso de usuários e funcionários atrelados a empresa e seus departamentos."}}</p>
-        <br/><br/>
-        <img src="assets/warning.svg" class="w-50"/>
+        <p>
+          {{
+            statusToUpdate === "ACTIVE"
+              ? "Essa ação poderá reabilitar o acesso de usuários e funcionários atrelados a empresa e seus departamentos."
+              : "Essa ação poderá desabilitar o acesso de usuários e funcionários atrelados a empresa e seus departamentos."
+          }}
+        </p>
+        <br /><br />
+        <img src="assets/warning.svg" class="w-50" />
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -219,14 +229,13 @@
           class="btn btn-primary"
           (click)="confirmUpdateStatus()"
         >
-        <i class="bi bi-floppy-fill"></i>
+          <i class="bi bi-floppy-fill"></i>
           Confirmar
         </button>
       </div>
     </div>
   </div>
 </div>
-
 
 <!-- Modal de Visualização -->
 <div
@@ -249,9 +258,15 @@
       </div>
       <div class="modal-body text-center">
         <div class="row">
+          @if(selectedCompany?.logoUri){
           <div class="col m-3">
-            <img [src]="selectedCompany?.logoUri" alt="Logo da Empresa" id="company-logo"/>
+            <img
+              [src]="selectedCompany?.logoUri"
+              alt="Logo da Empresa"
+              id="company-logo"
+            />
           </div>
+          }
         </div>
         <div class="row">
           <div class="form-floating col">
@@ -284,7 +299,9 @@
               disabled
               [value]="selectedCompany?.displayName"
             />
-            <label for="floatingDisplayName" class="ps-4">Nome da Empresa</label>
+            <label for="floatingDisplayName" class="ps-4"
+              >Nome da Empresa</label
+            >
           </div>
           <div class="form-floating col">
             <input
@@ -292,7 +309,9 @@
               class="form-control"
               id="floatingState"
               disabled
-              [value]="selectedCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'"
+              [value]="
+                selectedCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'
+              "
             />
             <label for="floatingState" class="ps-4">Estado</label>
           </div>

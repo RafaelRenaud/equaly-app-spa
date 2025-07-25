@@ -1,9 +1,10 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { SessionService } from '../session/session.service';
-import { Observable } from 'rxjs';
-import { CompaniesResponse } from '../../model/company/companies-response.model';
-import { CompanyResponse } from '../../model/company/company-response.model';
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+import { inject, Injectable } from "@angular/core";
+import { SessionService } from "../session/session.service";
+import { Observable } from "rxjs";
+import { CompaniesResponse } from "../../model/company/companies-response.model";
+import { CompanyResponse } from "../../model/company/company-response.model";
+import { CompanyCreateRequest } from "../../model/company/company-create.model";
 
 @Injectable({
   providedIn: "root",
@@ -76,8 +77,24 @@ export class CompanyService {
     return this.http.patch<CompanyResponse>(
       this.endpoint.concat("/").concat(id.toString()),
       JSON.stringify({
-        "status": status
+        status: status,
       }),
+      {
+        headers,
+      }
+    );
+  }
+
+  createCompany(company: CompanyCreateRequest): Observable<{ id: number }> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.post<{ id: number }>(
+      this.endpoint,
+      JSON.stringify(company),
       {
         headers,
       }

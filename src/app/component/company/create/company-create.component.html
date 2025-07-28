@@ -6,17 +6,38 @@
   <div class="surface-container-body">
     <div class="row">
       <div class="col text-end">
-        <img
-          src="assets/upload_file.svg"
-          alt="Upload do Logo da Empresa"
-          id="company-logo-upload-image"
-        />
+        <div class="logo-image-wrapper position-relative d-inline-block">
+          @if(logoIsSelected){
+          <img
+            [src]="croppedImage"
+            alt="Logo da Empresa"
+            id="company-logo-upload-image"
+            class="img-thumbnail"
+          />
+          <div class="overlay rounded" (click)="removeLogo()">
+            <span><i class="bi bi-trash-fill"></i> Remover</span>
+          </div>
+          } @else {
+          <img
+            src="assets/upload_file.svg"
+            alt="Upload do Logo da Empresa"
+            id="company-logo-upload-image"
+          />
+          }
+        </div>
       </div>
       <div class="col text-start">
-        <button class="btn btn-primary mt-5">
+        <button class="btn btn-primary mt-5" (click)="fileInput.click()">
           <i class="bi bi-upload"></i>
           Upload do Logo da Empresa
         </button>
+        <input
+          #fileInput
+          type="file"
+          accept="image/*"
+          (change)="fileChangeEvent($event)"
+          hidden
+        />
       </div>
     </div>
     <br />
@@ -114,5 +135,62 @@
         </div>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Model do Cropper -->
+<div
+  #cropperModal
+  class="modal fade"
+  id="cropperModal"
+  tabindex="-1"
+  aria-labelledby="cropperModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cropperModalLabel">
+          Ajustar logo da Empresa
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Fechar"
+          (click)="closeCropperModal()"
+        ></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="alert alert-primary" role="alert">
+          <i class="bi bi-info-square-fill"></i>
+          A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB
+        </div>
+        @if (isCropperVisible) {
+        <image-cropper
+          [imageChangedEvent]="imageChangedEvent"
+          [maintainAspectRatio]="true"
+          [aspectRatio]="1 / 1"
+          [format]="fileType"
+          (imageCropped)="imageCropped($event)"
+          (loadImageFailed)="loadImageFailed()"
+          [resizeToWidth]="256"
+        ></image-cropper>
+        }
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="closeCropperModal()"
+        >
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+          Definir
+        </button>
+      </div>
+    </div>
   </div>
 </div>

@@ -100,4 +100,26 @@ export class CompanyService {
       }
     );
   }
+
+  updateCompanyLogo(
+    id: string,
+    blob: Blob,
+    blobName: string
+  ): Observable<{ uri: string }> {
+    const headers = new HttpHeaders({
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    const formData = new FormData();
+    formData.append("file", blob, blobName);
+
+    return this.http.post<{ uri: string }>(
+      this.endpoint.concat("/").concat(id).concat("/logo"),
+      formData,
+      {
+        headers,
+      }
+    );
+  }
 }

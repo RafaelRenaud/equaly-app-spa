@@ -210,7 +210,9 @@
         }}</strong>
         a empresa <strong>{{ companyToUpdate?.name }}</strong
         >?
-        <p>
+        <br/><br/>
+        <p class="alert alert-warning">
+          <i class="bi bi-exclamation-square-fill"></i>
           {{
             statusToUpdate === "ACTIVE"
               ? "Essa ação poderá reabilitar o acesso de usuários e funcionários atrelados a empresa e seus departamentos."

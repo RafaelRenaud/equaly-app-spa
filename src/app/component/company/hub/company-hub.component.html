@@ -114,10 +114,14 @@
                   >
                     <i class="bi bi-eye-fill"></i>
                   </button>
-                  <button class="btn btn-secondary me-1" title="Editar">
+                  @if(company.status === "ACTIVE") {
+                  <button
+                    class="btn btn-secondary me-1"
+                    title="Editar"
+                    [routerLink]="['/companies/edit/', company.id]"
+                  >
                     <i class="bi bi-pencil-fill"></i>
                   </button>
-                  @if(company.status === "ACTIVE") {
                   <button
                     class="btn btn-danger"
                     title="Inativar"
@@ -209,8 +213,7 @@
           statusToUpdate === "ACTIVE" ? "REATIVAR" : "INATIVAR"
         }}</strong>
         a empresa <strong>{{ companyToUpdate?.name }}</strong
-        >?
-        <br/><br/>
+        >? <br /><br />
         <p class="alert alert-warning">
           <i class="bi bi-exclamation-square-fill"></i>
           {{

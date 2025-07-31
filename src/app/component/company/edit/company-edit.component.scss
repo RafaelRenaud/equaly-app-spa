@@ -1,0 +1,37 @@
+#company-logo-upload-image {
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 0.375rem;
+  }
+  
+  .logo-image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-height: 150px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    pointer-events: none;
+    border-radius: 0.375rem;
+    text-align: center;
+  }
+  
+  .logo-image-wrapper:hover .overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  

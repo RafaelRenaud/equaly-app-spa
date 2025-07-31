@@ -1,7 +1,7 @@
 <br />
 <div class="surface-container">
   <div class="surface-container-header">
-    <h3 class="text-white pt-3 pb-2">Cadastrar Empresa</h3>
+    <h3 class="text-white pt-3 pb-2">Editar Empresa</h3>
   </div>
   <div class="surface-container-body">
     <div class="row">
@@ -17,13 +17,20 @@
           <div class="overlay rounded" (click)="removeLogo()">
             <span><i class="bi bi-trash-fill"></i> Remover</span>
           </div>
+          } @else { @if(companyHasLogo && !logoIsSelected) {
+          <img
+            [src]="selectedCompany?.logoUri"
+            alt="Logo da Empresa"
+            id="company-logo-upload-image"
+            class="img-thumbnail"
+          />
           } @else {
           <img
             src="assets/upload_file.svg"
             alt="Upload do Logo da Empresa"
             id="company-logo-upload-image"
           />
-          }
+          } }
         </div>
       </div>
       <div class="col text-start">
@@ -42,6 +49,28 @@
     </div>
     <br />
     <form [formGroup]="companyForm">
+      <div class="row">
+        <div class="form-floating col">
+          <input
+            type="number"
+            class="form-control"
+            disabled
+            placeholder="ID da Empresa"
+            value="{{ selectedCompany?.id }}"
+          />
+          <label class="ps-4">ID da Empresa</label>
+        </div>
+        <div class="form-floating col">
+          <input
+            disabled
+            type="text"
+            class="form-control"
+            placeholder="Código da Empresa"
+            value="{{ selectedCompany?.alias }}"
+          />
+          <label class="ps-4">Código da Empresa</label>
+        </div>
+      </div>
       <div class="row">
         <div class="form-floating col">
           <input
@@ -70,20 +99,6 @@
           />
           <label class="ps-4">Nome da Empresa</label>
         </div>
-        <div class="form-floating col">
-          <input
-            formControlName="companyAlias"
-            type="text"
-            class="form-control"
-            placeholder="Código da Empresa"
-            [class.is-invalid]="invalidCompanyAlias"
-            (blur)="validateCompanyExists('alias')"
-          />
-          <label class="ps-4">Código da Empresa</label>
-          <div class="invalid-feedback pb-2">
-            Código não preenchido ou já cadastrado.
-          </div>
-        </div>
       </div>
 
       <div class="row">
@@ -102,18 +117,8 @@
           </div>
         </div>
         <div class="form-floating col">
-          <input
-            formControlName="companyDocument"
-            type="text"
-            class="form-control"
-            placeholder="CNPJ"
-            [class.is-invalid]="invalidCompanyDocument"
-            (blur)="validateCompanyExists('document')"
-          />
+          <input disabled type="text" class="form-control" placeholder="CNPJ" value="{{ selectedCompany?.document }}"/>
           <label class="ps-4">CNPJ</label>
-          <div class="invalid-feedback pb-2">
-            CNPJ não preenchido ou já cadastrado.
-          </div>
         </div>
       </div>
 
@@ -138,11 +143,11 @@
           </button>
           <button
             class="btn btn-success"
-            [disabled]="!canSubmit"
-            (click)="submitCompany()"
+            [disabled]="cantSubmit"
+            (click)="editCompany()"
           >
-            <i class="bi bi-plus-square-fill"></i>
-            Cadastrar
+            <i class="bi bi-pencil-fill"></i>
+            Editar
           </button>
         </div>
       </div>

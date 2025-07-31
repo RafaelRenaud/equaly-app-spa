@@ -5,6 +5,8 @@ import { Observable } from "rxjs";
 import { CompaniesResponse } from "../../model/company/companies-response.model";
 import { CompanyResponse } from "../../model/company/company-response.model";
 import { CompanyCreateRequest } from "../../model/company/company-create.model";
+import { CompanyEditComponent } from "../../../component/company/edit/company-edit.component";
+import { CompanyEditRequest } from "../../model/company/company-edit.model";
 
 @Injectable({
   providedIn: "root",
@@ -94,6 +96,22 @@ export class CompanyService {
 
     return this.http.post<{ id: number }>(
       this.endpoint,
+      JSON.stringify(company),
+      {
+        headers,
+      }
+    );
+  }
+
+  updateCompany(id: string, company: CompanyEditRequest): Observable<void> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.patch<void>(
+      this.endpoint.concat("/").concat(id),
       JSON.stringify(company),
       {
         headers,

@@ -10,6 +10,7 @@ import { MyAccountComponent } from "./component/my-account/my-account.component"
 import { CompanyHubComponent } from "./component/company/hub/company-hub.component";
 import { CredentialHubComponent } from "./component/credential/hub/credential-hub.component";
 import { CompanyCreateComponent } from "./component/company/create/company-create.component";
+import { CompanyEditComponent } from "./component/company/edit/company-edit.component";
 
 export const routes: Routes = [
   {
@@ -32,20 +33,24 @@ export const routes: Routes = [
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
       {
-        path: 'companies',
+        path: "companies",
         canActivateChild: [AuthGuard],
-        data: { roles: ['EQUALY_MASTER_ADMIN'] },
+        data: { roles: ["EQUALY_MASTER_ADMIN"] },
         children: [
           {
-            path: '',
+            path: "",
             component: CompanyHubComponent,
           },
           {
-            path: 'create',
+            path: "create",
             component: CompanyCreateComponent,
           },
-        ]
-      },      
+          {
+            path: "edit/:id",
+            component: CompanyEditComponent,
+          },
+        ],
+      },
       {
         path: "credentials",
         component: CredentialHubComponent,

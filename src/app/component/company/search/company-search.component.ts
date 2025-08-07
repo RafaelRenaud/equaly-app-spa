@@ -1,5 +1,4 @@
-import { Component } from "@angular/core";
-import { CompaniesResponse } from "../../../core/model/company/companies-response.model";
+import { Component, ElementRef, ViewChild } from "@angular/core";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
@@ -28,6 +27,10 @@ export class CompanySearchComponent {
   totalPages = 0;
   pageSize = 5;
   notFoundIndicator = false;
+
+  // Datalist Component Binding
+  @ViewChild("companySearchInputRef")
+  companySearchInputRef!: ElementRef<HTMLInputElement>;
 
   constructor(
     private companyService: CompanyService,
@@ -117,5 +120,15 @@ export class CompanySearchComponent {
       this.currentPage = page;
       this.internalSearchCompanies();
     }
+  }
+
+  selectCompanyFromModal(company: CompanyResponse): void {
+    this.selectedCompany = company;
+
+    if (this.companySearchInputRef) {
+      this.companySearchInputRef.nativeElement.value = `${company.id} - ${company.name}`;
+    }
+    
+    this.validCompanySelected = true;
   }
 }

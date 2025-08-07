@@ -8,6 +8,7 @@
       list="companyDatalist"
       (input)="searchCompanies($event)"
       [class.is-invalid]="!validCompanySelected"
+      #companySearchInputRef
     />
     <datalist id="companyDatalist">
       @for(company of searchedCompanies; track company.id) {
@@ -131,7 +132,7 @@
                 </thead>
                 <tbody>
                   @for (company of searchedCompanies; track company.id) {
-                  <tr>
+                  <tr style="cursor: pointer;" data-bs-dismiss="modal" (click)="selectCompanyFromModal(company)">
                     <td class="align-middle">{{ company.id }}</td>
                     <td class="align-middle">{{ company.name }}</td>
                     <td class="align-middle">{{ company.tradingName }}</td>

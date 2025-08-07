@@ -1,0 +1,121 @@
+import { Component } from "@angular/core";
+import { CompaniesResponse } from "../../../core/model/company/companies-response.model";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { CompanyService } from "../../../core/service/company/company.service";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { FormsModule } from "@angular/forms";
+
+@Component({
+  selector: "app-company-search",
+  imports: [FormsModule],
+  templateUrl: "./company-search.component.html",
+  styleUrl: "./company-search.component.scss",
+  standalone: true,
+})
+export class CompanySearchComponent {
+  searchedCompanies: CompanyResponse[] = [];
+  selectedCompany: CompanyResponse | null = null;
+  private timeoutId: any;
+  validCompanySelected: boolean = true;
+
+  // Filtros do Modal
+  selectedFilter = "NONE";
+  searchValue = "";
+  selectedStatus = "NONE";
+
+  // Paginação
+  currentPage = 0;
+  totalPages = 0;
+  pageSize = 5;
+  notFoundIndicator = false;
+
+  constructor(
+    private companyService: CompanyService,
+    private loadingService: LoadingService
+  ) {}
+
+  searchCompanies(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input?.value || "";
+
+    this.selectedCompany = null;
+
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+
+    // Input vazio
+    if (value.trim() === "") {
+      this.searchedCompanies = [];
+      this.validCompanySelected = true;
+      return;
+    }
+
+    // Validação de valor inválido curto
+    if (value.length <= 1) {
+      this.searchedCompanies = [];
+      this.validCompanySelected = false;
+      return;
+    }
+
+    // Validação do ID no início do campo
+    const companyId = value.split(" - ")[0];
+    const foundCompany = this.searchedCompanies.find(
+      (c) => c.id.toString() === companyId
+    );
+
+    if (foundCompany) {
+      this.selectedCompany = foundCompany;
+      this.validCompanySelected = true;
+    } else {
+      this.validCompanySelected = false;
+    }
+
+    // Aguarda digitação parar para buscar
+    this.timeoutId = setTimeout(() => {
+      this.companyService
+        .getCompanies("name", value, "ACTIVE", 0, 5)
+        .subscribe({
+          next: (response) => {
+            this.searchedCompanies = response.companies;
+          },
+          error: () => {
+            this.searchedCompanies = [];
+          },
+        });
+    }, 1000);
+  }
+
+  internalSearchCompanies(): void {
+    this.loadingService.show();
+    this.companyService
+      .getCompanies(
+        this.selectedFilter,
+        this.searchValue,
+        this.selectedStatus,
+        this.currentPage,
+        this.pageSize
+      )
+      .subscribe((response) => {
+        this.searchedCompanies = response.companies;
+        this.totalPages = response.pageable.totalPages;
+        this.notFoundIndicator = this.searchedCompanies.length === 0;
+        this.loadingService.hide();
+      });
+  }
+
+  clearFilters(): void {
+    this.selectedFilter = "NONE";
+    this.searchValue = "";
+    this.selectedStatus = "NONE";
+    this.currentPage = 0;
+    this.internalSearchCompanies();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.internalSearchCompanies();
+    }
+  }
+}

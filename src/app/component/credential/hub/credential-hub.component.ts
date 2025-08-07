@@ -6,10 +6,11 @@ import { Modal } from "bootstrap";
 import { LoadingService } from "../../../core/service/loading/loading.service";
 import { CredentialService } from "../../../core/service/credential/credential.service";
 import { isPlatformBrowser } from "@angular/common";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 
 @Component({
   selector: "credential-hub",
-  imports: [FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule, CompanySearchComponent],
   templateUrl: "./credential-hub.component.html",
   styleUrl: "./credential-hub.component.scss",
   standalone: true,

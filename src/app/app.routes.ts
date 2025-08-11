@@ -11,6 +11,10 @@ import { CompanyHubComponent } from "./component/company/hub/company-hub.compone
 import { CredentialHubComponent } from "./component/credential/hub/credential-hub.component";
 import { CompanyCreateComponent } from "./component/company/create/company-create.component";
 import { CompanyEditComponent } from "./component/company/edit/company-edit.component";
+import { CredentialCreateComponent } from "./component/credential/create/credential-create.component";
+import { DepartmentHubComponent } from "./component/department/hub/department-hub.component";
+import { OccurTypeHubComponent } from "./component/occur-type/hub/occur-type-hub.component";
+import { MyCompanyComponent } from "./component/my-company/my-company.component";
 
 export const routes: Routes = [
   {
@@ -32,6 +36,7 @@ export const routes: Routes = [
     children: [
       { path: "", component: HomeComponent, pathMatch: "full" },
       { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
+      { path: "my-company", component: MyCompanyComponent, pathMatch: "full" },
       {
         path: "companies",
         canActivateChild: [AuthGuard],
@@ -53,9 +58,86 @@ export const routes: Routes = [
       },
       {
         path: "credentials",
-        component: CredentialHubComponent,
-        pathMatch: "full",
+        canActivateChild: [AuthGuard],
         data: { roles: ["EQUALY_MASTER_ADMIN"] },
+        children: [
+          {
+            path: "",
+            component: CredentialHubComponent,
+          },
+          {
+            path: "create",
+            component: CredentialCreateComponent,
+          },
+        ],
+      },
+      {
+        path: "departments",
+        canActivateChild: [AuthGuard],
+        children: [
+          {
+            path: "",
+            data: {
+              roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN", "COMMON_ADMIN"],
+            },
+            component: DepartmentHubComponent,
+          },
+          // {
+          //   path: "create",
+          //   data: {
+          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+          //   },
+          //   component: DepartmentCreateComponent,
+          // },
+          // {
+          //   path: "edit/:id",
+          //   data: {
+          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+          //   },
+          //   component: DepartmentEditComponent,
+          // },
+        ],
+      },
+      {
+        path: "occur-types",
+        canActivateChild: [AuthGuard],
+        children: [
+          {
+            path: "",
+            data: {
+              roles: [
+                "EQUALY_MASTER_ADMIN",
+                "MASTER_ADMIN",
+                "COMMON_ADMIN",
+                "MASTER_QUALITY_INSPECTOR",
+                "COMMON_QUALITY_INSPECTOR",
+              ],
+            },
+            component: OccurTypeHubComponent,
+          },
+          // {
+          //   path: "create",
+          //   data: {
+          //     roles: [
+          //       "EQUALY_MASTER_ADMIN",
+          //       "MASTER_ADMIN",
+          //       "MASTER_QUALITY_INSPECTOR",
+          //     ],
+          //   },
+          //   component: OccurTypeCreateComponent,
+          // },
+          // {
+          //   path: "edit/:id",
+          //   data: {
+          //     roles: [
+          //       "EQUALY_MASTER_ADMIN",
+          //       "MASTER_ADMIN",
+          //       "MASTER_QUALITY_INSPECTOR",
+          //     ],
+          //   },
+          //   component: OccurTypeEditComponent,
+          // },
+        ],
       },
     ],
   },

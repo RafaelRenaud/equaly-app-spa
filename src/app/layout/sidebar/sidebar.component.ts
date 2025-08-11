@@ -1,6 +1,6 @@
-import { Component } from "@angular/core";
+import { Component, Inject, PLATFORM_ID } from "@angular/core";
 import { SessionService } from "../../core/service/session/session.service";
-import { Router, RouterModule } from "@angular/router";
+import { RouterModule } from "@angular/router";
 import { LoginService } from "../../core/service/login/login.service";
 import { LoadingService } from "../../core/service/loading/loading.service";
 
@@ -16,6 +16,7 @@ export class SidebarComponent {
   userAvatar: string | null = null;
   userDisplayName: string | null = null;
   companyDisplayName: string | null = null;
+  departmentName: string | null = null;
 
   constructor(
     public sessionService: SessionService,
@@ -28,6 +29,7 @@ export class SidebarComponent {
     this.userAvatar = this.sessionService.getItem("userAvatar");
     this.userDisplayName = this.sessionService.getItem("username");
     this.companyDisplayName = this.sessionService.getItem("companyDisplayName");
+    this.departmentName = this.sessionService.getItem("departmentName");
   }
 
   logout(event: Event): void {

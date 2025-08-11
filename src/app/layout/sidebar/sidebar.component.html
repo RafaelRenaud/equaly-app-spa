@@ -27,10 +27,11 @@
       <ul class="navbar-nav nav-pills flex-column">
         <li class="nav-item p-1">
           <a
-            href="/"
+            href="#"
             class="nav-link"
             [routerLink]="['/']"
             routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
           >
             <i class="bi bi-house-fill p-2"></i>
             Início
@@ -41,22 +42,38 @@
 
         @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" [routerLink]="['/companies']">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/companies']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-buildings-fill p-2"></i>
             Empresas
           </a>
         </li>
-        } @if ( sessionService.hasRole('MASTER_ADMIN') ||
-        sessionService.hasRole('COMMON_ADMIN') ) {
+        }
+
         <li class="nav-item p-1">
-          <a href="#" class="nav-link">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/my-company']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-building-fill p-2"></i>
             Minha Empresa
           </a>
         </li>
-        } @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
+
+        @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" [routerLink]="['/credentials']">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/credentials']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-award-fill p-2"></i>
             Credenciais
           </a>
@@ -65,14 +82,19 @@
         sessionService.hasRole('MASTER_ADMIN') ||
         sessionService.hasRole('COMMON_ADMIN') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/departments']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-diagram-2-fill p-2"></i>
             Departamentos
           </a>
         </li>
 
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-people-fill p-2"></i>
             Usuários
           </a>
@@ -83,7 +105,12 @@
         sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/occur-types']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-ui-checks p-2"></i>
             Tipos de Ocorrências
           </a>
@@ -95,7 +122,7 @@
         @if ( sessionService.hasRole('MASTER_EVENT_OPENER') ||
         sessionService.hasRole('COMMON_EVENT_OPENER') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-chat-left-fill p-2"></i>
             Feedbacks
           </a>
@@ -105,7 +132,7 @@
         sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-file-post-fill p-2"></i>
             Ocorrências
           </a>
@@ -114,7 +141,7 @@
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ||
         sessionService.hasRole('COMMON_RNC_REPORTER') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-clipboard2-minus-fill p-2"></i>
             Não Conformidades
           </a>
@@ -123,19 +150,19 @@
         !sessionService.hasRole('MASTER_ADMIN') &&
         !sessionService.hasRole('COMMON_ADMIN') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" arouterLinkActive="active">
             <i class="bi bi-bar-chart-line-fill p-2"></i>
             Dashboards
           </a>
         </li>
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-bookmark-fill p-2"></i>
             Salvos
           </a>
         </li>
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" aria-current="page">
+          <a href="#" class="nav-link" routerLinkActive="active">
             <i class="bi bi-archive-fill p-2"></i>
             Arquivados
           </a>
@@ -159,7 +186,7 @@
         <strong>{{ userDisplayName }}</strong
         ><br />
         <i
-          ><small>{{ companyDisplayName }}</small></i
+          ><small>{{ companyDisplayName }}</small> </i
         ><br />
         <small>
           <a href="/my-account" class="text-white text-decoration-none">

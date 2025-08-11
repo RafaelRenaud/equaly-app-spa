@@ -1,0 +1,305 @@
+<div>
+  <div class="surface-container">
+    <div class="surface-container-header">
+      <br />
+      <h3 class="text-white">Minha Empresa</h3>
+    </div>
+    <div class="surface-container-body">
+      @if (sessionService.hasRole('EQUALY_MASTER_ADMIN') || sessionService.hasRole('MASTER_ADMIN')) {
+      <div class="alert alert-primary" role="alert">
+        <i class="bi bi-info-square-fill"></i>
+        Algumas informações podem não ser editáveis por aqui, para editá-las
+        acesse diretamente o menu de Empresas.
+      </div>
+      }
+
+      @if(sessionService.hasRole('COMMON_ADMIN')) {
+      <div class="alert alert-primary" role="alert">
+        <i class="bi bi-info-square-fill"></i>
+        Para editar informações da empresa, solicite ao administrador master
+        do sistema.
+      </div>
+      }
+
+      @if(companyForm.invalid) {
+      <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Uma ou mais informações estão incorretas, corrija e tente novamente.
+      </div>
+      }
+
+      <form [formGroup]="companyForm" (ngSubmit)="editCompany()">
+        @if(myCompany?.logoUri) {
+        <div class="row text-center">
+          <div class="col m-3">
+            <img
+              [src]="myCompany?.logoUri"
+              alt="Logo da Empresa"
+              id="company-logo"
+            />
+          </div>
+        </div>
+        }
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="number"
+              class="form-control"
+              id="floatingId"
+              disabled
+              [value]="myCompany?.id"
+            />
+            <label for="floatingId" class="ps-4">ID da Empresa</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingAlias"
+              disabled
+              [value]="myCompany?.alias"
+            />
+            <label for="floatingAlias" class="ps-4">Código da Empresa</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              formControlName="companyDisplayName"
+              type="text"
+              class="form-control"
+              id="floatingDisplayName"
+              [disabled]="viewOnly"
+              [class.is-invalid]="
+                companyForm.get('companyDisplayName')?.invalid &&
+                companyForm.get('companyDisplayName')?.touched
+              "
+            />
+            <label for="floatingDisplayName" class="ps-4"
+              >Nome da Empresa</label
+            >
+            <div class="invalid-feedback">
+              Nome da Empresa é obrigatório e deve ter no máximo 128 caracteres.
+            </div>
+          </div>
+
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingStatus"
+              disabled
+              [value]="myCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'"
+            />
+            <label for="floatingStatus" class="ps-4">Estado</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              formControlName="companyName"
+              type="text"
+              class="form-control"
+              id="floatingName"
+              [disabled]="viewOnly"
+              [class.is-invalid]="
+                (companyForm.get('companyName')?.invalid ||
+                  invalidCompanyName) &&
+                companyForm.get('companyName')?.touched
+              "
+              (blur)="validateCompanyExists('name')"
+            />
+            <label for="floatingName" class="ps-4">Nome Fantasia</label>
+            <div class="invalid-feedback">
+              Nome Fantasia não preenchido ou já cadastrado.
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              formControlName="companyTradingName"
+              type="text"
+              class="form-control"
+              id="floatingTradingName"
+              [disabled]="viewOnly"
+              [class.is-invalid]="
+                (companyForm.get('companyTradingName')?.invalid ||
+                  invalidCompanyTradingName) &&
+                companyForm.get('companyTradingName')?.touched
+              "
+              (blur)="validateCompanyExists('tradingName')"
+            />
+            <label for="floatingTradingName" class="ps-4">Razão Social</label>
+            <div class="invalid-feedback">
+              Razão Social não preenchida ou já cadastrada.
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingDocument"
+              disabled
+              [value]="myCompany?.document"
+            />
+            <label for="floatingDocument" class="ps-4">CNPJ</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              formControlName="companyContact"
+              type="email"
+              class="form-control"
+              id="floatingContact"
+              [disabled]="viewOnly"
+              [class.is-invalid]="
+                companyForm.get('companyContact')?.invalid &&
+                companyForm.get('companyContact')?.touched
+              "
+            />
+            <label for="floatingContact" class="ps-4">Contato Principal</label>
+            <div class="invalid-feedback">Informe um e-mail válido.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedAt"
+              [value]="myCompany?.audit?.createdAt"
+              disabled
+            />
+            <label for="floatingCreatedAt" class="ps-4">Criado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedBy"
+              [value]="myCompany?.audit?.createdBy"
+              disabled
+            />
+            <label for="floatingCreatedBy" class="ps-4">Criado por</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedAt"
+              [value]="myCompany?.audit?.updatedAt || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedBy"
+              [value]="myCompany?.audit?.updatedBy || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactive"
+              [value]="myCompany?.audit?.disabledAt || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingLastInactive" class="ps-4"
+              >Inativo pela última vez em</label
+            >
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactiveBy"
+              [value]="myCompany?.audit?.disabledBy || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingLastInactiveBy" class="ps-4"
+              >Inativo pela última vez por</label
+            >
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <button type="button" class="btn btn-primary" [routerLink]="['']">
+            <i class="bi bi-arrow-left-square-fill"></i> Voltar
+          </button>
+          <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#confirmationModal"
+            [disabled]="cantSubmit"
+          >
+            <i class="bi bi-floppy-fill"></i> Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal de Confirmação -->
+<div
+  class="modal fade"
+  id="confirmationModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="confirmationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">
+          Deseja prosseguir com as atualizações?
+        </h5>
+      </div>
+      <div class="modal-body">
+        <p>
+          Ao salvar os dados, sua sessão será encerrada e será necessário realizar login novamente.
+          Deseja continuar?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+          <i class="bi bi-x-square-fill"></i> Fechar
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="confirmSave()"
+          data-bs-dismiss="modal"
+        >
+          <i class="bi bi-floppy-fill"></i> Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -7,6 +7,7 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 import { CredentialService } from "../../../core/service/credential/credential.service";
 import { isPlatformBrowser } from "@angular/common";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
 
 @Component({
   selector: "credential-hub",
@@ -37,6 +38,8 @@ export class CredentialHubComponent {
   confirmModal!: Modal;
   isBrowser = false;
 
+  selectedCompany: CompanyResponse | null = null;
+
   constructor(
     private credentialService: CredentialService,
     public loadingService: LoadingService,
@@ -65,6 +68,7 @@ export class CredentialHubComponent {
         this.selectedFilter,
         this.searchValue,
         this.selectedStatus,
+        this.selectedCompany ? this.selectedCompany.id.toString() : null,
         this.currentPage,
         this.pageSize
       )
@@ -132,5 +136,9 @@ export class CredentialHubComponent {
 
   selectCredentialView(credential: CredentialResponse) {
     this.selectedCredential = credential;
+  }
+
+  onSelectCompany(company: CompanyResponse | null): void {
+    this.selectedCompany = company;
   }
 }

@@ -1,4 +1,10 @@
-import { Component, ElementRef, ViewChild } from "@angular/core";
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Output,
+  ViewChild,
+} from "@angular/core";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
@@ -12,8 +18,9 @@ import { FormsModule } from "@angular/forms";
   standalone: true,
 })
 export class CompanySearchComponent {
+  @Output() selectedCompany = new EventEmitter<CompanyResponse | null>();
+
   searchedCompanies: CompanyResponse[] = [];
-  selectedCompany: CompanyResponse | null = null;
   private timeoutId: any;
   validCompanySelected: boolean = true;
 
@@ -41,7 +48,7 @@ export class CompanySearchComponent {
     const input = event.target as HTMLInputElement;
     const value = input?.value || "";
 
-    this.selectedCompany = null;
+    this.selectedCompany.emit(null);
 
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
@@ -68,7 +75,7 @@ export class CompanySearchComponent {
     );
 
     if (foundCompany) {
-      this.selectedCompany = foundCompany;
+      this.selectedCompany.emit(foundCompany);
       this.validCompanySelected = true;
     } else {
       this.validCompanySelected = false;
@@ -123,12 +130,12 @@ export class CompanySearchComponent {
   }
 
   selectCompanyFromModal(company: CompanyResponse): void {
-    this.selectedCompany = company;
+    this.selectedCompany.emit(company);
 
     if (this.companySearchInputRef) {
       this.companySearchInputRef.nativeElement.value = `${company.id} - ${company.name}`;
     }
-    
+
     this.validCompanySelected = true;
   }
 }

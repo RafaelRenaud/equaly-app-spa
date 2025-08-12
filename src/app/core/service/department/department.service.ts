@@ -95,7 +95,7 @@ export class DepartmentService {
   }
 
   createDepartment(
-    company: DepartmentCreateRequest
+    department: DepartmentCreateRequest
   ): Observable<{ id: number }> {
     const headers = new HttpHeaders({
       "Content-Type": "application/json",
@@ -105,7 +105,7 @@ export class DepartmentService {
 
     return this.http.post<{ id: number }>(
       this.endpoint,
-      JSON.stringify(company),
+      JSON.stringify(department),
       {
         headers,
       }

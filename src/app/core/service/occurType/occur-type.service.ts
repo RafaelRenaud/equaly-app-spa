@@ -94,7 +94,7 @@ export class OccurTypeService {
     );
   }
 
-  createOccurType(company: OccurTypeCreateRequest): Observable<{ id: number }> {
+  createOccurType(occurType: OccurTypeCreateRequest): Observable<{ id: number }> {
     const headers = new HttpHeaders({
       "Content-Type": "application/json",
       "X-Application-Key": this.session.getItem("clientKey")!,
@@ -103,7 +103,7 @@ export class OccurTypeService {
 
     return this.http.post<{ id: number }>(
       this.endpoint,
-      JSON.stringify(company),
+      JSON.stringify(occurType),
       {
         headers,
       }

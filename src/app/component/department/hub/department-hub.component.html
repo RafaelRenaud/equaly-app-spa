@@ -50,8 +50,10 @@
       </div>
       <div class="col-9">
         <app-company-search
+          [selectedCompanyValue]="selectedCompany"
           (selectedCompany)="onSelectCompany($event)"
-        ></app-company-search>
+        >
+        </app-company-search>
       </div>
     </div>
     } @else {
@@ -152,7 +154,7 @@
                     [class.bg-success]="department.status === 'ACTIVE'"
                     [class.bg-danger]="department.status === 'INACTIVE'"
                   >
-                    {{ department.status === "ACTIVE" ? "Ativa" : "Inativa" }}
+                    {{ department.status === "ACTIVE" ? "Ativo" : "Inativo" }}
                   </span>
                 </td>
 
@@ -356,7 +358,7 @@
               id="floatingState"
               disabled
               [value]="
-                selectedDepartment?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'
+                selectedDepartment?.status === 'ACTIVE' ? 'Ativo' : 'Inativo'
               "
             />
             <label for="floatingState" class="ps-4">Estado</label>
@@ -374,11 +376,9 @@
         </div>
 
         <div class="form-floating">
-          <textarea
-            class="form-control"
-            id="floatingDescription"
-            disabled
-          >{{ selectedDepartment?.description || "Não há descrição" }}</textarea>
+          <textarea class="form-control" id="floatingDescription" disabled>{{
+            selectedDepartment?.description || "Não há descrição"
+          }}</textarea>
           <label for="floatingDescription">Descrição</label>
         </div>
         <br />

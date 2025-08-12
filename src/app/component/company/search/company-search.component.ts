@@ -2,8 +2,11 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  Input,
   Output,
   ViewChild,
+  SimpleChanges,
+  OnChanges,
 } from "@angular/core";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
@@ -17,7 +20,8 @@ import { FormsModule } from "@angular/forms";
   styleUrl: "./company-search.component.scss",
   standalone: true,
 })
-export class CompanySearchComponent {
+export class CompanySearchComponent implements OnChanges {
+  @Input() selectedCompanyValue: CompanyResponse | null = null; // novo
   @Output() selectedCompany = new EventEmitter<CompanyResponse | null>();
 
   searchedCompanies: CompanyResponse[] = [];
@@ -35,7 +39,6 @@ export class CompanySearchComponent {
   pageSize = 5;
   notFoundIndicator = false;
 
-  // Datalist Component Binding
   @ViewChild("companySearchInputRef")
   companySearchInputRef!: ElementRef<HTMLInputElement>;
 
@@ -43,6 +46,20 @@ export class CompanySearchComponent {
     private companyService: CompanyService,
     private loadingService: LoadingService
   ) {}
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes["selectedCompanyValue"] && this.selectedCompanyValue === null) {
+      this.clearInput();
+    }
+  }
+
+  clearInput() {
+    if (this.companySearchInputRef) {
+      this.companySearchInputRef.nativeElement.value = "";
+    }
+    this.validCompanySelected = true;
+    this.searchedCompanies = [];
+  }
 
   searchCompanies(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -54,21 +71,18 @@ export class CompanySearchComponent {
       clearTimeout(this.timeoutId);
     }
 
-    // Input vazio
     if (value.trim() === "") {
       this.searchedCompanies = [];
       this.validCompanySelected = true;
       return;
     }
 
-    // Validação de valor inválido curto
     if (value.length <= 1) {
       this.searchedCompanies = [];
       this.validCompanySelected = false;
       return;
     }
 
-    // Validação do ID no início do campo
     const companyId = value.split(" - ")[0];
     const foundCompany = this.searchedCompanies.find(
       (c) => c.id.toString() === companyId
@@ -81,7 +95,6 @@ export class CompanySearchComponent {
       this.validCompanySelected = false;
     }
 
-    // Aguarda digitação parar para buscar
     this.timeoutId = setTimeout(() => {
       this.companyService
         .getCompanies("name", value, "ACTIVE", 0, 5)

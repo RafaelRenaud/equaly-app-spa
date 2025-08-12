@@ -86,6 +86,7 @@ export class DepartmentHubComponent {
     this.searchValue = "";
     this.selectedStatus = "NONE";
     this.currentPage = 0;
+    this.selectedCompany = null;
     this.searchDepartments();
   }
 

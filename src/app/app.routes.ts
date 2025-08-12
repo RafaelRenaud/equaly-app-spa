@@ -15,6 +15,10 @@ import { CredentialCreateComponent } from "./component/credential/create/credent
 import { DepartmentHubComponent } from "./component/department/hub/department-hub.component";
 import { OccurTypeHubComponent } from "./component/occur-type/hub/occur-type-hub.component";
 import { MyCompanyComponent } from "./component/my-company/my-company.component";
+import { DepartmentCreateComponent } from "./component/department/create/department-create.component";
+import { OccurTypeCreateComponent } from "./component/occur-type/create/occur-type-create.component";
+import { OccurTypeEditComponent } from "./component/occur-type/edit/occur-type-edit.component";
+import { DepartmentEditComponent } from "./component/department/edit/department-edit.component";
 
 export const routes: Routes = [
   {
@@ -82,20 +86,20 @@ export const routes: Routes = [
             },
             component: DepartmentHubComponent,
           },
-          // {
-          //   path: "create",
-          //   data: {
-          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
-          //   },
-          //   component: DepartmentCreateComponent,
-          // },
-          // {
-          //   path: "edit/:id",
-          //   data: {
-          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
-          //   },
-          //   component: DepartmentEditComponent,
-          // },
+          {
+            path: "create",
+            data: {
+              roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+            },
+            component: DepartmentCreateComponent,
+          },
+          {
+            path: "edit/:id",
+            data: {
+              roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+            },
+            component: DepartmentEditComponent,
+          },
         ],
       },
       {
@@ -115,28 +119,28 @@ export const routes: Routes = [
             },
             component: OccurTypeHubComponent,
           },
-          // {
-          //   path: "create",
-          //   data: {
-          //     roles: [
-          //       "EQUALY_MASTER_ADMIN",
-          //       "MASTER_ADMIN",
-          //       "MASTER_QUALITY_INSPECTOR",
-          //     ],
-          //   },
-          //   component: OccurTypeCreateComponent,
-          // },
-          // {
-          //   path: "edit/:id",
-          //   data: {
-          //     roles: [
-          //       "EQUALY_MASTER_ADMIN",
-          //       "MASTER_ADMIN",
-          //       "MASTER_QUALITY_INSPECTOR",
-          //     ],
-          //   },
-          //   component: OccurTypeEditComponent,
-          // },
+          {
+            path: "create",
+            data: {
+              roles: [
+                "EQUALY_MASTER_ADMIN",
+                "MASTER_ADMIN",
+                "MASTER_QUALITY_INSPECTOR",
+              ],
+            },
+            component: OccurTypeCreateComponent,
+          },
+          {
+            path: "edit/:id",
+            data: {
+              roles: [
+                "EQUALY_MASTER_ADMIN",
+                "MASTER_ADMIN",
+                "MASTER_QUALITY_INSPECTOR",
+              ],
+            },
+            component: OccurTypeEditComponent,
+          },
         ],
       },
     ],

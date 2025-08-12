@@ -50,8 +50,10 @@
       </div>
       <div class="col-9">
         <app-company-search
+          [selectedCompanyValue]="selectedCompany"
           (selectedCompany)="onSelectCompany($event)"
-        ></app-company-search>
+        >
+        </app-company-search>
       </div>
     </div>
     } @else {
@@ -378,11 +380,9 @@
         </div>
 
         <div class="form-floating">
-          <textarea
-            class="form-control"
-            id="floatingDescription"
-            disabled
-          >{{ selectedOccurType?.description || "Não há descrição" }}</textarea>
+          <textarea class="form-control" id="floatingDescription" disabled>{{
+            selectedOccurType?.description || "Não há descrição"
+          }}</textarea>
           <label for="floatingDescription">Descrição</label>
         </div>
         <br />

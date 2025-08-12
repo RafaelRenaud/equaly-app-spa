@@ -94,11 +94,17 @@
         </li>
 
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/users']"
+            routerLinkActive="active"
+          >
             <i class="bi bi-people-fill p-2"></i>
             Usuários
           </a>
         </li>
+
         } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
         sessionService.hasRole('MASTER_ADMIN') ||
         sessionService.hasRole('COMMON_ADMIN') ||

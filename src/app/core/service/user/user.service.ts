@@ -1,10 +1,11 @@
 import { inject, Injectable } from "@angular/core";
 import { SessionService } from "../session/session.service";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { UserResponse } from "../../model/user/user-response.model";
 import { RolesResponse } from "../../model/role/roles-response.model";
 import { MainProfile } from "../../model/user/main-profile.model";
+import { UsersResponse } from "../../model/user/users-response.model";
 
 @Injectable({
   providedIn: "root",
@@ -24,6 +25,58 @@ export class UserService {
 
     return this.http.get<UserResponse>(this.endpoint.concat("/").concat(id), {
       headers,
+    });
+  }
+
+  getUsers(
+    filterName: string,
+    filterValue: string,
+    universalUserId: number | null,
+    companyId: number | null,
+    departmentId: number | null,
+    status: string,
+    page: number,
+    size: number
+  ): Observable<UsersResponse> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    let params = new HttpParams();
+
+    if (filterName !== "NONE") {
+      params = params.set(filterName, filterValue);
+    }
+
+    if (status !== "NONE") {
+      params = params.set("status", status);
+    }
+
+    if (page !== undefined) {
+      params = params.set("page", page);
+    }
+
+    if (size !== undefined) {
+      params = params.set("size", size);
+    }
+
+    if (universalUserId !== null) {
+      params = params.set("userUniversalId", universalUserId.toString());
+    }
+
+    if (companyId !== null) {
+      params = params.set("userCompanyId", companyId.toString());
+    }
+
+    if (departmentId !== null) {
+      params = params.set("userDepartmentId", departmentId.toString());
+    }
+
+    return this.http.get<UsersResponse>(this.endpoint, {
+      headers,
+      params,
     });
   }
 
@@ -74,6 +127,24 @@ export class UserService {
     return this.http.post<{ uri: string }>(
       this.endpoint.concat("/").concat(id).concat("/avatar"),
       formData,
+      {
+        headers,
+      }
+    );
+  }
+
+  updateUserStatus(id: number, status: string): Observable<UserResponse> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.patch<UserResponse>(
+      this.endpoint.concat("/").concat(id.toString()),
+      JSON.stringify({
+        status: status,
+      }),
       {
         headers,
       }

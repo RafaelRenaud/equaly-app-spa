@@ -19,6 +19,7 @@ import { DepartmentCreateComponent } from "./component/department/create/departm
 import { OccurTypeCreateComponent } from "./component/occur-type/create/occur-type-create.component";
 import { OccurTypeEditComponent } from "./component/occur-type/edit/occur-type-edit.component";
 import { DepartmentEditComponent } from "./component/department/edit/department-edit.component";
+import { UserHubComponent } from "./component/user/hub/user-hub.component";
 
 export const routes: Routes = [
   {
@@ -141,6 +142,33 @@ export const routes: Routes = [
             },
             component: OccurTypeEditComponent,
           },
+        ],
+      },
+      {
+        path: "users",
+        canActivateChild: [AuthGuard],
+        children: [
+          {
+            path: "",
+            data: {
+              roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN", "COMMON_ADMIN"],
+            },
+            component: UserHubComponent,
+          },
+          // {
+          //   path: "create",
+          //   data: {
+          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+          //   },
+          //   component: ,
+          // },
+          // {
+          //   path: "edit/:id",
+          //   data: {
+          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+          //   },
+          //   component: ,
+          // },
         ],
       },
     ],

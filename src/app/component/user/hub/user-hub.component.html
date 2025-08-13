@@ -50,58 +50,46 @@
       </div>
     </div>
 
-    <div class="accordion" id="accordionFilter">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button
-            class="accordion-button"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapseOne"
-            aria-expanded="true"
-            aria-controls="collapseOne"
-          >
-            Pesquisa por Filtro Avançado
-          </button>
+    <div ngbAccordion>
+      <div ngbAccordionItem [collapsed]="true">
+        <h2 ngbAccordionHeader>
+          <button ngbAccordionButton class="accordion-button">Pesquisa por Filtro Avançado</button>
         </h2>
-        <div
-          id="collapseOne"
-          class="accordion-collapse collapse show"
-          data-bs-parent="#accordionFilter"
-        >
-          <div class="accordion-body">
-            @if(sessionService.hasRole("EQUALY_MASTER_ADMIN")){
-
-            <div class="row">
-              <div class="col">
-                <app-company-search
-                  [selectedCompanyValue]="selectedCompany"
-                  (selectedCompany)="onSelectCompany($event)"
-                >
-                </app-company-search>
+        <div ngbAccordionCollapse>
+          <div ngbAccordionBody>
+            <ng-template>
+              @if(sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
+              <div class="row">
+                <div class="col">
+                  <app-company-search
+                    [selectedCompanyValue]="selectedCompany"
+                    (selectedCompany)="onSelectCompany($event)"
+                  >
+                  </app-company-search>
+                </div>
               </div>
-            </div>
-            }
+              }
 
-            <div class="row">
-              <div class="col">
-                <app-department-search
-                  [selectedDepartmentValue]="selectedDepartment"
-                  (selectedDepartment)="onSelectDepartment($event)"
-                >
-                </app-department-search>
+              <div class="row">
+                <div class="col">
+                  <app-department-search
+                    [selectedDepartmentValue]="selectedDepartment"
+                    (selectedDepartment)="onSelectDepartment($event)"
+                  >
+                  </app-department-search>
+                </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col">
-                <app-universal-user-search
-                  [selectedUniversalUserValue]="selectedUniversalUser"
-                  (selectedUniversalUser)="onSelectUniversalUser($event)"
-                >
-                </app-universal-user-search>
+              <div class="row">
+                <div class="col">
+                  <app-universal-user-search
+                    [selectedUniversalUserValue]="selectedUniversalUser"
+                    (selectedUniversalUser)="onSelectUniversalUser($event)"
+                  >
+                  </app-universal-user-search>
+                </div>
               </div>
-            </div>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -137,7 +125,7 @@
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Nome de Usuário</th>
+                <th>Usuário</th>
                 <th>Empresa</th>
                 <th>Departamento</th>
                 <!-- <th>CPF/RNE</th> ADICIONAR NO FUTURO NA SAÍDA DA API -->

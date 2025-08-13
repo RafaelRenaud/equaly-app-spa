@@ -105,16 +105,16 @@ i.btn-outline-primary {
   margin: 16px;
 }
 
-.btn-success{
+.btn-success {
   background-color: green;
   &:hover {
     background-color: var(--success-color);
     border-color: green;
-    color: var(--primary-color)
+    color: var(--primary-color);
   }
 }
 
-.btn-error{
+.btn-error {
   background-color: var(--error-color);
 }
 
@@ -152,16 +152,29 @@ i.btn-outline-primary {
   padding: 2rem;
 }
 
-.surface-banner{
+.surface-banner {
   padding-top: 5%;
   color: grey;
   text-align: center;
 }
 
-.surface-banner > img{
+.surface-banner > img {
   width: 40%;
 }
 
 a {
   color: var(--primary-color);
+}
+
+.accordion-button {
+  box-shadow: none !important;
+
+  &:not(.collapsed) {
+    color: white;
+    background-color: var(--primary-color);
+
+    &::after {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' class='bi bi-chevron-down' viewBox='0 0 16 16'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+    }
+  }
 }

@@ -9,16 +9,20 @@ import { LoadingLayoutComponent } from "./layout/loading-layout/loading-layout.c
 import { AlertService, AlertType } from "./core/service/alert/alert.service";
 import { filter } from "rxjs";
 import { AlertLayoutComponent } from "./layout/alert/alert.component";
+import { NgbAccordionModule, NgbModule } from "@ng-bootstrap/ng-bootstrap";
+
 
 @Component({
   selector: "app-root",
   imports: [
     RouterOutlet,
     LoadingLayoutComponent,
-    AlertLayoutComponent
+    AlertLayoutComponent,
+    NgbModule,
+    NgbAccordionModule
   ],
   templateUrl: "./app.component.html",
-  styleUrl: "./app.component.scss",
+  styleUrl: "./app.component.scss"
 })
 export class AppComponent {
   title = "equaly-app-spa";

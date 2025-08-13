@@ -181,8 +181,10 @@
     <div class="sidebar-footer row text-white">
       <div class="col-4">
         <img
-          [src]="userAvatar || 'avatar.png'"
-          alt=""
+          [src]="
+            userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
+          "
+          alt="Avatar"
           width="64"
           height="64"
           class="rounded"

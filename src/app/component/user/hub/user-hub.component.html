@@ -53,7 +53,9 @@
     <div ngbAccordion>
       <div ngbAccordionItem [collapsed]="true">
         <h2 ngbAccordionHeader>
-          <button ngbAccordionButton class="accordion-button">Pesquisa por Filtro Avançado</button>
+          <button ngbAccordionButton class="accordion-button">
+            Pesquisa por Filtro Avançado
+          </button>
         </h2>
         <div ngbAccordionCollapse>
           <div ngbAccordionBody>
@@ -128,8 +130,6 @@
                 <th>Usuário</th>
                 <th>Empresa</th>
                 <th>Departamento</th>
-                <!-- <th>CPF/RNE</th> ADICIONAR NO FUTURO NA SAÍDA DA API -->
-                <th>E-Mail</th>
                 <th>Estado</th>
                 <th>Login em</th>
                 <th>Ações</th>
@@ -142,7 +142,6 @@
                 <td class="align-middle">{{ user.username }}</td>
                 <td class="align-middle">{{ user.company.name }}</td>
                 <td class="align-middle">{{ user.department.name }}</td>
-                <td class="align-middle">{{ user.email }}</td>
                 <td class="align-middle">
                   <span
                     class="badge"
@@ -152,6 +151,7 @@
                     {{ user.status === "ACTIVE" ? "Ativo" : "Inativo" }}
                   </span>
                 </td>
+                <td class="align-middle">{{ user.lastLoginAt }}</td>
                 <td class="text-nowrap align-middle">
                   <button
                     class="btn btn-primary me-1"
@@ -186,7 +186,8 @@
                   <button
                     class="btn btn-warning"
                     title="Enviar Código de Recuperação"
-                    data-bs-target="confirmRecoveryModal"
+                    data-bs-toggle="modal"
+                    data-bs-target="#confirmRecoveryModal"
                     (click)="onSelectUserToRecovery(user)"
                   >
                     <i class="bi bi-lock-fill"></i>

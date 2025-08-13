@@ -17,7 +17,11 @@ import { CompanyService } from "../../../core/service/company/company.service";
 import { map, switchMap } from "rxjs";
 import { DepartmentSearchComponent } from "../../department/search/department-search.component";
 import { UniversalUserSearchComponent } from "../universal-user/search/universal-user-search.component";
-import { NgbAccordionCollapse, NgbAccordionModule, NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import {
+  NgbAccordionCollapse,
+  NgbAccordionModule,
+  NgbModule,
+} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: "app-user-hub",
@@ -28,7 +32,6 @@ import { NgbAccordionCollapse, NgbAccordionModule, NgbModule } from "@ng-bootstr
     DepartmentSearchComponent,
     UniversalUserSearchComponent,
     NgbAccordionModule,
-    NgbModule
   ],
   templateUrl: "./user-hub.component.html",
   styleUrl: "./user-hub.component.scss",

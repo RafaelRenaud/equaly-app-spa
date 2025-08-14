@@ -1,0 +1,118 @@
+<div>
+  <div class="surface-container">
+    <div class="surface-container-header">
+      <h3 class="text-white pt-3 pb-2">Cadastrar Usuário</h3>
+    </div>
+    <div class="surface-container-body">
+      <form [formGroup]="createUserForm">
+        @if(universalUserExists){
+        <div class="alert alert-primary" role="alert">
+          <i class="bi bi-info-square-fill"></i>
+          Já existe um usuário com esse documento atrelado a outra empresa. Ao
+          prosseguir, o usuário será atrelado ao seu cadastro geral do sistema
+          junto ao cadastro na empresa.
+        </div>
+        }
+
+        <div class="row">
+          <div class="form-floating col">
+            <select
+              class="form-select form-control"
+              title="Selecione o Filtro"
+              formControlName="documentType"
+            >
+              <option value="NONE" selected>Selecione</option>
+              <option value="CPF">CPF</option>
+              <option value="RNE">RNE (Estrangeiro)</option>
+            </select>
+
+            <label for="floatingDocument" class="ps-4">Tipo de Documento</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingDocument"
+              formControlName="document"
+              (blur)="checkUniversalUserExists()"
+            />
+            <label for="floatingDocument" class="ps-4">Documento</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingName"
+              formControlName="name"
+              [value]="universalUser?.name"
+            />
+            <label for="floatingName" class="ps-4">Nome Completo</label>
+          </div>
+        </div>
+
+        @if(isEqualyMasterAdmin){
+        <div class="row">
+          <app-company-search
+            (selectedCompany)="onSelectCompany($event)"
+          ></app-company-search>
+        </div>
+        }
+
+        <div class="row">
+          <app-department-search
+            (selectedDepartment)="onSelectDepartment($event)"
+          ></app-department-search>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUsername"
+              (blur)="setNickname()"
+              formControlName="username"
+            />
+            <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLogin"
+              formControlName="login"
+            />
+            <label for="floatingLogin" class="ps-4">Login</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingNickname"
+              formControlName="nickname"
+            />
+            <label for="floatingNickname" class="ps-4">Apelido</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="email"
+              class="form-control"
+              id="floatingEmail"
+              formControlName="email"
+            />
+            <label for="floatingEmail" class="ps-4">E-Mail</label>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

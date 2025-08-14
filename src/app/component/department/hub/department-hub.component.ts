@@ -64,21 +64,56 @@ export class DepartmentHubComponent {
 
   searchDepartments(): void {
     this.loadingService.show();
-    this.departmentService
-      .getDepartments(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedCompany ? this.selectedCompany.id : null,
-        this.selectedStatus,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.departments = response.departments;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.departments.length === 0;
-        this.loadingService.hide();
+    if (this.selectedFilter === "id") {
+      this.departmentService.getDepartment(+this.searchValue).subscribe({
+        next: (response) => {
+          this.departments = Array.of(response);
+          this.totalPages = 1;
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          this.router.navigate(["/departments"], {
+            queryParams: {
+              action: err.status === 404 ? "WARNING" : "ERROR",
+              message:
+                err.status === 404
+                  ? "Departamento não encontrado"
+                  : "Erro ao buscar departamento, contate o time de suporte",
+            },
+          });
+        },
       });
+    } else {
+      this.loadingService.show();
+      this.departmentService
+        .getDepartments(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedCompany ? this.selectedCompany.id : null,
+          this.selectedStatus,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe({
+          next: (response) => {
+            this.departments = response.departments;
+            this.totalPages = response.pageable.totalPages;
+            this.notFoundIndicator = this.departments.length === 0;
+            this.loadingService.hide();
+          },
+          error: () => {
+            this.loadingService.hide();
+            this.router.navigate(["/departments"], {
+              queryParams: {
+                action: "ERROR",
+                message:
+                  "Erro ao buscar departamentos, contate o time de suporte",
+              },
+            });
+          },
+        });
+    }
   }
 
   clearFilters(): void {

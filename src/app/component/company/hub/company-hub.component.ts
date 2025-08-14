@@ -6,6 +6,7 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 import { Modal } from "bootstrap";
 import { isPlatformBrowser } from "@angular/common";
 import { Router, RouterModule } from "@angular/router";
+import { response } from "express";
 
 @Component({
   selector: "company-hub",
@@ -60,20 +61,54 @@ export class CompanyHubComponent implements OnInit {
 
   searchCompanies(): void {
     this.loadingService.show();
-    this.companyService
-      .getCompanies(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedStatus,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.companies = response.companies;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.companies.length === 0;
-        this.loadingService.hide();
+
+    if (this.selectedFilter === "id") {
+      this.companyService.getCompany(+this.searchValue).subscribe({
+        next: (response) => {
+          this.companies = Array.of(response);
+          this.totalPages = 1;
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          this.router.navigate(["/companies"], {
+            queryParams: {
+              action: err.status === 404 ? "WARNING" : "ERROR",
+              message:
+                err.status === 404
+                  ? "Empresa não encontrada"
+                  : "Erro ao buscar empresa, contate o time de suporte",
+            },
+          });
+        },
       });
+    } else {
+      this.companyService
+        .getCompanies(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedStatus,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe({
+          next: (response) => {
+            this.companies = response.companies;
+            this.totalPages = response.pageable.totalPages;
+            this.notFoundIndicator = this.companies.length === 0;
+            this.loadingService.hide();
+          },
+          error: (err) => {
+            this.loadingService.hide();
+            this.router.navigate(["/companies"], {
+              queryParams: {
+                action: "ERROR",
+                message: "Erro ao buscar empresas, contate o time de suporte",
+              },
+            });
+          },
+        });
+    }
   }
 
   clearFilters(): void {
@@ -115,7 +150,7 @@ export class CompanyHubComponent implements OnInit {
               message:
                 this.statusToUpdate === "ACTIVE"
                   ? "Empresa reativada com sucesso"
-                  : "Empresa inativada com sucesso"
+                  : "Empresa inativada com sucesso",
             },
           });
           this.companyToUpdate = null;
@@ -139,7 +174,7 @@ export class CompanyHubComponent implements OnInit {
       });
   }
 
-  selectCompanyView(company: CompanyResponse){
+  selectCompanyView(company: CompanyResponse) {
     this.selectedCompany = company;
   }
 }

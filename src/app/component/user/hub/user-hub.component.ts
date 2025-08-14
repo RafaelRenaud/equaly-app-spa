@@ -89,23 +89,57 @@ export class UserHubComponent {
 
   searchUsers(): void {
     this.loadingService.show();
-    this.userService
-      .getUsers(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedUniversalUser ? this.selectedUniversalUser.id : null,
-        this.selectedCompany ? this.selectedCompany.id : null,
-        this.selectedDepartment ? this.selectedDepartment.id : null,
-        this.selectedStatus,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.users = response.users;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.users.length === 0;
-        this.loadingService.hide();
+    if (this.selectedFilter === "id") {
+      this.userService.getUser(this.searchValue).subscribe({
+        next: (response) => {
+          this.users = Array.of(response);
+          this.totalPages = 1;
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          this.router.navigate(["/users"], {
+            queryParams: {
+              action: err.status === 404 ? "WARNING" : "ERROR",
+              message:
+                err.status === 404
+                  ? "Usuário não encontrado"
+                  : "Erro ao buscar usuário, contate o time de suporte",
+            },
+          });
+        },
       });
+    } else {
+      this.loadingService.show();
+      this.userService
+        .getUsers(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedUniversalUser ? this.selectedUniversalUser.id : null,
+          this.selectedCompany ? this.selectedCompany.id : null,
+          this.selectedDepartment ? this.selectedDepartment.id : null,
+          this.selectedStatus,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe({
+          next: (response) => {
+            this.users = response.users;
+            this.totalPages = response.pageable.totalPages;
+            this.notFoundIndicator = this.users.length === 0;
+            this.loadingService.hide();
+          },
+          error: () => {
+            this.loadingService.hide();
+            this.router.navigate(["/users"], {
+              queryParams: {
+                action: "ERROR",
+                message: "Erro ao buscar usuários, contate o time de suporte",
+              },
+            });
+          },
+        });
+    }
   }
 
   clearFilters(): void {

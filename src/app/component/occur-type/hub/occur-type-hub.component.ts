@@ -64,21 +64,56 @@ export class OccurTypeHubComponent {
 
   searchOccurTypes(): void {
     this.loadingService.show();
-    this.occurTypeService
-      .getOccurTypes(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedCompany ? this.selectedCompany.id : null,
-        this.selectedStatus,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.occurTypes = response.occurTypes;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.occurTypes.length === 0;
-        this.loadingService.hide();
+    if (this.selectedFilter === "id") {
+      this.occurTypeService.getOccurType(+this.searchValue).subscribe({
+        next: (response) => {
+          this.occurTypes = Array.of(response);
+          this.totalPages = 1;
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          this.router.navigate(["/occur-types"], {
+            queryParams: {
+              action: err.status === 404 ? "WARNING" : "ERROR",
+              message:
+                err.status === 404
+                  ? "Tipo de Ocorrência não encontrada"
+                  : "Erro ao buscar Tipo de Ocorrência, contate o time de suporte",
+            },
+          });
+        },
       });
+    } else {
+      this.loadingService.show();
+      this.occurTypeService
+        .getOccurTypes(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedCompany ? this.selectedCompany.id : null,
+          this.selectedStatus,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe({
+          next: (response) => {
+            this.occurTypes = response.occurTypes;
+            this.totalPages = response.pageable.totalPages;
+            this.notFoundIndicator = this.occurTypes.length === 0;
+            this.loadingService.hide();
+          },
+          error: () => {
+            this.loadingService.hide();
+            this.router.navigate(["/occur-types"], {
+              queryParams: {
+                action: "ERROR",
+                message:
+                  "Erro ao buscar Tipos de Ocorrências, contate o time de suporte",
+              },
+            });
+          },
+        });
+    }
   }
 
   clearFilters(): void {

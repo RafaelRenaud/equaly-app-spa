@@ -8,6 +8,7 @@ import { CredentialService } from "../../../core/service/credential/credential.s
 import { isPlatformBrowser } from "@angular/common";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { error } from "console";
 
 @Component({
   selector: "credential-hub",
@@ -63,21 +64,57 @@ export class CredentialHubComponent {
 
   searchCredentials(): void {
     this.loadingService.show();
-    this.credentialService
-      .getCredentials(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedStatus,
-        this.selectedCompany ? this.selectedCompany.id.toString() : null,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.credentials = response.credentials;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.credentials.length === 0;
-        this.loadingService.hide();
+    
+    if (this.selectedFilter === "id") {
+      this.credentialService.getCredential(+this.searchValue).subscribe({
+        next: (response) => {
+          this.credentials = Array.of(response);
+          this.totalPages = 1;
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          this.router.navigate(["/credentials"], {
+            queryParams: {
+              action: err.status === 404 ? "WARNING" : "ERROR",
+              message:
+                err.status === 404
+                  ? "Credencial não encontrada"
+                  : "Erro ao buscar credencial, contate o time de suporte",
+            },
+          });
+        },
       });
+    } else {
+      this.loadingService.show();
+      this.credentialService
+        .getCredentials(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedStatus,
+          this.selectedCompany ? this.selectedCompany.id.toString() : null,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe({
+          next: (response) => {
+            this.credentials = response.credentials;
+            this.totalPages = response.pageable.totalPages;
+            this.notFoundIndicator = this.credentials.length === 0;
+            this.loadingService.hide();
+          },
+          error: () => {
+            this.loadingService.hide();
+            this.router.navigate(["/credentials"], {
+              queryParams: {
+                action: "ERROR",
+                message:
+                  "Erro ao buscar credenciais, contate o time de suporte",
+              },
+            });
+          },
+        });
+    }
   }
 
   clearFilters(): void {

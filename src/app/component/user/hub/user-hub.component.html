@@ -1,4 +1,3 @@
-<br />
 <div class="surface-container">
   <div class="surface-container-header">
     <h3 class="text-white pt-3 pb-2">Gerenciar Usuários</h3>
@@ -131,7 +130,6 @@
                 <th>Empresa</th>
                 <th>Departamento</th>
                 <th>Estado</th>
-                <th>Login em</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -151,7 +149,6 @@
                     {{ user.status === "ACTIVE" ? "Ativo" : "Inativo" }}
                   </span>
                 </td>
-                <td class="align-middle">{{ user.lastLoginAt }}</td>
                 <td class="text-nowrap align-middle">
                   <button
                     class="btn btn-primary me-1"
@@ -174,7 +171,7 @@
                     <i class="bi bi-pencil-fill"></i>
                   </button>
                   <button
-                    class="btn btn-danger"
+                    class="btn btn-danger me-1"
                     title="Inativar"
                     (click)="openConfirmModal(user, 'INACTIVE')"
                   >
@@ -184,13 +181,13 @@
                   }
 
                   <button
-                    class="btn btn-warning"
+                    class="btn btn-warning me-1"
                     title="Enviar Código de Recuperação"
                     data-bs-toggle="modal"
                     data-bs-target="#confirmRecoveryModal"
                     (click)="onSelectUserToRecovery(user)"
                   >
-                    <i class="bi bi-lock-fill"></i>
+                    <i class="bi bi-arrow-repeat"></i>
                   </button>
                   } @else { @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
                   sessionService.hasRole("MASTER_ADMIN")){

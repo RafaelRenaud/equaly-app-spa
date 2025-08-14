@@ -1,8 +1,8 @@
+
 <div>
   <div class="surface-container">
     <div class="surface-container-header">
-      <br />
-      <h3 class="text-white">Meu Perfil</h3>
+      <h3 class="text-white pt-3 pb-2">Meu Perfil</h3>
     </div>
     <div class="surface-container-body">
       <div class="text-center mt-3 mb-3">
@@ -20,8 +20,8 @@
           <input
             #fileInput
             type="file"
-            accept="image/*"
-            (change)="fileChangeEvent($event)"
+            accept="image/png, image/jpeg"
+            (change)="fileChangeEvent($event, cropperModal)"
             hidden
           />
         </div>
@@ -36,9 +36,9 @@
         administrador. Para editar informações bloqueadas acesse diretamente o
         menu de usuários.
       </div>
-      } @if (!( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+      } @if ( !( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
       sessionService.hasRole('MASTER_ADMIN') ||
-      sessionService.hasRole('COMMON_ADMIN') )) {
+      sessionService.hasRole('COMMON_ADMIN') ) ) {
       <div class="alert alert-primary" role="alert">
         <i class="bi bi-info-square-fill"></i>
         Algumas informações não são permitidas para alterações. Se necessário,
@@ -226,9 +226,9 @@
               [value]="myUser?.audit?.disabledAt || 'Não se aplica'"
               disabled
             />
-            <label for="floatingLastInactive" class="ps-4"
-              >Inativo pela última vez em</label
-            >
+            <label for="floatingLastInactive" class="ps-4">
+              Inativo pela última vez em
+            </label>
           </div>
           <div class="form-floating col">
             <input
@@ -238,33 +238,27 @@
               [value]="myUser?.audit?.disabledBy || 'Não se aplica'"
               disabled
             />
-            <label for="floatingLastInactiveBy" class="ps-4"
-              >Inativo pela última vez por</label
-            >
+            <label for="floatingLastInactiveBy" class="ps-4">
+              Inativo pela última vez por
+            </label>
           </div>
         </div>
 
         <div class="text-center">
-          <button
-            type="button"
-            class="btn btn-primary"
-            [routerLink]="['']"
-          >
+          <button type="button" class="btn btn-primary" [routerLink]="['']">
             <i class="bi bi-arrow-left-square-fill"></i> Voltar
           </button>
           <button
             type="button"
             class="btn btn-outline-danger"
-            data-bs-toggle="modal"
-            data-bs-target="#passwordChangeModal"
+            (click)="openModal(passwordChangeModal)"
           >
             <i class="bi bi-lock-fill"></i> Alterar Senha
           </button>
           <button
             type="button"
             class="btn btn-success"
-            data-bs-toggle="modal"
-            data-bs-target="#confirmationModal"
+            (click)="openModal(confirmationModal)"
           >
             <i class="bi bi-floppy-fill"></i> Salvar
           </button>
@@ -275,147 +269,88 @@
 </div>
 
 <!-- Modal de Confirmação -->
-<div
-  class="modal fade"
-  id="confirmationModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="confirmationModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmationModalLabel">
-          Deseja prosseguir com as atualizações?
-        </h5>
-      </div>
-      <div class="modal-body">
-        <p>
-          Para fins de atualizações na sessão, ao confirmar você será deslogado
-          e deverá entrar novamente. Deseja continuar?
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          <i class="bi bi-x-square-fill"></i> Fechar
-        </button>
-        <button type="button" class="btn btn-success" (click)="updateProfile()">
-          <i class="bi bi-floppy-fill"></i> Salvar
-        </button>
-      </div>
-    </div>
+<ng-template #confirmationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Deseja prosseguir com as atualizações?</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
   </div>
-</div>
+  <div class="modal-body">
+    <p>
+      Para fins de atualizações na sessão, ao confirmar você será deslogado e deverá entrar novamente. Deseja continuar?
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+      <i class="bi bi-x-square-fill"></i> Fechar
+    </button>
+    <button type="button" class="btn btn-success" (click)="updateProfile(); modal.close('Salvar')">
+      <i class="bi bi-floppy-fill"></i> Salvar
+    </button>
+  </div>
+</ng-template>
 
 <!-- Modal de Alteração de Senha -->
-<div
-  class="modal fade"
-  id="passwordChangeModal"
-  aria-labelledby="passwordChangeModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="passwordChangeModalLabel">
-          Deseja prosseguir com a alteração de senha?
-        </h5>
-      </div>
-      <div class="modal-body">
-        <p>
-          Para fins de atualizações na sessão, ao confirmar, um código de
-          alteração de senha será enviado ao seu e-mail
-          <i
-            ><b>{{ myUser?.email }}</b></i
-          >
-          e sua sessão será encerrada neste navegador. Deseja prosseguir?
-        </p>
-        <div class="text-center">
-          <img src="assets/confirmation.svg" alt="Tarefas em dia" class="w-50"/>
-        </div>
-        @if(invalidRecovery){
-        <div class="alert alert-danger" role="alert">
-          <i class="bi bi-x-square-fill"></i>
-          Houve um erro tentar alterar a senha, tente novamente mais tarde.
-        </div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          <i class="bi bi-x-square-fill"></i> Fechar
-        </button>
-        <button
-          type="button"
-          class="btn btn-success"
-          (click)="sendRAC()"
-          data-bs-dismiss="modal"
-        >
-          <i class="bi bi-send-fill"></i> Enviar Código de Recuperação
-        </button>
-      </div>
-    </div>
+<ng-template #passwordChangeModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Deseja prosseguir com a alteração de senha?</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
   </div>
-</div>
+  <div class="modal-body">
+    <p>
+      Para fins de atualizações na sessão, ao confirmar, um código de alteração de senha será enviado ao seu e-mail
+      <b>{{ myUser?.email }}</b> e sua sessão será encerrada neste navegador. Deseja prosseguir?
+    </p>
+    <div class="text-center">
+      <img src="assets/confirmation.svg" alt="Tarefas em dia" class="w-50" />
+    </div>
 
-<!-- Model do Cropper -->
-<div
-  #cropperModal
-  class="modal fade"
-  id="cropperModal"
-  tabindex="-1"
-  aria-labelledby="cropperModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="cropperModalLabel">
-          Ajustar foto de perfil
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Fechar"
-          (click)="closeCropperModal()"
-        ></button>
-      </div>
-      <div class="modal-body text-center">
-        <div class="alert alert-primary" role="alert">
-          <i class="bi bi-info-square-fill"></i>
-          A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB
-        </div>
-        @if (isCropperVisible) {
-        <image-cropper
-          [imageChangedEvent]="imageChangedEvent"
-          [maintainAspectRatio]="true"
-          [aspectRatio]="1 / 1"
-          [format]="fileType"
-          (imageCropped)="imageCropped($event)"
-          (loadImageFailed)="loadImageFailed()"
-          [resizeToWidth]="256"
-        ></image-cropper>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          data-bs-dismiss="modal"
-          (click)="closeCropperModal()"
-        >
-          Cancelar
-        </button>
-        <button
-          type="button"
-          class="btn btn-success"
-          data-bs-dismiss="modal"
-          (click)="saveCroppedImage()"
-        >
-          Salvar
-        </button>
-      </div>
+    @if (invalidRecovery) {
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-x-square-fill"></i>
+      Houve um erro tentar alterar a senha, tente novamente mais tarde.
     </div>
+    }
   </div>
-</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+      <i class="bi bi-x-square-fill"></i> Fechar
+    </button>
+    <button type="button" class="btn btn-success" (click)="sendRAC(); modal.close('Enviar Código')">
+      <i class="bi bi-send-fill"></i> Enviar Código de Recuperação
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal do Cropper -->
+<ng-template #cropperModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajustar foto de perfil</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="closeCropperModal(); modal.dismiss('Close click')"></button>
+  </div>
+  <div class="modal-body text-center">
+    <div class="alert alert-primary" role="alert">
+      <i class="bi bi-info-square-fill"></i>
+      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução baixa e com formato quadrado (1:1).
+    </div>
+
+    @if (isCropperVisible) {
+    <image-cropper
+      [imageChangedEvent]="imageChangedEvent"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1 / 1"
+      [format]="fileType"
+      (imageCropped)="imageCropped($event)"
+      (loadImageFailed)="loadImageFailed()"
+      [resizeToWidth]="256"
+    ></image-cropper>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeCropperModal(); modal.dismiss('Cancelar')">
+      Cancelar
+    </button>
+    <button type="button" class="btn btn-success" (click)="saveCroppedImage(); modal.close('Salvar')">
+      Salvar
+    </button>
+  </div>
+</ng-template>

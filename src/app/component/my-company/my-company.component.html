@@ -1,8 +1,7 @@
 <div>
   <div class="surface-container">
     <div class="surface-container-header">
-      <br />
-      <h3 class="text-white">Minha Empresa</h3>
+      <h3 class="text-white pt-3 pb-2">Minha Empresa</h3>
     </div>
     <div class="surface-container-body">
       @if (sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
@@ -251,8 +250,7 @@
           <button
             type="button"
             class="btn btn-success"
-            data-bs-toggle="modal"
-            data-bs-target="#confirmationModal"
+            (click)="openModal(confirmationModal)"
             [disabled]="cantSubmit"
           >
             <i class="bi bi-floppy-fill"></i> Salvar
@@ -265,40 +263,23 @@
 </div>
 
 <!-- Modal de Confirmação -->
-<div
-  class="modal fade"
-  id="confirmationModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="confirmationModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmationModalLabel">
-          Deseja prosseguir com as atualizações?
-        </h5>
-      </div>
-      <div class="modal-body">
-        <p>
-          Ao salvar os dados, sua sessão será encerrada e será necessário
-          realizar login novamente. Deseja continuar?
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
-          <i class="bi bi-x-square-fill"></i> Fechar
-        </button>
-        <button
-          type="button"
-          class="btn btn-success"
-          (click)="confirmSave()"
-          data-bs-dismiss="modal"
-        >
-          <i class="bi bi-floppy-fill"></i> Salvar
-        </button>
-      </div>
-    </div>
+<ng-template #confirmationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Deseja prosseguir com as atualizações?</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
   </div>
-</div>
+  <div class="modal-body">
+    <p>
+      Ao salvar os dados, sua sessão será encerrada e será necessário
+      realizar login novamente. Deseja continuar?
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+      <i class="bi bi-x-square-fill"></i> Fechar
+    </button>
+    <button type="button" class="btn btn-success" (click)="confirmSave(); modal.close('Salvar')">
+      <i class="bi bi-floppy-fill"></i> Salvar
+    </button>
+  </div>
+</ng-template>

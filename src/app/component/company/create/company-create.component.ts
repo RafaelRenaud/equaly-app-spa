@@ -164,49 +164,49 @@ export class CompanyCreateComponent {
 
     this.loadingService.show();
 
-    this.companyService
-      .createCompany(companyRequest)
-      .subscribe({
-        next: (response) => {
-          const companyId = response.id;
+    this.companyService.createCompany(companyRequest).subscribe({
+      next: (response) => {
+        const companyId = response.id;
 
-          if (this.logoIsSelected) {
-            this.companyService
-              .updateCompanyLogo(
-                companyId.toString(),
-                this.croppedBlob!,
-                this.imageName!
-              )
-              .pipe(finalize(() => {
+        if (this.logoIsSelected) {
+          this.companyService
+            .updateCompanyLogo(
+              companyId.toString(),
+              this.croppedBlob!,
+              this.imageName!
+            )
+            .pipe(
+              finalize(() => {
                 this.loadingService.hide();
                 this.navigateSuccess(companyId.toString());
-              }))
-              .subscribe({
-                error: () => {
-                  this.router.navigate([], {
-                    queryParams: {
-                      action: "ERROR",
-                      message:
-                        "Empresa cadastrada, mas houve erro ao enviar o logo.",
-                    },
-                  });
-                },
-              });
-          } else {
-            this.loadingService.hide();
-            this.navigateSuccess(companyId.toString());
-          }
-        },
-        error: () => {
+              })
+            )
+            .subscribe({
+              error: () => {
+                this.router.navigate([], {
+                  queryParams: {
+                    action: "ERROR",
+                    message:
+                      "Empresa cadastrada, mas houve erro ao enviar o logo.",
+                  },
+                });
+              },
+            });
+        } else {
           this.loadingService.hide();
-          this.router.navigate([], {
-            queryParams: {
-              action: "ERROR",
-              message: "Erro ao cadastrar empresa",
-            },
-          });
-        },
-      });
+          this.navigateSuccess(companyId.toString());
+        }
+      },
+      error: () => {
+        this.loadingService.hide();
+        this.router.navigate([], {
+          queryParams: {
+            action: "ERROR",
+            message: "Erro ao cadastrar empresa",
+          },
+        });
+      },
+    });
   }
 
   private navigateSuccess(companyId: string): void {

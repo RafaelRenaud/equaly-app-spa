@@ -1,10 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  ViewChild,
-  AfterViewInit,
-  OnDestroy,
-} from "@angular/core";
+import { Component, ElementRef, ViewChild, OnInit } from "@angular/core";
 import { SessionService } from "../../core/service/session/session.service";
 import { UserService } from "../../core/service/user/user.service";
 import { LoadingService } from "../../core/service/loading/loading.service";
@@ -20,13 +14,10 @@ import {
 } from "@angular/forms";
 import { MainProfile } from "../../core/model/user/main-profile.model";
 import { LoginService } from "../../core/service/login/login.service";
-import {
-  ImageCroppedEvent,
-  ImageCropperComponent,
-  LoadedImage,
-} from "ngx-image-cropper";
+import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { RecoveryService } from "../../core/service/recovery/recovery.service";
+import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: "app-my-account",
@@ -35,7 +26,7 @@ import { RecoveryService } from "../../core/service/recovery/recovery.service";
   templateUrl: "./my-account.component.html",
   styleUrl: "./my-account.component.scss",
 })
-export class MyAccountComponent implements AfterViewInit, OnDestroy {
+export class MyAccountComponent implements OnInit {
   myUser: UserResponse | null = null;
   myRoles: RolesResponse | null = null;
   fileType: "png" | "jpeg" = "png";
@@ -53,12 +44,10 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
   croppedBlob: Blob | null = null;
 
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
-  @ViewChild("cropperModal") cropperModal!: ElementRef<HTMLDivElement>;
 
   isCropperVisible = false;
 
-  // para controle do modal bootstrap via JS
-  private cropperModalInstance: any;
+  private cropperModalRef?: NgbModalRef;
 
   constructor(
     public sessionService: SessionService,
@@ -68,7 +57,8 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
     private loginService: LoginService,
     private recoveryService: RecoveryService,
     private router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private modalService: NgbModal
   ) {
     this.mainProfileForm = this.formBuilder.group({
       username: ["", [Validators.minLength(8), Validators.maxLength(64)]],
@@ -101,18 +91,8 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  ngAfterViewInit() {
-    const modalEl = this.cropperModal.nativeElement;
-    this.cropperModalInstance = new (window as any).bootstrap.Modal(modalEl, {
-      backdrop: "static",
-      keyboard: false,
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.cropperModalInstance) {
-      this.cropperModalInstance.dispose();
-    }
+  openModal(content: any, options: any = {}) {
+    return this.modalService.open(content, { centered: true, ...options });
   }
 
   sendRAC() {
@@ -137,17 +117,15 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  // Abre input file quando clica no overlay
   triggerFileInput() {
     this.fileInput.nativeElement.value = "";
     this.fileInput.nativeElement.click();
   }
 
-  fileChangeEvent(event: any): void {
+  fileChangeEvent(event: any, cropperModalTemplate: any): void {
     const file: File = event.target.files[0];
     if (file) {
       this.imageName = file.name;
-
       if (file.type === "image/png") {
         this.fileType = "png";
       } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
@@ -157,28 +135,25 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
       }
 
       this.imageChangedEvent = event;
-      this.openCropperModal();
+      this.openCropperModal(cropperModalTemplate);
     }
   }
 
-  openCropperModal() {
+  openCropperModal(content: any) {
     this.isCropperVisible = false;
-
-    const modalEl = this.cropperModal.nativeElement;
-    const modal = new (window as any).bootstrap.Modal(modalEl);
-
-    modal.show();
-
-    const onShown = () => {
-      this.isCropperVisible = true;
-      modalEl.removeEventListener("shown.bs.modal", onShown);
-    };
-    modalEl.addEventListener("shown.bs.modal", onShown);
+    this.cropperModalRef = this.modalService.open(content, {
+      size: "lg",
+      centered: true,
+      backdrop: "static",
+      keyboard: false,
+    });
+    // Exibe o cropper imediatamente
+    this.isCropperVisible = true;
   }
 
   closeCropperModal() {
     this.isCropperVisible = false;
-    this.cropperModalInstance?.hide();
+    this.cropperModalRef?.close();
   }
 
   imageCropped(event: ImageCroppedEvent) {
@@ -225,14 +200,6 @@ export class MyAccountComponent implements AfterViewInit, OnDestroy {
   }
 
   updateProfile() {
-    const modal = document.getElementById("confirmationModal");
-    if (modal) {
-      (window as any).bootstrap.Modal.getInstance(modal)?.hide();
-      document.body.classList.remove("modal-open");
-      const backdrop = document.querySelector(".modal-backdrop");
-      if (backdrop) backdrop.remove();
-    }
-
     this.loadingService.show();
     this.invalidNickname = false;
     this.invalidUsername = false;

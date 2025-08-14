@@ -12,6 +12,7 @@ import { LoadingService } from "../../core/service/loading/loading.service";
 import { Router, RouterModule } from "@angular/router";
 import { finalize } from "rxjs";
 import { LoginService } from "../../core/service/login/login.service";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: "app-my-company",
@@ -22,7 +23,6 @@ import { LoginService } from "../../core/service/login/login.service";
 })
 export class MyCompanyComponent {
   myCompany: CompanyResponse | null = null;
-
   companyForm!: FormGroup;
 
   invalidCompanyName = false;
@@ -31,7 +31,6 @@ export class MyCompanyComponent {
   invalidCompanyContact = false;
 
   cantSubmit: boolean = true;
-
   viewOnly = true;
 
   constructor(
@@ -40,7 +39,8 @@ export class MyCompanyComponent {
     private loadingService: LoadingService,
     private formBuilder: FormBuilder,
     private loginService: LoginService,
-    private router: Router
+    private router: Router,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +65,6 @@ export class MyCompanyComponent {
       next: (company) => {
         this.myCompany = company;
 
-        // Define se pode editar baseado nos roles e status
         this.viewOnly = !(
           (this.sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
             this.sessionService.hasRole("MASTER_ADMIN")) &&
@@ -79,11 +78,8 @@ export class MyCompanyComponent {
           companyContact: company.contact,
         });
 
-        if (this.viewOnly) {
-          this.companyForm.disable();
-        } else {
-          this.companyForm.enable();
-        }
+        if (this.viewOnly) this.companyForm.disable();
+        else this.companyForm.enable();
 
         this.loadingService.hide();
       },
@@ -178,9 +174,9 @@ export class MyCompanyComponent {
   }
 
   private markAllFieldsAsTouched() {
-    Object.values(this.companyForm.controls).forEach((control) => {
-      control.markAsTouched();
-    });
+    Object.values(this.companyForm.controls).forEach((control) =>
+      control.markAsTouched()
+    );
   }
 
   private getFormControlName(field: string): string {
@@ -201,5 +197,9 @@ export class MyCompanyComponent {
     }
 
     this.editCompany();
+  }
+
+  openModal(content: any) {
+    this.modalService.open(content, { centered: true });
   }
 }

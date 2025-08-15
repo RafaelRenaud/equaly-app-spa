@@ -35,8 +35,10 @@
               id="floatingDocument"
               formControlName="document"
               (blur)="checkUniversalUserExists()"
+              [class.is-invalid]="invalidDocument"
             />
             <label for="floatingDocument" class="ps-4">Documento</label>
+            <div class="invalid-feedback pb-2">Documento inválido</div>
           </div>
         </div>
 
@@ -48,8 +50,10 @@
               id="floatingName"
               formControlName="name"
               [value]="universalUser?.name"
+              [class.is-invalid]="invalidName"
             />
             <label for="floatingName" class="ps-4">Nome Completo</label>
+            <div class="invalid-feedback pb-2">Nome inválido</div>
           </div>
         </div>
 
@@ -75,8 +79,10 @@
               id="floatingUsername"
               (blur)="setNickname()"
               formControlName="username"
+              [class.is-invalid]="invalidUsername"
             />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
+            <div class="invalid-feedback pb-2">Nome de usuário inválido</div>
           </div>
         </div>
 
@@ -87,8 +93,11 @@
               class="form-control"
               id="floatingLogin"
               formControlName="login"
+              [class.is-invalid]="invalidLogin"
+              (blur)="checkLoginExists()"
             />
             <label for="floatingLogin" class="ps-4">Login</label>
+            <div class="invalid-feedback pb-2">Login inválido</div>
           </div>
           <div class="form-floating col">
             <input
@@ -96,8 +105,10 @@
               class="form-control"
               id="floatingNickname"
               formControlName="nickname"
+              [class.is-invalid]="invalidNickname"
             />
             <label for="floatingNickname" class="ps-4">Apelido</label>
+            <div class="invalid-feedback pb-2">Apelido inválido</div>
           </div>
         </div>
 
@@ -108,8 +119,37 @@
               class="form-control"
               id="floatingEmail"
               formControlName="email"
+              [class.is-invalid]="invalidEmail"
+              (blur)="checkEmailExists()"
             />
             <label for="floatingEmail" class="ps-4">E-Mail</label>
+            <div class="invalid-feedback pb-2">E-Mail inválido</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col text-center">
+            <button class="btn btn-primary" [routerLink]="['/users']">
+              <i class="bi bi-arrow-left-square-fill"></i>
+              Voltar
+            </button>
+            <button
+              type="submit"
+              class="btn btn-success"
+              (click)="saveUser()"
+              [disabled]="
+                createUserForm.invalid ||
+                invalidDocument ||
+                invalidName ||
+                invalidUsername ||
+                invalidLogin ||
+                invalidNickname ||
+                invalidEmail
+              "
+            >
+              <i class="bi bi-plus-square-fill"></i>
+              Cadastrar
+            </button>
           </div>
         </div>
       </form>

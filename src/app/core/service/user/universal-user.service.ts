@@ -3,7 +3,8 @@ import { inject, Injectable } from "@angular/core";
 import { SessionService } from "../session/session.service";
 import { Observable } from "rxjs";
 import { UniversalUserResponse } from "../../model/user/universal-user.model";
-import { UniversalUsersResponse } from "../../model/user/universal-users-response.model copy";
+import { UniversalUsersResponse } from "../../model/user/universal-users-response.model";
+import { UniversalUserCreateRequest } from "../../model/user/universal-user-create-request.model";
 
 @Injectable({
   providedIn: "root",
@@ -59,5 +60,40 @@ export class UniversalUserService {
       headers,
       params,
     });
+  }
+
+  createUniversalUser(
+    request: UniversalUserCreateRequest
+  ): Observable<{ id: number }> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.post<{ id: number }>(
+      this.endpoint,
+      JSON.stringify(request), {
+      headers,
+    });
+  }
+
+  updateUniversalUser(
+    id: number,
+    request: { name: string }
+  ): Observable<UniversalUserResponse> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.patch<UniversalUserResponse>(
+      this.endpoint.concat("/").concat(id.toString()),
+      JSON.stringify(request),
+      {
+        headers,
+      }
+    );
   }
 }

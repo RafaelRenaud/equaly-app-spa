@@ -6,6 +6,8 @@ import { UserResponse } from "../../model/user/user-response.model";
 import { RolesResponse } from "../../model/role/roles-response.model";
 import { MainProfile } from "../../model/user/main-profile.model";
 import { UsersResponse } from "../../model/user/users-response.model";
+import { UserCreateRequest } from "../../model/user/user-create-request.model";
+import { UserEditRequest } from "../../model/user/user-edit-request.model";
 
 @Injectable({
   providedIn: "root",
@@ -145,6 +147,38 @@ export class UserService {
       JSON.stringify({
         status: status,
       }),
+      {
+        headers,
+      }
+    );
+  }
+
+  createUser(request: UserCreateRequest): Observable<{ id: number }> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.post<{ id: number }>(
+      this.endpoint,
+      JSON.stringify(request),
+      {
+        headers,
+      }
+    );
+  }
+
+  updateUser(id: number, request: UserEditRequest): Observable<UserResponse> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.patch<UserResponse>(
+      this.endpoint.concat("/").concat(id.toString()),
+      JSON.stringify(request),
       {
         headers,
       }

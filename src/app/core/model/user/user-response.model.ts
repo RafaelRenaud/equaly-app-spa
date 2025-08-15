@@ -5,6 +5,8 @@ export interface UserResponse {
   universalUser: {
     id: number;
     name: string;
+    document: string;
+    documentType: string;
   };
   company: {
     id: number;

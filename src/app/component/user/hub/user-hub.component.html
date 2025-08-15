@@ -373,6 +373,7 @@
               [src]="selectedUser?.avatarUri"
               alt="Avatar do Usuário"
               id="user-avatar"
+              class="img-thumbnail rounded"
             />
           </div>
           }
@@ -404,6 +405,32 @@
               "
             />
             <label for="floatingUniversalUser" class="ps-4">Pessoa</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingDocumentType"
+              disabled
+              [value]="
+                selectedUser?.universalUser?.documentType
+              "
+            />
+            <label for="floatingDocumentType" class="ps-4">Tipo de Documento</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingDocument"
+              disabled
+              [value]="
+                selectedUser?.universalUser?.document
+              "
+            />
+            <label for="floatingDocument" class="ps-4">Documento</label>
           </div>
         </div>
         <div class="row">

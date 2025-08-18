@@ -414,11 +414,11 @@
               class="form-control"
               id="floatingDocumentType"
               disabled
-              [value]="
-                selectedUser?.universalUser?.documentType
-              "
+              [value]="selectedUser?.universalUser?.documentType"
             />
-            <label for="floatingDocumentType" class="ps-4">Tipo de Documento</label>
+            <label for="floatingDocumentType" class="ps-4"
+              >Tipo de Documento</label
+            >
           </div>
           <div class="form-floating col">
             <input
@@ -426,9 +426,7 @@
               class="form-control"
               id="floatingDocument"
               disabled
-              [value]="
-                selectedUser?.universalUser?.document
-              "
+              [value]="selectedUser?.universalUser?.document"
             />
             <label for="floatingDocument" class="ps-4">Documento</label>
           </div>
@@ -529,11 +527,17 @@
               class="form-control"
               id="floatingValue"
               disabled
-              [value]="selectedUser?.lastLoginAt"
+              [value]="selectedUser?.lastLoginAt || 'Não se aplica'"
             />
             <label for="floatingValue" class="ps-4">Último Login em</label>
           </div>
         </div>
+
+        <div class="form-floating">
+          <textarea id="floatingRoles" disabled class="form-control">{{ userRoles === null ? "Sem Permissões" : userRoles }}</textarea>
+          <label for="floatingRoles">Permissões</label>
+        </div>
+        <br />
 
         <div class="row">
           <div class="form-floating col">
@@ -564,7 +568,7 @@
               type="text"
               class="form-control"
               id="floatingCreatedAt"
-              [value]="selectedUser?.audit?.updatedAt"
+              [value]="selectedUser?.audit?.updatedAt || 'Não se aplica'"
               disabled
             />
             <label for="floatingCreatedAt" class="ps-4">Atualizado em</label>
@@ -574,7 +578,7 @@
               type="text"
               class="form-control"
               id="floatingCreatedBy"
-              [value]="selectedUser?.audit?.updatedBy"
+              [value]="selectedUser?.audit?.updatedBy || 'Não se aplica'"
               disabled
             />
             <label for="floatingCreatedBy" class="ps-4">Atualizado por</label>

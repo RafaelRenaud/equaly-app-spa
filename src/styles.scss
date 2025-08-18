@@ -182,3 +182,8 @@ a {
 textarea{
   min-height: 100px !important;
 }
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--secondary-color);     
+}

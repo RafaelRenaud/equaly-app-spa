@@ -1,9 +1,10 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { DepartmentSearchComponent } from "../../department/search/department-search.component";
 import { SessionService } from "../../../core/service/session/session.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
 import {
+  FormArray,
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
@@ -17,6 +18,13 @@ import { CompanyResponse } from "../../../core/model/company/company-response.mo
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { UserCreateRequest } from "../../../core/model/user/user-create-request.model";
 import { UniversalUserCreateRequest } from "../../../core/model/user/universal-user-create-request.model";
+import {
+  NgbModal,
+  NgbModalModule,
+  NgbTooltipModule,
+} from "@ng-bootstrap/ng-bootstrap";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
 
 @Component({
   selector: "app-user-create",
@@ -25,6 +33,9 @@ import { UniversalUserCreateRequest } from "../../../core/model/user/universal-u
     DepartmentSearchComponent,
     ReactiveFormsModule,
     RouterModule,
+    NgbTooltipModule,
+    NgbModalModule,
+    ImageCropperComponent,
   ],
   templateUrl: "./user-create.component.html",
   styleUrl: "./user-create.component.scss",
@@ -33,6 +44,8 @@ import { UniversalUserCreateRequest } from "../../../core/model/user/universal-u
 export class UserCreateComponent implements OnInit {
   isEqualyMasterAdmin = false;
   universalUserExists = false;
+  rolesSelected = false;
+  avatarSelected = false;
   universalUser: UniversalUserResponse | null = null;
   selectedCompany: CompanyResponse | null = null;
   selectedDepartment: DepartmentResponse | null = null;
@@ -46,13 +59,27 @@ export class UserCreateComponent implements OnInit {
   invalidNickname = false;
   invalidEmail = false;
 
+  //Para Upload do Avatar
+  fileType: "png" | "jpeg" = "png";
+  imageChangedEvent: Event | null = null;
+  imageName: string | null = null;
+  croppedImage: SafeUrl = "";
+  croppedBlob: Blob | null = null;
+
+  invalidAvatar = false;
+
+  //Componente Cropper
+  @ViewChild("cropperModal", { static: false }) cropperModal!: TemplateRef<any>;
+
   constructor(
     private sessionService: SessionService,
     private loadingService: LoadingService,
     private formBuilder: FormBuilder,
     private universalUserService: UniversalUserService,
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private sanitizer: DomSanitizer,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -92,6 +119,7 @@ export class UserCreateComponent implements OnInit {
         ],
       ],
       email: ["", [Validators.required, Validators.email]],
+      roles: this.formBuilder.array([]),
     });
 
     if (this.sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
@@ -222,7 +250,6 @@ export class UserCreateComponent implements OnInit {
     this.invalidEmail = this.createUserForm.get("email")?.invalid ?? false;
   }
 
-  // Salva e redireciona
   saveUser() {
     this.markInvalidControls();
     if (this.createUserForm.invalid || this.invalidEmail || this.invalidLogin)
@@ -242,28 +269,72 @@ export class UserCreateComponent implements OnInit {
 
     if (this.universalUser) {
       // Já existe universalUser
-      this.userService.createUser(userRequest).subscribe({
-        next: () => this.onSaveSuccess(),
-        error: () => this.onSaveError(),
-      });
+      this.createUser(userRequest);
     } else {
-      // Cria universalUser antes do user
+      // Cria universalUser + user
       const uuRequest: UniversalUserCreateRequest = {
         documentType: this.createUserForm.get("documentType")?.value,
         document: this.createUserForm.get("document")?.value,
         name: this.createUserForm.get("name")?.value,
       };
-      this.universalUserService.createUniversalUser(uuRequest).subscribe({
+      this.createUniversalUserAndUser(userRequest, uuRequest);
+    }
+  }
+
+  createUniversalUserAndUser(
+    userRequest: UserCreateRequest,
+    universalUserRequest: UniversalUserCreateRequest
+  ) {
+    this.universalUserService
+      .createUniversalUser(universalUserRequest)
+      .subscribe({
         next: (uuRes) => {
           userRequest.universalUser.id = uuRes.id;
-          this.userService.createUser(userRequest).subscribe({
-            next: () => this.onSaveSuccess(),
-            error: () => this.onSaveError(),
-          });
+          this.createUser(userRequest);
         },
         error: () => this.onSaveError(),
       });
-    }
+  }
+
+  createUser(userRequest: UserCreateRequest) {
+    this.userService.createUser(userRequest).subscribe({
+      next: (response) => {
+        if (this.rolesSelected) {
+          this.createUserRoles(response.id, this.roles);
+        }
+
+        if (
+          this.avatarSelected &&
+          this.croppedBlob !== null &&
+          this.imageName !== null
+        ) {
+          this.createUserAvatar(response.id, this.croppedBlob, this.imageName);
+        } else {
+          this.onSaveSuccess();
+        }
+      },
+      error: () => this.onSaveError(),
+    });
+  }
+
+  createUserRoles(id: number, roles: FormArray) {
+    this.userService.createUserRole(id, roles.value).subscribe({
+      next: () => {
+        if (!this.avatarSelected) {
+          this.onSaveSuccess();
+        }
+      },
+      error: () => this.onSaveError(),
+    });
+  }
+
+  createUserAvatar(id: number, blob: Blob, blobName: string) {
+    this.userService.updateUserAvatar(id.toString(), blob, blobName).subscribe({
+      next: () => {
+        this.onSaveSuccess();
+      },
+      error: () => this.onSaveError(),
+    });
   }
 
   private onSaveSuccess() {
@@ -291,5 +362,75 @@ export class UserCreateComponent implements OnInit {
   }
   onSelectDepartment(department: DepartmentResponse | null) {
     this.selectedDepartment = department;
+  }
+
+  onCheckboxChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    if (input.checked) {
+      this.roles.push(this.formBuilder.control(value));
+    } else {
+      const index = this.roles.controls.findIndex((x) => x.value === value);
+      this.roles.removeAt(index);
+    }
+
+    if (this.roles.length === 0) {
+      this.rolesSelected = false;
+    } else {
+      this.rolesSelected = true;
+    }
+
+    alert(this.rolesSelected);
+  }
+
+  get roles(): FormArray {
+    return this.createUserForm.get("roles") as FormArray;
+  }
+
+  fileChangeEvent(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.imageName = file.name;
+
+      if (file.type === "image/png") {
+        this.fileType = "png";
+      } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
+        this.fileType = "jpeg";
+      } else {
+        this.fileType = "png";
+      }
+
+      this.imageChangedEvent = event;
+      this.modalService.open(this.cropperModal, {
+        ariaLabelledBy: "cropperModal",
+      });
+    }
+  }
+
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.objectUrl!);
+    this.croppedBlob = event.blob!;
+    console.log(
+      "Tamanho do blob recortado:",
+      this.croppedBlob.size / 1024,
+      "KB"
+    );
+    this.avatarSelected = true;
+  }
+
+  removeAvatar() {
+    this.avatarSelected = false;
+    this.croppedImage = "";
+    this.croppedBlob = null;
+  }
+
+  loadImageFailed() {
+    this.invalidAvatar = true;
+    this.closeCropperModal();
+  }
+
+  closeCropperModal() {
+    this.modalService.dismissAll();
   }
 }

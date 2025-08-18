@@ -63,6 +63,9 @@ export class UserHubComponent {
   confirmModal!: Modal;
   isBrowser = false;
 
+  //Controle Visual de Permissões
+  userRoles: string[] | null = null;
+
   constructor(
     private userService: UserService,
     private recoveryService: RecoveryService,
@@ -215,12 +218,12 @@ export class UserHubComponent {
     this.loadingService.show();
 
     this.companyService
-      .getCompany(this.selectedUser.id)
+      .getCompany(this.selectedUser.company.id)
       .pipe(
         map((company: CompanyResponse) => company.alias),
         switchMap((alias: string) =>
           this.recoveryService.sendRAC({
-            companyAlias: "equaly",
+            companyAlias: alias,
             login: this.selectedUser!.login,
           })
         )
@@ -255,7 +258,27 @@ export class UserHubComponent {
   }
 
   selectUserView(user: UserResponse) {
+    this.loadingService.show();
+    this.userRoles = null;
     this.selectedUser = user;
+    this.userService.getUserRoles(this.selectedUser.id.toString()).subscribe({
+      next: (resonse) => {
+        if(resonse.roles.length > 0){
+          this.userRoles = this.userService.parseRoles(resonse.roles);
+        }
+
+        this.loadingService.hide();
+      },
+      error: () => {
+        this.loadingService.hide();
+        this.router.navigate(["/users"], {
+          queryParams: {
+            action: "ERROR",
+            message: "Erro ao consultar permissões do usuário",
+          },
+        });
+      },
+    });
   }
 
   onSelectCompany(company: CompanyResponse | null): void {

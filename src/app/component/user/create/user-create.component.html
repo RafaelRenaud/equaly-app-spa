@@ -5,6 +5,48 @@
     </div>
     <div class="surface-container-body">
       <form [formGroup]="createUserForm">
+        <div class="row">
+          <div class="col text-end">
+            <div
+              class="position-relative d-inline-block profile-image-container"
+            >
+              @if(avatarSelected){
+              <img
+                [src]="croppedImage"
+                alt="Imagem de Perfil"
+                id="user-avatar"
+                class="rounded profile-image img-thumbnail"
+              />
+              <div class="overlay rounded" (click)="removeAvatar()">
+                <span><i class="bi bi-trash-fill"></i> Remover</span>
+              </div>
+              } @else {
+              <img
+                src="avatar.png"
+                alt="Imagem do Perfil"
+                id="user-avatar"
+                class="rounded profile-image img-thumbnail"
+              />
+              }
+            </div>
+          </div>
+
+          <div class="col text-start">
+            <button class="btn btn-primary mt-5" (click)="fileInput.click()">
+              <i class="bi bi-upload"></i>
+              Upload do Logo da Empresa
+            </button>
+            <input
+              #fileInput
+              type="file"
+              accept="image/png, image/jpeg"
+              (change)="fileChangeEvent($event)"
+              hidden
+            />
+          </div>
+        </div>
+        <br />
+
         @if(universalUserExists){
         <div class="alert alert-primary" role="alert">
           <i class="bi bi-info-square-fill"></i>
@@ -128,6 +170,236 @@
         </div>
 
         <div class="row">
+          <label class="ps-4 pb-2">Filtros de Permissões</label>
+        </div>
+
+        <!-- Texto das Permissões -->
+
+        <ng-template #equalyMasterAdmin>
+          <p>Exclusivo para administradores eQualy.</p>
+          <p>
+            Permite o cadastro de empresas, credenciais, usuários e
+            departamentos no geral, além do controle das parametrizações do
+            sistema.
+          </p>
+          <b
+            >Não utilize essa opção para cadastrar usuários se não tiver certeza
+            do que fazer</b
+          >
+        </ng-template>
+
+        <ng-template #masterAdmin>
+          <p>Exclusivo para administradores corporativos.</p>
+          <p>
+            Permite o cadastro de usuários, departamentos e parâmetros para a
+            empresa associada.
+          </p>
+          <b
+            >Essa permissão fornece o controle total do usuário a empresa
+            cadastrada.</b
+          >
+        </ng-template>
+
+        <ng-template #commonAdmin>
+          <p>Para Administradores corporativos.</p>
+          <p>
+            Permite visualização de usuários, departamentos e parâmetros para a
+            empresa associada.
+          </p>
+          <b
+            >Essa permissão fornece o visualização total do usuário a empresa
+            cadastrada.</b
+          >
+        </ng-template>
+
+        <ng-template #masterEventOpener>
+          <p>
+            Permite parametrizações e controle geral de ocorrências e feedbacks
+            a empresa associada.
+          </p>
+        </ng-template>
+
+        <ng-template #commonEventOpener>
+          <p>
+            Permite visualização e abertura de ocorrências e feedbacks a empresa
+            associada.
+          </p>
+        </ng-template>
+
+        <ng-template #masterQualityInspector>
+          <p>
+            Permite parametrizações e controle geral de ocorrências, não
+            conformidades e formulários de qualidades da empresa associada.
+          </p>
+        </ng-template>
+
+        <ng-template #commonQualityInspector>
+          <p>
+            Permite visualizações e abertura de não conformidades e formulários
+            de qualidades da empresa associada.
+          </p>
+        </ng-template>
+
+        <ng-template #commonRncReporter>
+          <p>
+            Usuário Comum, destinado a preenchimento de formulários de qualidade
+            para seguir os procedimentos sistêmicos.
+          </p>
+        </ng-template>
+
+        <div class="row">
+          @if(isEqualyMasterAdmin){
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="EQUALY_MASTER_ADMIN"
+              id="equalyMasterAdmin"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="equalyMasterAdmin">
+              ADMINISTRADOR MASTER EQUALY
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="equalyMasterAdmin"
+              ></i>
+            </label>
+          </div>
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="MASTER_ADMIN"
+              id="masterAdmin"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="masterAdmin">
+              ADMINISTRADOR MASTER
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="masterAdmin"
+              ></i>
+            </label>
+          </div>
+          }
+
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="COMMON_ADMIN"
+              id="commonAdmin"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="commonAdmin">
+              ADMINISTRADOR
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="commonAdmin"
+              ></i>
+            </label>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="row">
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="MASTER_EVENT_OPENER"
+              id="masterEventOpener"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="masterEventOpener">
+              AGENTE DE EVENTOS MASTER
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="masterEventOpener"
+              ></i>
+            </label>
+          </div>
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="COMMON_EVENT_OPENER"
+              id="commonEventOpener"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="commonEventOpener">
+              AGENTE DE EVENTOS
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="commonEventOpener"
+              ></i>
+            </label>
+          </div>
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="MASTER_QUALITY_INSPECTOR"
+              id="masterQualityInspector"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="masterQualityInspector">
+              AGENTE DE QUALIDADE MASTER
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="masterQualityInspector"
+              ></i>
+            </label>
+          </div>
+        </div>
+
+        <br />
+
+        <div class="row">
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="COMMON_QUALITY_INSPECTOR"
+              id="commonQualityInspector"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="commonQualityInspector">
+              AGENTE DE QUALIDADE
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="commonQualityInspector"
+              ></i>
+            </label>
+          </div>
+          <div class="col form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              value="COMMON_RNC_REPORTER"
+              id="commonRncReporter"
+              (change)="onCheckboxChange($event)"
+            />
+            <label class="form-check-label" for="commonRncReporter">
+              USUÁRIO COMUM
+              <i
+                class="bi bi-info-square-fill"
+                placement="top"
+                [ngbTooltip]="commonRncReporter"
+              ></i>
+            </label>
+          </div>
+        </div>
+
+        <div class="row">
           <div class="col text-center">
             <button class="btn btn-primary" [routerLink]="['/users']">
               <i class="bi bi-arrow-left-square-fill"></i>
@@ -156,3 +428,40 @@
     </div>
   </div>
 </div>
+
+<!-- Modal do Cropper -->
+<ng-template #cropperModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="cropperModal">Ajustar Foto do Usuário</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss()"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <div class="alert alert-primary" role="alert">
+      <i class="bi bi-info-square-fill"></i>
+      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução baixa e com formato quadrado (1:1).
+    </div>
+    <image-cropper
+      [imageChangedEvent]="imageChangedEvent"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1 / 1"
+      [format]="fileType"
+      (imageCropped)="imageCropped($event)"
+      (loadImageFailed)="loadImageFailed()"
+      [resizeToWidth]="256"
+    ></image-cropper>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.close('Save click')"
+    >
+      Save
+    </button>
+  </div>
+</ng-template>

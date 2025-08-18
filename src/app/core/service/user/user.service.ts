@@ -8,6 +8,8 @@ import { MainProfile } from "../../model/user/main-profile.model";
 import { UsersResponse } from "../../model/user/users-response.model";
 import { UserCreateRequest } from "../../model/user/user-create-request.model";
 import { UserEditRequest } from "../../model/user/user-edit-request.model";
+import { FormArray } from "@angular/forms";
+import { RoleResponse } from "../../model/role/role-response.model";
 
 @Injectable({
   providedIn: "root",
@@ -17,6 +19,17 @@ export class UserService {
   private readonly endpoint = "/administration/v1/users";
 
   constructor(private session: SessionService) {}
+
+  roleNameMapping: Record<string, string> = {
+    EQUALY_MASTER_ADMIN: "ADMINISTRADOR MASTER EQUALY",
+    MASTER_ADMIN: "ADMINISTRADOR MASTER",
+    COMMON_ADMIN: "ADMINISTRADOR",
+    MASTER_EVENT_OPENER: "AGENTE DE EVENTOS MASTER",
+    COMMON_EVENT_OPENER: "AGENTE DE EVENTOS",
+    MASTER_QUALITY_INSPECTOR: "AGENTE DE QUALIDADE MASTER",
+    COMMON_QUALITY_INSPECTOR: "AGENTE DE QUALIDADE",
+    COMMON_RNC_REPORTER: "USUÁRIO COMUM",
+  };
 
   getUser(id: string): Observable<UserResponse> {
     const headers = new HttpHeaders({
@@ -166,6 +179,30 @@ export class UserService {
       {
         headers,
       }
+    );
+  }
+
+  createUserRole(id: number, roles: string[]): Observable<{ ids: number[] }> {
+    const headers = new HttpHeaders({
+      "Content-Type": "application/json",
+      "X-Application-Key": this.session.getItem("clientKey")!,
+      Authorization: this.session.getItem("Authorization")!,
+    });
+
+    return this.http.post<{ ids: number[] }>(
+      this.endpoint.concat("/").concat(id.toString()).concat("/roles"),
+      JSON.stringify({
+        roles: roles,
+      }),
+      {
+        headers,
+      }
+    );
+  }
+
+  parseRoles(rolesResponse: RoleResponse[]): string[] {
+    return rolesResponse.map(
+      (role) => this.roleNameMapping[role.name] || role.name
     );
   }
 

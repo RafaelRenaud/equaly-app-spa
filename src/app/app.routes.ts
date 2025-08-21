@@ -41,8 +41,8 @@ export const routes: Routes = [
     canActivateChild: [AuthGuard],
     children: [
       { path: "", component: HomeComponent, pathMatch: "full" },
-      { path: "my-account", component: MyAccountComponent, pathMatch: "full" },
-      { path: "my-company", component: MyCompanyComponent, pathMatch: "full" },
+      { path: "my-account", component: MyAccountComponent },
+      { path: "my-company", component: MyCompanyComponent },
       {
         path: "companies",
         canActivateChild: [AuthGuard],
@@ -176,5 +176,5 @@ export const routes: Routes = [
   },
 
   // Rota coringa
-  // { path: "**", redirectTo: "" },
+  { path: "**", redirectTo: "" },
 ];

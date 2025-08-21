@@ -84,7 +84,7 @@ export class UserCreateComponent implements OnInit {
 
   ngOnInit() {
     this.createUserForm = this.formBuilder.group({
-      documentType: ["", Validators.required],
+      documentType: ["NONE", Validators.required],
       document: ["", [Validators.required, Validators.pattern(/^\d{1,11}$/)]],
       name: [
         "",

@@ -29,6 +29,7 @@ import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 export class MyAccountComponent implements OnInit {
   myUser: UserResponse | null = null;
   myRoles: RolesResponse | null = null;
+  rolesAsText: string | null = null;
   fileType: "png" | "jpeg" = "png";
 
   mainProfileForm!: FormGroup;
@@ -78,6 +79,13 @@ export class MyAccountComponent implements OnInit {
       next: ({ user, roles }) => {
         this.myUser = user;
         this.myRoles = roles;
+
+        if(this.myRoles.roles.length > 0){
+          this.rolesAsText = this.userService.parseRoles(roles.roles).toString();
+        }else{
+          this.rolesAsText = "Sem Permissões";
+        }
+
         this.mainProfileForm.patchValue({
           username: user.username,
           nickname: user.nickname,
@@ -229,9 +237,5 @@ export class MyAccountComponent implements OnInit {
           },
         });
     }
-  }
-
-  getRolesAsText() {
-    return this.myRoles?.roles.map((role) => role.name).join(", ") ?? "";
   }
 }

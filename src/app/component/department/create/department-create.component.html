@@ -22,7 +22,7 @@
             class="form-control"
             [class.is-invalid]="invalidDepartmentName"
             formControlName="departmentName"
-            title="Nome do Departamento"
+            placeholder="Nome do Departamento"
           />
           <label class="ps-4">Nome do Departamento</label>
           @if(invalidDepartmentName){
@@ -40,6 +40,7 @@
           [class.is-invalid]="invalidDepartmentDescription"
           formControlName="departmentDescription"
           maxlength="256"
+          placeholder="Descrição"
         ></textarea>
         <label for="departmentDescriptionLabel">Descrição</label>
 

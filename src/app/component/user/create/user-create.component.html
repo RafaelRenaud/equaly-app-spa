@@ -60,7 +60,7 @@
           <div class="form-floating col">
             <select
               class="form-select form-control"
-              title="Selecione o Filtro"
+              title="Tipo de Documento"
               formControlName="documentType"
             >
               <option value="NONE" selected>Selecione</option>
@@ -78,6 +78,7 @@
               formControlName="document"
               (blur)="checkUniversalUserExists()"
               [class.is-invalid]="invalidDocument"
+              placeholder="Documento"
             />
             <label for="floatingDocument" class="ps-4">Documento</label>
             <div class="invalid-feedback pb-2">Documento inválido</div>
@@ -93,6 +94,7 @@
               formControlName="name"
               [value]="universalUser?.name"
               [class.is-invalid]="invalidName"
+              placeholder="Nome Completo"
             />
             <label for="floatingName" class="ps-4">Nome Completo</label>
             <div class="invalid-feedback pb-2">Nome inválido</div>
@@ -122,6 +124,7 @@
               (blur)="setNickname()"
               formControlName="username"
               [class.is-invalid]="invalidUsername"
+              placeholder="Nome de Usuário"
             />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
             <div class="invalid-feedback pb-2">Nome de usuário inválido</div>
@@ -137,6 +140,7 @@
               formControlName="login"
               [class.is-invalid]="invalidLogin"
               (blur)="checkLoginExists()"
+              placeholder="Login"
             />
             <label for="floatingLogin" class="ps-4">Login</label>
             <div class="invalid-feedback pb-2">Login inválido</div>
@@ -147,6 +151,7 @@
               class="form-control"
               id="floatingNickname"
               formControlName="nickname"
+              placeholder="Apelido"
               [class.is-invalid]="invalidNickname"
             />
             <label for="floatingNickname" class="ps-4">Apelido</label>
@@ -161,6 +166,7 @@
               class="form-control"
               id="floatingEmail"
               formControlName="email"
+              placeholder="E-Mail"
               [class.is-invalid]="invalidEmail"
               (blur)="checkEmailExists()"
             />

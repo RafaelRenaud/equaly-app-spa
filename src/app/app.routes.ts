@@ -45,7 +45,6 @@ export const routes: Routes = [
       { path: "my-company", component: MyCompanyComponent },
       {
         path: "companies",
-        canActivateChild: [AuthGuard],
         data: { roles: ["EQUALY_MASTER_ADMIN"] },
         children: [
           {
@@ -64,7 +63,6 @@ export const routes: Routes = [
       },
       {
         path: "credentials",
-        canActivateChild: [AuthGuard],
         data: { roles: ["EQUALY_MASTER_ADMIN"] },
         children: [
           {
@@ -79,7 +77,6 @@ export const routes: Routes = [
       },
       {
         path: "departments",
-        canActivateChild: [AuthGuard],
         children: [
           {
             path: "",
@@ -106,7 +103,6 @@ export const routes: Routes = [
       },
       {
         path: "occur-types",
-        canActivateChild: [AuthGuard],
         children: [
           {
             path: "",
@@ -147,7 +143,6 @@ export const routes: Routes = [
       },
       {
         path: "users",
-        canActivateChild: [AuthGuard],
         children: [
           {
             path: "",

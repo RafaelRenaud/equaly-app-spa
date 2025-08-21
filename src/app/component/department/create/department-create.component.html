@@ -1,0 +1,68 @@
+<div class="surface-container">
+  <div class="surface-container-header">
+    <h3 class="text-white pt-3 pb-2">Cadastrar Departamento</h3>
+  </div>
+  <div class="surface-container-body">
+    <form [formGroup]="departmentForm" (ngSubmit)="submitDepartment()">
+      @if(isEqualyMasterAdmin){
+      <div class="row">
+        <div class="form-floating col">
+          <app-company-search
+            (selectedCompany)="onSelectCompany($event)"
+          ></app-company-search>
+        </div>
+      </div>
+      }
+
+      <div class="row">
+        <div class="form-floating col">
+          <input
+            type="text"
+            maxlength="64"
+            class="form-control"
+            [class.is-invalid]="invalidDepartmentName"
+            formControlName="departmentName"
+            placeholder="Nome do Departamento"
+          />
+          <label class="ps-4">Nome do Departamento</label>
+          @if(invalidDepartmentName){
+          <div class="invalid-feedback pb-2">
+            Nome do Departamento não preenchido ou inválido.
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="form-floating">
+        <textarea
+          class="form-control"
+          id="departmentDescriptionLabel"
+          [class.is-invalid]="invalidDepartmentDescription"
+          formControlName="departmentDescription"
+          maxlength="256"
+          placeholder="Descrição"
+        ></textarea>
+        <label for="departmentDescriptionLabel">Descrição</label>
+
+        @if(invalidDepartmentDescription){
+        <div class="invalid-feedback pb-2">
+          Descrição não preenchida ou inválida.
+        </div>
+        }
+      </div>
+
+      <div class="row">
+        <div class="col text-center">
+          <button class="btn btn-primary" [routerLink]="['/departments']">
+            <i class="bi bi-arrow-left-square-fill"></i>
+            Voltar
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-plus-square-fill"></i>
+            Cadastrar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,214 @@
+<nav class="navbar navbar-expand-sm navbar-dark" id="main-sidebar">
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#navbarToggler"
+    aria-controls="navbarToggler"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarToggler">
+    <div class="sidebar-content">
+      <!-- LOGO -->
+      <a href="/" class="mx-auto navbar-brand">
+        <img
+          alt="Logo da Empresa"
+          id="company-logo"
+          [src]="companyLogo || 'logo_white.png'"
+        />
+        <hr />
+      </a>
+
+      <!-- MENU -->
+      <ul class="navbar-nav nav-pills flex-column">
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/']"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: true }"
+          >
+            <i class="bi bi-house-fill p-2"></i>
+            Início
+          </a>
+        </li>
+
+        <!-- ADMINISTRATIVO -->
+
+        @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/companies']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-buildings-fill p-2"></i>
+            Empresas
+          </a>
+        </li>
+        }
+
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/my-company']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-building-fill p-2"></i>
+            Minha Empresa
+          </a>
+        </li>
+
+        @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/credentials']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-award-fill p-2"></i>
+            Credenciais
+          </a>
+        </li>
+        } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+        sessionService.hasRole('MASTER_ADMIN') ||
+        sessionService.hasRole('COMMON_ADMIN') ) {
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/departments']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-diagram-2-fill p-2"></i>
+            Departamentos
+          </a>
+        </li>
+
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/users']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-people-fill p-2"></i>
+            Usuários
+          </a>
+        </li>
+
+        } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+        sessionService.hasRole('MASTER_ADMIN') ||
+        sessionService.hasRole('COMMON_ADMIN') ||
+        sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+        sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
+        <li class="nav-item p-1">
+          <a
+            href="#"
+            class="nav-link"
+            [routerLink]="['/occur-types']"
+            routerLinkActive="active"
+          >
+            <i class="bi bi-ui-checks p-2"></i>
+            Tipos de Ocorrências
+          </a>
+        </li>
+        }
+
+        <!-- OPERACIONAL -->
+
+        @if ( sessionService.hasRole('MASTER_EVENT_OPENER') ||
+        sessionService.hasRole('COMMON_EVENT_OPENER') ) {
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" routerLinkActive="active">
+            <i class="bi bi-chat-left-fill p-2"></i>
+            Feedbacks
+          </a>
+        </li>
+        } @if ( sessionService.hasRole('MASTER_EVENT_OPENER') ||
+        sessionService.hasRole('COMMON_EVENT_OPENER') ||
+        sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+        sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" routerLinkActive="active">
+            <i class="bi bi-file-post-fill p-2"></i>
+            Ocorrências
+          </a>
+        </li>
+        } @if ( sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+        sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ||
+        sessionService.hasRole('COMMON_RNC_REPORTER') ) {
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" routerLinkActive="active">
+            <i class="bi bi-clipboard2-minus-fill p-2"></i>
+            Não Conformidades
+          </a>
+        </li>
+        } @if ( !sessionService.hasRole('EQUALY_MASTER_ADMIN') &&
+        !sessionService.hasRole('MASTER_ADMIN') &&
+        !sessionService.hasRole('COMMON_ADMIN') ) {
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" arouterLinkActive="active">
+            <i class="bi bi-bar-chart-line-fill p-2"></i>
+            Dashboards
+          </a>
+        </li>
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" routerLinkActive="active">
+            <i class="bi bi-bookmark-fill p-2"></i>
+            Salvos
+          </a>
+        </li>
+        <li class="nav-item p-1">
+          <a href="#" class="nav-link" routerLinkActive="active">
+            <i class="bi bi-archive-fill p-2"></i>
+            Arquivados
+          </a>
+        </li>
+        }
+      </ul>
+    </div>
+
+    <!-- RODAPÉ: perfil -->
+    <div class="sidebar-footer row text-white">
+      <div class="col-4">
+        <img
+          [src]="
+            userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
+          "
+          alt="Avatar"
+          width="64"
+          height="64"
+          class="rounded"
+        />
+      </div>
+      <div class="col-8">
+        <strong>{{ userDisplayName }}</strong
+        ><br />
+        <i
+          ><small>{{ companyDisplayName }}</small> </i
+        ><br />
+        <small>
+          <a href="/#" [routerLink]="['/my-account']" class="text-white text-decoration-none">
+            Meu Perfil
+          </a>
+          |
+          <a
+            class="text-white text-decoration-none"
+            (click)="logout($event)"
+            href="#"
+            >Sair</a
+          >
+        </small>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,10 @@
+.main-layout {
+  height: 100vh;
+  display: flex;
+}
+
+.content {
+    overflow-y: auto;
+    padding: 16px;
+    flex-grow: 1;
+}

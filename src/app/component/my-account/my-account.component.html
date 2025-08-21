@@ -1,0 +1,356 @@
+
+<div>
+  <div class="surface-container">
+    <div class="surface-container-header">
+      <h3 class="text-white pt-3 pb-2">Meu Perfil</h3>
+    </div>
+    <div class="surface-container-body">
+      <div class="text-center mt-3 mb-3">
+        <div class="position-relative d-inline-block profile-image-container">
+          <img
+            [src]="myUser?.avatarUri || 'avatar.png'"
+            alt="Imagem de Perfil"
+            id="user-avatar"
+            class="rounded profile-image img-thumbnail"
+          />
+          <div class="overlay rounded" (click)="fileInput.click()">
+            <span>Alterar foto de perfil</span>
+          </div>
+
+          <input
+            #fileInput
+            type="file"
+            accept="image/png, image/jpeg"
+            (change)="fileChangeEvent($event, cropperModal)"
+            hidden
+          />
+        </div>
+      </div>
+
+      @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+      sessionService.hasRole('MASTER_ADMIN') ||
+      sessionService.hasRole('COMMON_ADMIN') ) {
+      <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Não é possível realizar algumas alterações por aqui, mesmo sendo
+        administrador. Para editar informações bloqueadas acesse diretamente o
+        menu de usuários.
+      </div>
+      } @if ( !( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+      sessionService.hasRole('MASTER_ADMIN') ||
+      sessionService.hasRole('COMMON_ADMIN') ) ) {
+      <div class="alert alert-primary" role="alert">
+        <i class="bi bi-info-square-fill"></i>
+        Algumas informações não são permitidas para alterações. Se necessário,
+        solicite ao administrador master do sistema.
+      </div>
+      } @if (mainProfileForm.invalid) {
+      <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Uma ou mais informações estão incorretas, corrija e tente novamente.
+      </div>
+      } @if (invalidAvatar) {
+      <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Não foi possível atualizar a imagem de perfil, entre em contato com o
+        administrador do sistema.
+      </div>
+      }
+
+      <form [formGroup]="mainProfileForm">
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="number"
+              class="form-control"
+              id="floatingId"
+              disabled
+              [value]="myUser?.id"
+            />
+            <label for="floatingId" class="ps-4">ID de Usuário</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUniversalUsername"
+              disabled
+              [value]="myUser?.universalUser?.name"
+            />
+            <label for="floatingUniversalUsername" class="ps-4">Nome</label>
+          </div>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingCompany"
+            disabled
+            [value]="
+              myUser?.company?.id
+                ?.toString()
+                ?.concat(' - ')
+                ?.concat(myUser?.company?.name!)
+            "
+          />
+          <label for="floatingCompany">Empresa</label>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingDepartment"
+            disabled
+            [value]="
+              myUser?.department?.id
+                ?.toString()
+                ?.concat(' - ')
+                ?.concat(myUser?.department?.name!)
+            "
+          />
+          <label for="floatingDepartment">Departamento</label>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUsername"
+              formControlName="username"
+              [value]="myUser?.username"
+              [class.is-invalid]="invalidUsername"
+            />
+            <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingNickname"
+              formControlName="nickname"
+              [value]="myUser?.nickname"
+              [class.is-invalid]="invalidNickname"
+            />
+            <label for="floatingNickname" class="ps-4">Apelido</label>
+          </div>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="email"
+            class="form-control"
+            id="floatingEmail"
+            [value]="myUser?.email"
+            disabled
+          />
+          <label for="floatingEmail">E-Mail</label>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingRoles"
+            [value]="rolesAsText"
+            disabled
+          />
+          <label for="floatingRoles">Permissões</label>
+        </div>
+
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingLastLogin"
+            [value]="myUser?.lastLoginAt"
+            disabled
+          />
+          <label for="floatingLastLogin">Último Login em</label>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedAt"
+              [value]="myUser?.audit?.createdAt"
+              disabled
+            />
+            <label for="floatingCreatedAt" class="ps-4">Criado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingCreatedBy"
+              [value]="myUser?.audit?.createdBy"
+              disabled
+            />
+            <label for="floatingCreatedBy" class="ps-4">Criado por</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedAt"
+              [value]="myUser?.audit?.updatedAt || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingUpdatedBy"
+              [value]="myUser?.audit?.updatedBy || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactive"
+              [value]="myUser?.audit?.disabledAt || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingLastInactive" class="ps-4">
+              Inativo pela última vez em
+            </label>
+          </div>
+          <div class="form-floating col">
+            <input
+              type="text"
+              class="form-control"
+              id="floatingLastInactiveBy"
+              [value]="myUser?.audit?.disabledBy || 'Não se aplica'"
+              disabled
+            />
+            <label for="floatingLastInactiveBy" class="ps-4">
+              Inativo pela última vez por
+            </label>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button type="button" class="btn btn-primary" [routerLink]="['']">
+            <i class="bi bi-arrow-left-square-fill"></i> Voltar
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-danger"
+            (click)="openModal(passwordChangeModal)"
+          >
+            <i class="bi bi-lock-fill"></i> Alterar Senha
+          </button>
+          <button
+            type="button"
+            class="btn btn-success"
+            (click)="openModal(confirmationModal)"
+          >
+            <i class="bi bi-floppy-fill"></i> Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<ng-template #confirmationModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Deseja prosseguir com as atualizações?</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Para fins de atualizações na sessão, ao confirmar você será deslogado e deverá entrar novamente. Deseja continuar?
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+      <i class="bi bi-x-square-fill"></i> Fechar
+    </button>
+    <button type="button" class="btn btn-success" (click)="updateProfile(); modal.close('Salvar')">
+      <i class="bi bi-floppy-fill"></i> Salvar
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal de Alteração de Senha -->
+<ng-template #passwordChangeModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Deseja prosseguir com a alteração de senha?</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Para fins de atualizações na sessão, ao confirmar, um código de alteração de senha será enviado ao seu e-mail
+      <b>{{ myUser?.email }}</b> e sua sessão será encerrada neste navegador. Deseja prosseguir?
+    </p>
+    <div class="text-center">
+      <img src="assets/confirmation.svg" alt="Tarefas em dia" class="w-50" />
+    </div>
+
+    @if (invalidRecovery) {
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-x-square-fill"></i>
+      Houve um erro tentar alterar a senha, tente novamente mais tarde.
+    </div>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+      <i class="bi bi-x-square-fill"></i> Fechar
+    </button>
+    <button type="button" class="btn btn-success" (click)="sendRAC(); modal.close('Enviar Código')">
+      <i class="bi bi-send-fill"></i> Enviar Código de Recuperação
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal do Cropper -->
+<ng-template #cropperModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajustar foto de perfil</h5>
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="closeCropperModal(); modal.dismiss('Close click')"></button>
+  </div>
+  <div class="modal-body text-center">
+    <div class="alert alert-primary" role="alert">
+      <i class="bi bi-info-square-fill"></i>
+      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução baixa e com formato quadrado (1:1).
+    </div>
+
+    @if (isCropperVisible) {
+    <image-cropper
+      [imageChangedEvent]="imageChangedEvent"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1 / 1"
+      [format]="fileType"
+      (imageCropped)="imageCropped($event)"
+      (loadImageFailed)="loadImageFailed()"
+      [resizeToWidth]="256"
+    ></image-cropper>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="closeCropperModal(); modal.dismiss('Cancelar')">
+      Cancelar
+    </button>
+    <button type="button" class="btn btn-success" (click)="saveCroppedImage(); modal.close('Salvar')">
+      Salvar
+    </button>
+  </div>
+</ng-template>

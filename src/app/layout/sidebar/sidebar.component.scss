@@ -1,0 +1,114 @@
+#main-sidebar {
+  background-color: var(--primary-color) !important;
+  height: 100vh;
+  padding: 20px;
+  width: max-content;
+  min-width: 250px;
+  white-space: nowrap;
+  overflow-x: hidden;
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media (max-width: 576px) {
+  #main-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    z-index: 1050; /* acima do conteúdo */
+    display: block;
+  }
+
+  #navbarToggler {
+    width: 100%;
+  }
+
+  .navbar-toggler {
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-content,
+  .sidebar-footer {
+    display: none; /* oculta a sidebar tradicional no mobile */
+  }
+
+  #navbarToggler.show .sidebar-content,
+  #navbarToggler.show .sidebar-footer {
+    display: block; /* mostra quando o menu está expandido */
+  }
+}
+
+
+#navbarToggler {
+  flex-direction: column;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.navbar-toggler-icon {
+  color: white;
+}
+
+#company-logo {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 1rem auto;
+}
+
+.navbar-nav {
+  width: 100%;
+  align-items: flex-start;
+}
+
+.nav-item {
+  width: 100%;
+}
+
+.nav-link {
+  max-width: 220px;   /* Define a largura ideal */
+  width: 100%;
+  margin: 0 auto;     /* Centraliza o botão dentro da sidebar */
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  border-radius: 0.375rem;
+  text-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+}
+
+.nav-link.active {
+  background-color: var(--secondary-color);
+}
+
+.nav-link.active:hover {
+  color: var(--text-color);
+}
+
+.nav-link:hover {
+  background-color: var(--primary-hover);
+}
+
+.nav-link i {
+  min-width: 24px;
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+hr {
+  color: white;
+}
+
+#main-sidebar .row.text-white {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: auto;
+}

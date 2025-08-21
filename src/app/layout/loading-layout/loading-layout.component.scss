@@ -1,0 +1,22 @@
+.loading {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.loading.loading-show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.spinner-grow {
+  color: #203340;
+  border-color: #203340 transparent transparent transparent !important;
+}

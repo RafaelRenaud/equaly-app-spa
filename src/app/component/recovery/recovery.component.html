@@ -1,0 +1,49 @@
+<div class="recovery-div">
+  <div class="col-4 mx-auto surface-container-centered">
+    <div class="surface-container-header"><br /></div>
+    <div class="surface-container-body">
+      <h2 class="text-center">Redefinir Conta</h2>
+      <p>
+        Confirme o código de 6 dígitos enviados para o e-mail
+        <i>{{ recoveryEmail }}</i
+        >, digite e confirme uma nova senha.
+      </p>
+      <p>
+        Se foi solicitado um envio de código e não recebeu o mesmo, verifique
+        sua caixa de spam ou entre em contato com o administrador do sistema.
+      </p>
+      <form [formGroup]="recoveryForm" (ngSubmit)="accountRecovery()">
+        <input
+          formControlName="racCode"
+          size="6"
+          type="text"
+          class="form-control"
+          placeholder="Código de Recuperação"
+          [class.is-invalid]="invalidRecovery"
+        />
+        <input
+          formControlName="password1"
+          type="password"
+          class="form-control"
+          placeholder="Nova Senha"
+          [class.is-invalid]="invalidRecovery"
+        />
+        <input
+          formControlName="password2"
+          type="password"
+          class="form-control"
+          placeholder="Confirme a Nova Senha"
+          [class.is-invalid]="invalidRecovery"
+        />
+        @if (invalidRecovery) {
+        <div class="alert alert-danger">
+          Houve um erro ao processar, tenta novamente mais tarde.
+        </div>
+        }
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">Redefinir Senha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+.login-div {
+  display: flex;
+  align-items: center;
+  min-height: 100vh;
+}
+
+#equaly-logo {
+  max-width: 50%;
+  height: auto;
+}
+
+td > p{
+  margin: 0;
+}
+
+.company-info > p{
+  text-align: left;
+  margin: 0;
+}
+
+.company-logo{
+  max-width: 40%;
+  padding: 8px;
+}
+
+input.form-control {
+  margin-bottom: 1rem;
+  margin-top: 16px;
+}

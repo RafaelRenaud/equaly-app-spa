@@ -1,0 +1,14 @@
+.alert{
+    z-index: 1080; 
+    min-width: 300px
+}
+
+.temp-alert {
+    opacity: 1;
+    transition: opacity 1s ease-out;
+  }
+  
+  .temp-alert.fade-out {
+    opacity: 0;
+  }
+  

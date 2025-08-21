@@ -1,0 +1,90 @@
+<div class="surface-container">
+  <div class="surface-container-header">
+    <h3 class="text-white pt-3 pb-2">Editar Tipo de Ocorrência</h3>
+  </div>
+  <div class="surface-container-body">
+    <form [formGroup]="occurTypeForm" (ngSubmit)="editOccurType()">
+      <div class="row">
+        <div class="form-floating col">
+          <input
+            type="number"
+            class="form-control"
+            id="floatingId"
+            disabled
+            [value]="selectedOccurType?.id"
+            title="ID"
+          />
+          <label for="floatingId" class="ps-4">ID do Tipo de Ocorrência</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-floating col">
+          <input
+            type="text"
+            class="form-control"
+            id="floatingCompany"
+            disabled
+            [value]="
+              selectedOccurType?.company?.id
+                ?.toString()
+                ?.concat(' - ')
+                ?.concat(selectedOccurType?.company?.name!)
+            "
+          />
+          <label for="floatingCompany" class="ps-4">Empresa</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-floating col">
+          <input
+            type="text"
+            maxlength="64"
+            class="form-control"
+            [class.is-invalid]="invalidOccurTypeName"
+            formControlName="occurTypeName"
+            title="Nome do Tipo de Ocorrência"
+            [value]="selectedOccurType?.name"
+          />
+          <label class="ps-4">Nome do Tipo de Ocorrência</label>
+          @if(invalidOccurTypeName){
+          <div class="invalid-feedback pb-2">
+            Tipo de Ocorrência não preenchido ou inválido.
+          </div>
+          }
+        </div>
+      </div>
+
+      <div class="form-floating">
+        <textarea
+          type="text"
+          maxlength="256"
+          class="form-control"
+          id="occurTypeDescriptionLabel"
+          [class.is-invalid]="invalidOccurTypeDescription"
+          formControlName="occurTypeDescription"
+          [value]="selectedOccurType?.description"
+        ></textarea>
+        <label for="occurTypeDescriptionLabel">Descrição</label>
+
+        @if(invalidOccurTypeDescription){
+        <div class="invalid-feedback pb-2">
+          Descrição não preenchida ou inválida.
+        </div>
+        }
+      </div>
+
+      <div class="row">
+        <div class="col text-center">
+          <button class="btn btn-primary" [routerLink]="['/occur-types']">
+            <i class="bi bi-arrow-left-square-fill"></i>
+            Voltar
+          </button>
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-pencil-fill"></i>
+            Editar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

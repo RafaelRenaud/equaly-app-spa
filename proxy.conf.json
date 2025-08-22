@@ -1,12 +1,12 @@
 {
   "/authentication": {
-    "target": "https://equalyiam.reddune-fdeeb971.westus2.azurecontainerapps.io",
+    "target": "https://equalyiam.reddune-fdeeb971.westus2.azurecontainerapps.io/authentication/v2",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "info"
   },
   "/administration": {
-    "target": "https://equalyadmin.reddune-fdeeb971.westus2.azurecontainerapps.io",
+    "target": "https://equalyadmin.reddune-fdeeb971.westus2.azurecontainerapps.io/administration/v1",
     "secure": true,
     "changeOrigin": true,
     "logLevel": "info"

@@ -380,8 +380,6 @@ export class UserCreateComponent implements OnInit {
     } else {
       this.rolesSelected = true;
     }
-
-    alert(this.rolesSelected);
   }
 
   get roles(): FormArray {

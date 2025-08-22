@@ -7,13 +7,15 @@ import { LoginCompanySearchRequest } from "../../model/login/login-company-searc
 import { LoginCompanySearchResponse } from "../../model/login/login-company-search-response.model";
 import { Router } from "@angular/router";
 import { SessionService } from "../session/session.service";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class LoginService {
   private http = inject(HttpClient);
-  private readonly authEndpoint = "/authentication/v2/oauth/token";
+  private readonly authEndpoint = `${environment.api.authentication}/oauth/token`;
+  private readonly companyEndpoint = `${environment.api.authentication}`;
 
   constructor(private router: Router, public sessionService: SessionService) {}
 
@@ -50,7 +52,7 @@ export class LoginService {
     });
 
     return this.http.get<LoginCompanySearchResponse>(
-      `/authentication/v2/user/${customerDocument}/companies?page=${page}&size=10`,
+      this.companyEndpoint.concat(`/${customerDocument}/companies?page=${page}&size=10`),
       {
         headers,
       }
@@ -63,7 +65,10 @@ export class LoginService {
   }
 
   refresh(): Observable<LoginResponse> {
-    let body = new HttpParams().set("refresh_token", this.sessionService.getItem("refreshToken")!);
+    let body = new HttpParams().set(
+      "refresh_token",
+      this.sessionService.getItem("refreshToken")!
+    );
 
     const headers = new HttpHeaders({
       "Content-Type": "application/x-www-form-urlencoded",
@@ -71,8 +76,12 @@ export class LoginService {
       Authorization: this.sessionService.getItem("Authorization")!,
     });
 
-    return this.http.post<LoginResponse>(this.authEndpoint.concat("/refresh"), body.toString(), {
-      headers,
-    });
+    return this.http.post<LoginResponse>(
+      this.authEndpoint.concat("/refresh"),
+      body.toString(),
+      {
+        headers,
+      }
+    );
   }
 }

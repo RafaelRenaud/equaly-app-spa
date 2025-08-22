@@ -5,13 +5,14 @@ import { Observable } from "rxjs";
 import { UniversalUserResponse } from "../../model/user/universal-user.model";
 import { UniversalUsersResponse } from "../../model/user/universal-users-response.model";
 import { UniversalUserCreateRequest } from "../../model/user/universal-user-create-request.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class UniversalUserService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/universal_users";
+  private readonly endpoint = `${environment.api.administration}/universal_users`;
 
   constructor(private session: SessionService) {}
 

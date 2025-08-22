@@ -6,13 +6,14 @@ import { OccurTypesResponse } from "../../model/occurType/occur-types-response.m
 import { OccurTypeResponse } from "../../model/occurType/occur-type-response.model";
 import { OccurTypeCreateRequest } from "../../model/occurType/occur-type-create.model";
 import { OccurTypeEditRequest } from "../../model/occurType/occur-type-edit.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class OccurTypeService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/occur_types";
+  private readonly endpoint = `${environment.api.administration}/occur_types`;
 
   constructor(private session: SessionService) {}
 

@@ -40,7 +40,6 @@ yarn.lock
 # Environment files
 *.env
 *.local
-src/environments/environment*.ts
 
 # Firebase
 .firebase/

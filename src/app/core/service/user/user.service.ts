@@ -10,13 +10,14 @@ import { UserCreateRequest } from "../../model/user/user-create-request.model";
 import { UserEditRequest } from "../../model/user/user-edit-request.model";
 import { FormArray } from "@angular/forms";
 import { RoleResponse } from "../../model/role/role-response.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class UserService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/users";
+  private readonly endpoint = `${environment.api.administration}/users`;
 
   constructor(private session: SessionService) {}
 

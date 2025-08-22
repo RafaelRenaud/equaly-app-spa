@@ -4,13 +4,14 @@ import { SessionService } from "../session/session.service";
 import { CredentialsResponse } from "../../model/credential/credentials-response.model";
 import { Observable } from "rxjs";
 import { CredentialResponse } from "../../model/credential/credential-response.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class CredentialService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/credentials";
+  private readonly endpoint = `${environment.api.administration}/credentials`;
 
   constructor(private session: SessionService) {}
 

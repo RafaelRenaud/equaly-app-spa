@@ -6,13 +6,14 @@ import { inject, Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { SendRecovery } from "../../model/recovery/send-recovery.model";
 import { RecoveryData } from "../../model/recovery/recovery-data.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class RecoveryService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/authentication/v2/recovery";
+  private readonly endpoint = `${environment.api.authentication}/recovery`;
 
   sendRAC(data: SendRecovery): Observable<void> {
     const headers = new HttpHeaders({

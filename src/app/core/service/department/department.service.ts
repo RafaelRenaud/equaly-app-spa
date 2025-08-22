@@ -6,13 +6,14 @@ import { DepartmentsResponse } from "../../model/department/departments-response
 import { DepartmentResponse } from "../../model/department/department-response.model";
 import { DepartmentCreateRequest } from "../../model/department/department-create.model";
 import { DepartmentEditRequest } from "../../model/department/department-edit.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class DepartmentService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/departments";
+  private readonly endpoint = `${environment.api.administration}/departments`;
 
   constructor(private session: SessionService) {}
 

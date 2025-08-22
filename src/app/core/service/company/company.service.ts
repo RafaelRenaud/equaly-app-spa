@@ -7,13 +7,16 @@ import { CompanyResponse } from "../../model/company/company-response.model";
 import { CompanyCreateRequest } from "../../model/company/company-create.model";
 import { CompanyEditComponent } from "../../../component/company/edit/company-edit.component";
 import { CompanyEditRequest } from "../../model/company/company-edit.model";
+import { environment } from "../../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class CompanyService {
   private http = inject(HttpClient);
-  private readonly endpoint = "/administration/v1/companies";
+
+  private readonly endpoint = `${environment.api.administration}/companies`;
+
 
   constructor(private session: SessionService) {}
 

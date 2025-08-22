@@ -40,7 +40,9 @@
       </div>
     </div>
     <br />
+
     <form [formGroup]="companyForm">
+      <!-- Nome Fantasia -->
       <div class="row">
         <div class="form-floating col">
           <input
@@ -48,16 +50,29 @@
             type="text"
             class="form-control"
             placeholder="Nome Fantasia"
-            [class.is-invalid]="invalidCompanyName"
+            [class.is-invalid]="
+              invalidCompanyName ||
+              (companyForm.get('companyName')?.invalid &&
+              companyForm.get('companyName')?.touched)
+            "
             (blur)="validateCompanyExists('name')"
           />
           <label class="ps-4">Nome Fantasia</label>
           <div class="invalid-feedback pb-2">
-            Nome Fantasia não preenchido ou já cadastrado.
+            @if (companyForm.get('companyName')?.hasError('required')) {
+              Nome Fantasia é obrigatório.
+            }
+            @else if (companyForm.get('companyName')?.hasError('maxlength')) {
+              Nome Fantasia excede o tamanho máximo.
+            }
+            @else if (invalidCompanyName) {
+              Nome Fantasia já cadastrado.
+            }
           </div>
         </div>
       </div>
 
+      <!-- Nome da Empresa + Código -->
       <div class="row">
         <div class="form-floating col">
           <input
@@ -65,26 +80,51 @@
             type="text"
             class="form-control"
             placeholder="Nome da Empresa"
-            [class.is-invalid]="invalidCompanyDisplayName"
+            [class.is-invalid]="
+              companyForm.get('companyDisplayName')?.invalid &&
+              companyForm.get('companyDisplayName')?.touched
+            "
           />
           <label class="ps-4">Nome da Empresa</label>
+          <div class="invalid-feedback pb-2">
+            @if (companyForm.get('companyDisplayName')?.hasError('required')) {
+              Nome da Empresa é obrigatório.
+            }
+            @else if (companyForm.get('companyDisplayName')?.hasError('maxlength')) {
+              Nome da Empresa excede o tamanho máximo.
+            }
+          </div>
         </div>
+
         <div class="form-floating col">
           <input
             formControlName="companyAlias"
             type="text"
             class="form-control"
             placeholder="Código da Empresa"
-            [class.is-invalid]="invalidCompanyAlias"
+            [class.is-invalid]="
+              invalidCompanyAlias ||
+              (companyForm.get('companyAlias')?.invalid &&
+              companyForm.get('companyAlias')?.touched)
+            "
             (blur)="validateCompanyExists('alias')"
           />
           <label class="ps-4">Código da Empresa</label>
           <div class="invalid-feedback pb-2">
-            Código não preenchido ou já cadastrado.
+            @if (companyForm.get('companyAlias')?.hasError('required')) {
+              Código é obrigatório.
+            }
+            @else if (companyForm.get('companyAlias')?.hasError('maxlength')) {
+              Código excede o tamanho máximo.
+            }
+            @else if (invalidCompanyAlias) {
+              Código já cadastrado.
+            }
           </div>
         </div>
       </div>
 
+      <!-- Razão Social + CNPJ -->
       <div class="row">
         <div class="form-floating col">
           <input
@@ -92,30 +132,53 @@
             type="text"
             class="form-control"
             placeholder="Razão Social"
-            [class.is-invalid]="invalidCompanyTradingName"
+            [class.is-invalid]="
+              invalidCompanyTradingName ||
+              (companyForm.get('companyTradingName')?.invalid &&
+              companyForm.get('companyTradingName')?.touched)
+            "
             (blur)="validateCompanyExists('tradingName')"
           />
           <label class="ps-4">Razão Social</label>
           <div class="invalid-feedback pb-2">
-            Razão Social não preenchida ou já cadastrada.
+            @if (companyForm.get('companyTradingName')?.hasError('maxlength')) {
+              Razão Social excede o tamanho máximo.
+            }
+            @else if (invalidCompanyTradingName) {
+              Razão Social já cadastrada.
+            }
           </div>
         </div>
+
         <div class="form-floating col">
           <input
             formControlName="companyDocument"
             type="text"
             class="form-control"
             placeholder="CNPJ"
-            [class.is-invalid]="invalidCompanyDocument"
+            [class.is-invalid]="
+              invalidCompanyDocument ||
+              (companyForm.get('companyDocument')?.invalid &&
+              companyForm.get('companyDocument')?.touched)
+            "
             (blur)="validateCompanyExists('document')"
           />
           <label class="ps-4">CNPJ</label>
           <div class="invalid-feedback pb-2">
-            CNPJ não preenchido ou já cadastrado.
+            @if (companyForm.get('companyDocument')?.hasError('required')) {
+              CNPJ é obrigatório.
+            }
+            @else if (companyForm.get('companyDocument')?.hasError('pattern')) {
+              CNPJ deve conter 14 dígitos numéricos.
+            }
+            @else if (invalidCompanyDocument) {
+              CNPJ já cadastrado.
+            }
           </div>
         </div>
       </div>
 
+      <!-- E-mail -->
       <div class="row">
         <div class="form-floating col">
           <input
@@ -123,12 +186,24 @@
             type="email"
             class="form-control"
             placeholder="E-Mail de Contato Principal"
-            [class.is-invalid]="invalidCompanyContact"
+            [class.is-invalid]="
+              companyForm.get('companyContact')?.invalid &&
+              companyForm.get('companyContact')?.touched
+            "
           />
           <label class="ps-4">E-Mail de Contato Principal</label>
+          <div class="invalid-feedback pb-2">
+            @if (companyForm.get('companyContact')?.hasError('required')) {
+              E-mail é obrigatório.
+            }
+            @else if (companyForm.get('companyContact')?.hasError('email')) {
+              Formato de e-mail inválido.
+            }
+          </div>
         </div>
       </div>
 
+      <!-- Botões -->
       <div class="row">
         <div class="col text-center">
           <button class="btn btn-primary" [routerLink]="['/companies']">
@@ -137,7 +212,13 @@
           </button>
           <button
             class="btn btn-success"
-            [disabled]="!canSubmit"
+            [disabled]="
+              companyForm.invalid ||
+              invalidCompanyName ||
+              invalidCompanyAlias ||
+              invalidCompanyTradingName ||
+              invalidCompanyDocument
+            "
             (click)="submitCompany()"
           >
             <i class="bi bi-plus-square-fill"></i>
@@ -149,7 +230,7 @@
   </div>
 </div>
 
-<!-- Model do Cropper -->
+<!-- Modal do Cropper -->
 <div
   #cropperModal
   class="modal fade"

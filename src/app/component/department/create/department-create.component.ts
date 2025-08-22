@@ -17,7 +17,7 @@ import { CompanySearchComponent } from "../../company/search/company-search.comp
   imports: [RouterModule, ReactiveFormsModule, CompanySearchComponent],
   templateUrl: "./department-create.component.html",
   styleUrl: "./department-create.component.scss",
-  standalone: true
+  standalone: true,
 })
 export class DepartmentCreateComponent {
   departmentForm!: FormGroup;
@@ -55,6 +55,11 @@ export class DepartmentCreateComponent {
       ],
     });
 
+    // Observa mudanças no form e atualiza o canSubmit automaticamente
+    this.departmentForm.valueChanges.subscribe(() => {
+      this.canSubmit = this.departmentForm.valid;
+    });
+
     if (sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
       this.isEqualyMasterAdmin = true;
     }
@@ -75,12 +80,6 @@ export class DepartmentCreateComponent {
       if (this.departmentForm.get("departmentDescription")?.invalid) {
         this.invalidDepartmentDescription = true;
       }
-      this.canSubmit = false;
-    }else{
-      this.canSubmit = true;
-    }
-
-    if (!this.canSubmit) {
       return;
     }
 
@@ -99,7 +98,7 @@ export class DepartmentCreateComponent {
           this.router.navigate(["/departments"], {
             queryParams: {
               action: "SUCCESS",
-              message: `Departamento ` + response.id + ` cadastrado com sucesso`,
+              message: `Departamento ${response.id} cadastrado com sucesso`,
             },
           });
         },

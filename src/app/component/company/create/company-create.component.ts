@@ -1,16 +1,16 @@
-import { Component, ElementRef, ViewChild } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import { Router, RouterModule } from "@angular/router";
+import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
 import { CompanyService } from "../../../core/service/company/company.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
-import { finalize } from "rxjs/operators";
+import { Router, RouterModule } from "@angular/router";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
-import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
+import { Component, ElementRef, ViewChild } from "@angular/core";
+import { finalize } from "rxjs";
 
 @Component({
   selector: "company-create",
@@ -22,27 +22,22 @@ import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
 export class CompanyCreateComponent {
   companyForm!: FormGroup;
 
+  // flags de API (duplicados)
   invalidCompanyName = false;
-  invalidCompanyDisplayName = false;
   invalidCompanyAlias = false;
   invalidCompanyTradingName = false;
   invalidCompanyDocument = false;
-  invalidCompanyContact = false;
 
-  canSubmit: boolean = false;
-
-  //Image Variables
+  // Controle de logo
   fileType: "png" | "jpeg" = "png";
   imageChangedEvent: Event | null = null;
   imageName: string | null = null;
   croppedImage: SafeUrl = "";
   croppedBlob: Blob | null = null;
-
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild("cropperModal") cropperModal!: ElementRef<HTMLDivElement>;
   isCropperVisible = false;
   private cropperModalInstance: any;
-
   invalidLogo: boolean = false;
   logoIsSelected: boolean = false;
 
@@ -67,31 +62,24 @@ export class CompanyCreateComponent {
       ],
       companyContact: ["", [Validators.required, Validators.email]],
     });
-
-    this.companyForm.statusChanges.subscribe(() => {
-      this.updateFormValidity();
-    });
   }
 
   ngAfterViewInit() {
-    const modalEl = this.cropperModal.nativeElement;
-    this.cropperModalInstance = new (window as any).bootstrap.Modal(modalEl, {
-      backdrop: "static",
-      keyboard: false,
-    });
+    this.cropperModalInstance = new (window as any).bootstrap.Modal(
+      this.cropperModal.nativeElement,
+      { backdrop: "static", keyboard: false }
+    );
   }
 
   ngOnDestroy() {
-    if (this.cropperModalInstance) {
-      this.cropperModalInstance.dispose();
-    }
+    this.cropperModalInstance?.dispose();
   }
 
   validateCompanyExists(field: "name" | "alias" | "tradingName" | "document") {
     const control = this.companyForm.get(this.getFormControlName(field));
     const value = control?.value?.trim();
 
-    if (!value || !control?.valid) return; // <-- só continua se for válido
+    if (!value || !control?.valid) return;
 
     this.loadingService.show();
 
@@ -115,7 +103,6 @@ export class CompanyCreateComponent {
               this.invalidCompanyDocument = exists;
               break;
           }
-          this.updateFormValidity();
         },
         error: () => {
           switch (field) {
@@ -132,23 +119,18 @@ export class CompanyCreateComponent {
               this.invalidCompanyDocument = true;
               break;
           }
-          this.updateFormValidity();
         },
       });
   }
 
-  private updateFormValidity() {
-    const allValid =
-      !this.invalidCompanyName &&
-      !this.invalidCompanyAlias &&
-      !this.invalidCompanyTradingName &&
-      !this.invalidCompanyDocument &&
-      this.companyForm.valid;
-    this.canSubmit = allValid;
-  }
-
   submitCompany() {
-    if (!this.canSubmit || this.companyForm.invalid) {
+    if (
+      this.companyForm.invalid ||
+      this.invalidCompanyName ||
+      this.invalidCompanyAlias ||
+      this.invalidCompanyTradingName ||
+      this.invalidCompanyDocument
+    ) {
       this.markAllFieldsAsTouched();
       return;
     }
@@ -209,7 +191,7 @@ export class CompanyCreateComponent {
     });
   }
 
-  private navigateSuccess(companyId: string): void {
+  private navigateSuccess(companyId: string) {
     this.router.navigate(["/companies"], {
       queryParams: {
         action: "SUCCESS",
@@ -219,9 +201,7 @@ export class CompanyCreateComponent {
   }
 
   private markAllFieldsAsTouched() {
-    Object.values(this.companyForm.controls).forEach((control) => {
-      control.markAsTouched();
-    });
+    Object.values(this.companyForm.controls).forEach((c) => c.markAsTouched());
   }
 
   private getFormControlName(field: string): string {

@@ -17,6 +17,7 @@
           <label for="floatingId" class="ps-4">ID do Departamento</label>
         </div>
       </div>
+
       <div class="row">
         <div class="form-floating col">
           <input
@@ -34,19 +35,19 @@
           <label for="floatingCompany" class="ps-4">Empresa</label>
         </div>
       </div>
+
       <div class="row">
         <div class="form-floating col">
           <input
             type="text"
             maxlength="64"
             class="form-control"
-            [class.is-invalid]="invalidDepartmentName"
             formControlName="departmentName"
+            [class.is-invalid]="departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)"
             title="Nome do Departamento"
-            [value]="selectedDepartment?.name"
           />
           <label class="ps-4">Nome do Departamento</label>
-          @if(invalidDepartmentName){
+          @if(departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)){
           <div class="invalid-feedback pb-2">
             Nome do Departamento não preenchido ou inválido.
           </div>
@@ -56,17 +57,14 @@
 
       <div class="form-floating">
         <textarea
-          type="text"
           maxlength="256"
           class="form-control"
           id="departmentDescriptionLabel"
-          [class.is-invalid]="invalidDepartmentDescription"
           formControlName="departmentDescription"
-          [value]="selectedDepartment?.description"
+          [class.is-invalid]="departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)"
         ></textarea>
         <label for="departmentDescriptionLabel">Descrição</label>
-
-        @if(invalidDepartmentDescription){
+        @if(departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)){
         <div class="invalid-feedback pb-2">
           Descrição não preenchida ou inválida.
         </div>
@@ -79,7 +77,7 @@
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar
           </button>
-          <button type="submit" class="btn btn-success">
+          <button type="submit" class="btn btn-success" [disabled]="departmentForm.invalid">
             <i class="bi bi-pencil-fill"></i>
             Editar
           </button>

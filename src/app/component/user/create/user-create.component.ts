@@ -7,8 +7,8 @@ import {
   FormArray,
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
+  ReactiveFormsModule,
 } from "@angular/forms";
 import { UniversalUserService } from "../../../core/service/user/universal-user.service";
 import { UserService } from "../../../core/service/user/user.service";
@@ -51,24 +51,22 @@ export class UserCreateComponent implements OnInit {
   selectedDepartment: DepartmentResponse | null = null;
   createUserForm!: FormGroup;
 
-  // Flags para feedback visual
+  // Flags de validação
   invalidDocument = false;
   invalidName = false;
   invalidUsername = false;
   invalidLogin = false;
   invalidNickname = false;
   invalidEmail = false;
+  invalidAvatar = false;
 
-  //Para Upload do Avatar
+  // Upload de avatar
   fileType: "png" | "jpeg" = "png";
   imageChangedEvent: Event | null = null;
   imageName: string | null = null;
   croppedImage: SafeUrl = "";
   croppedBlob: Blob | null = null;
 
-  invalidAvatar = false;
-
-  //Componente Cropper
   @ViewChild("cropperModal", { static: false }) cropperModal!: TemplateRef<any>;
 
   constructor(
@@ -119,22 +117,24 @@ export class UserCreateComponent implements OnInit {
         ],
       ],
       email: ["", [Validators.required, Validators.email]],
-      roles: this.formBuilder.array([]),
+      roles: this.formBuilder.array([], Validators.required),
     });
 
     if (this.sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
       this.isEqualyMasterAdmin = true;
     }
 
-    // Atualiza flags sempre que form mudar
-    this.createUserForm.statusChanges.subscribe(() => {
-      this.invalidDocument = this.isFieldInvalid("document");
-      this.invalidName = this.isFieldInvalid("name");
-      this.invalidUsername = this.isFieldInvalid("username");
-      this.invalidLogin = this.isFieldInvalid("login");
-      this.invalidNickname = this.isFieldInvalid("nickname");
-      this.invalidEmail = this.isFieldInvalid("email");
-    });
+    // Atualiza flags de validação quando o form mudar
+    this.createUserForm.valueChanges.subscribe(() => this.validateFields());
+  }
+
+  private validateFields() {
+    this.invalidDocument = this.isFieldInvalid("document");
+    this.invalidName = this.isFieldInvalid("name");
+    this.invalidUsername = this.isFieldInvalid("username");
+    this.invalidLogin = this.isFieldInvalid("login");
+    this.invalidNickname = this.isFieldInvalid("nickname");
+    this.invalidEmail = this.isFieldInvalid("email");
   }
 
   private isFieldInvalid(controlName: string): boolean {
@@ -142,7 +142,6 @@ export class UserCreateComponent implements OnInit {
     return !!(control && control.invalid && (control.touched || control.dirty));
   }
 
-  // Verifica universalUser pelo documento
   checkUniversalUserExists() {
     const docCtrl = this.createUserForm.get("document");
     if (!docCtrl || docCtrl.invalid) return;
@@ -156,6 +155,7 @@ export class UserCreateComponent implements OnInit {
             this.universalUserExists = false;
             this.universalUser = null;
             this.createUserForm.get("name")?.enable();
+            this.createUserForm.get("documentType")?.enable();
           } else {
             this.universalUserExists = true;
             this.universalUser = res.universalUsers[0];
@@ -169,15 +169,7 @@ export class UserCreateComponent implements OnInit {
           }
           this.loadingService.hide();
         },
-        error: () => {
-          this.loadingService.hide();
-          this.router.navigate(["/users/create"], {
-            queryParams: {
-              action: "ERROR",
-              message: "Erro ao consultar a base de usuário.",
-            },
-          });
-        },
+        error: () => this.handleValidationError("Erro ao consultar usuário."),
       });
   }
 
@@ -189,71 +181,56 @@ export class UserCreateComponent implements OnInit {
     this.userService
       .getUsers("login", loginCtrl.value, null, null, null, "NONE", 0, 1)
       .subscribe({
-        next: (res) => {
-          this.invalidLogin = res.users.length > 0;
-          this.loadingService.hide();
-        },
-        error: () => {
-          this.loadingService.hide();
-          this.router.navigate(["/users/create"], {
-            queryParams: {
-              action: "ERROR",
-              message:
-                "Instabilidade ao validar ao login, tente novamente mais tarde",
-            },
-          });
-        },
+        next: (res) => (this.invalidLogin = res.users.length > 0),
+        error: () => this.handleValidationError("Erro ao validar login."),
+        complete: () => this.loadingService.hide(),
       });
   }
 
   checkEmailExists() {
     const emailCtrl = this.createUserForm.get("email");
     if (!emailCtrl || emailCtrl.invalid) return;
-    this.loadingService.show();
 
+    this.loadingService.show();
     this.userService
       .getUsers("email", emailCtrl.value, null, null, null, "NONE", 0, 1)
       .subscribe({
-        next: (res) => {
-          (this.invalidEmail = res.users.length > 0),
-            this.loadingService.hide();
-        },
-        error: () => {
-          this.loadingService.hide();
-          this.router.navigate(["/users/create"], {
-            queryParams: {
-              action: "ERROR",
-              message:
-                "Instabilidade ao validar ao login, tente novamente mais tarde",
-            },
-          });
-        },
+        next: (res) => (this.invalidEmail = res.users.length > 0),
+        error: () => this.handleValidationError("Erro ao validar email."),
+        complete: () => this.loadingService.hide(),
       });
   }
 
-  // Preenche nickname com a primeira palavra do username
+  private handleValidationError(message: string) {
+    this.loadingService.hide();
+    this.router.navigate(["/users/create"], {
+      queryParams: { action: "ERROR", message },
+    });
+  }
+
   setNickname() {
     const username: string = this.createUserForm.get("username")?.value || "";
     this.createUserForm.patchValue({ nickname: username.split(" ")[0] });
   }
 
-  // Marca controles inválidos
   private markInvalidControls() {
-    this.invalidDocument =
-      this.createUserForm.get("document")?.invalid ?? false;
-    this.invalidName = this.createUserForm.get("name")?.invalid ?? false;
-    this.invalidUsername =
-      this.createUserForm.get("username")?.invalid ?? false;
-    this.invalidLogin = this.createUserForm.get("login")?.invalid ?? false;
-    this.invalidNickname =
-      this.createUserForm.get("nickname")?.invalid ?? false;
-    this.invalidEmail = this.createUserForm.get("email")?.invalid ?? false;
+    this.invalidDocument = this.isFieldInvalid("document");
+    this.invalidName = this.isFieldInvalid("name");
+    this.invalidUsername = this.isFieldInvalid("username");
+    this.invalidLogin = this.isFieldInvalid("login");
+    this.invalidNickname = this.isFieldInvalid("nickname");
+    this.invalidEmail = this.isFieldInvalid("email");
+  }
+
+  get canSubmit(): boolean {
+    return (
+      this.createUserForm.valid && !this.invalidEmail && !this.invalidLogin
+    );
   }
 
   saveUser() {
     this.markInvalidControls();
-    if (this.createUserForm.invalid || this.invalidEmail || this.invalidLogin)
-      return;
+    if (!this.canSubmit) return;
 
     this.loadingService.show();
 
@@ -268,10 +245,8 @@ export class UserCreateComponent implements OnInit {
     };
 
     if (this.universalUser) {
-      // Já existe universalUser
       this.createUser(userRequest);
     } else {
-      // Cria universalUser + user
       const uuRequest: UniversalUserCreateRequest = {
         documentType: this.createUserForm.get("documentType")?.value,
         document: this.createUserForm.get("document")?.value,
@@ -299,15 +274,9 @@ export class UserCreateComponent implements OnInit {
   createUser(userRequest: UserCreateRequest) {
     this.userService.createUser(userRequest).subscribe({
       next: (response) => {
-        if (this.rolesSelected) {
-          this.createUserRoles(response.id, this.roles);
-        }
+        if (this.rolesSelected) this.createUserRoles(response.id, this.roles);
 
-        if (
-          this.avatarSelected &&
-          this.croppedBlob !== null &&
-          this.imageName !== null
-        ) {
+        if (this.avatarSelected && this.croppedBlob && this.imageName) {
           this.createUserAvatar(response.id, this.croppedBlob, this.imageName);
         } else {
           this.onSaveSuccess();
@@ -320,19 +289,22 @@ export class UserCreateComponent implements OnInit {
   createUserRoles(id: number, roles: FormArray) {
     this.userService.createUserRole(id, roles.value).subscribe({
       next: () => {
-        if (!this.avatarSelected) {
-          this.onSaveSuccess();
-        }
+        if (!this.avatarSelected) this.onSaveSuccess();
       },
       error: () => this.onSaveError(),
     });
   }
 
   createUserAvatar(id: number, blob: Blob, blobName: string) {
+    if (blob.size > 2 * 1024 * 1024) {
+      // valida 2MB
+      this.invalidAvatar = true;
+      this.loadingService.hide();
+      return;
+    }
+
     this.userService.updateUserAvatar(id.toString(), blob, blobName).subscribe({
-      next: () => {
-        this.onSaveSuccess();
-      },
+      next: () => this.onSaveSuccess(),
       error: () => this.onSaveError(),
     });
   }
@@ -360,6 +332,7 @@ export class UserCreateComponent implements OnInit {
   onSelectCompany(company: CompanyResponse | null) {
     this.selectedCompany = company;
   }
+
   onSelectDepartment(department: DepartmentResponse | null) {
     this.selectedDepartment = department;
   }
@@ -375,11 +348,7 @@ export class UserCreateComponent implements OnInit {
       this.roles.removeAt(index);
     }
 
-    if (this.roles.length === 0) {
-      this.rolesSelected = false;
-    } else {
-      this.rolesSelected = true;
-    }
+    this.rolesSelected = this.roles.length > 0;
   }
 
   get roles(): FormArray {
@@ -388,32 +357,32 @@ export class UserCreateComponent implements OnInit {
 
   fileChangeEvent(event: any): void {
     const file: File = event.target.files[0];
-    if (file) {
-      this.imageName = file.name;
+    if (!file) return;
 
-      if (file.type === "image/png") {
-        this.fileType = "png";
-      } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
-        this.fileType = "jpeg";
-      } else {
-        this.fileType = "png";
-      }
-
-      this.imageChangedEvent = event;
-      this.modalService.open(this.cropperModal, {
-        ariaLabelledBy: "cropperModal",
-      });
+    if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+      this.invalidAvatar = true;
+      return;
     }
+
+    if (file.size > 2 * 1024 * 1024) {
+      // 2MB
+      this.invalidAvatar = true;
+      return;
+    }
+
+    this.invalidAvatar = false;
+    this.imageName = file.name;
+    this.fileType =
+      file.type.includes("jpeg") || file.type.includes("jpg") ? "jpeg" : "png";
+    this.imageChangedEvent = event;
+    this.modalService.open(this.cropperModal, {
+      ariaLabelledBy: "cropperModal",
+    });
   }
 
   imageCropped(event: ImageCroppedEvent) {
     this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.objectUrl!);
     this.croppedBlob = event.blob!;
-    console.log(
-      "Tamanho do blob recortado:",
-      this.croppedBlob.size / 1024,
-      "KB"
-    );
     this.avatarSelected = true;
   }
 

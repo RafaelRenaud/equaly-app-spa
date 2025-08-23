@@ -2,8 +2,8 @@ import { Component } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
+  ReactiveFormsModule,
 } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
@@ -12,18 +12,14 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 
 @Component({
   selector: "app-department-edit",
+  standalone: true,
   imports: [ReactiveFormsModule, RouterModule],
   templateUrl: "./department-edit.component.html",
   styleUrl: "./department-edit.component.scss",
-  standalone: true
 })
 export class DepartmentEditComponent {
   selectedDepartment: DepartmentResponse | null = null;
   departmentForm!: FormGroup;
-
-  canSubmit: boolean = false;
-  invalidDepartmentName: boolean = false;
-  invalidDepartmentDescription: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -56,7 +52,6 @@ export class DepartmentEditComponent {
     this.loadingService.show();
     const idParam = this.route.snapshot.paramMap.get("id");
     if (!idParam) {
-      // Tratar caso o id não exista
       this.router.navigate(["/departments"], {
         queryParams: {
           action: "ERROR",
@@ -74,38 +69,23 @@ export class DepartmentEditComponent {
           departmentName: department.name,
           departmentDescription: department.description,
         });
-
         this.loadingService.hide();
       },
       error: () => {
+        this.loadingService.hide();
         this.router.navigate(["/departments"], {
           queryParams: {
             action: "ERROR",
             message: "Erro ao carregar departamento",
           },
         });
-        this.loadingService.hide();
       },
     });
   }
 
   editDepartment() {
-    this.invalidDepartmentName = false;
-    this.invalidDepartmentDescription = false;
-
     if (this.departmentForm.invalid) {
-      if (this.departmentForm.get("departmentName")?.invalid) {
-        this.invalidDepartmentName = true;
-      }
-      if (this.departmentForm.get("departmentDescription")?.invalid) {
-        this.invalidDepartmentDescription = true;
-      }
-      this.canSubmit = false;
-    } else {
-      this.canSubmit = true;
-    }
-
-    if (!this.canSubmit) {
+      this.departmentForm.markAllAsTouched();
       return;
     }
 
@@ -121,10 +101,7 @@ export class DepartmentEditComponent {
           this.router.navigate(["/departments"], {
             queryParams: {
               action: "SUCCESS",
-              message:
-                `Departamento ` +
-                this.selectedDepartment?.id +
-                ` atualizado com sucesso`,
+              message: `Departamento ${this.selectedDepartment?.id} atualizado com sucesso`,
             },
           });
         },
@@ -133,7 +110,7 @@ export class DepartmentEditComponent {
           this.router.navigate(["/departments"], {
             queryParams: {
               action: "ERROR",
-              message: `Erro ao atualizar departamento`,
+              message: "Erro ao atualizar departamento",
             },
           });
         },

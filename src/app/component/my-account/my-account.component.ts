@@ -62,8 +62,8 @@ export class MyAccountComponent implements OnInit {
     private modalService: NgbModal
   ) {
     this.mainProfileForm = this.formBuilder.group({
-      username: ["", [Validators.minLength(8), Validators.maxLength(64)]],
-      nickname: ["", [Validators.minLength(4), Validators.maxLength(32)]],
+      username: ["", [Validators.minLength(8), Validators.maxLength(64), Validators.required]],
+      nickname: ["", [Validators.minLength(4), Validators.maxLength(32), Validators.required]],
     });
   }
 

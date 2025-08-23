@@ -1,10 +1,10 @@
-
 <div>
   <div class="surface-container">
     <div class="surface-container-header">
       <h3 class="text-white pt-3 pb-2">Meu Perfil</h3>
     </div>
     <div class="surface-container-body">
+      <!-- Imagem de Perfil -->
       <div class="text-center mt-3 mb-3">
         <div class="position-relative d-inline-block profile-image-container">
           <img
@@ -12,6 +12,7 @@
             alt="Imagem de Perfil"
             id="user-avatar"
             class="rounded profile-image img-thumbnail"
+            style="max-height: 150px; width: auto"
           />
           <div class="overlay rounded" (click)="fileInput.click()">
             <span>Alterar foto de perfil</span>
@@ -27,6 +28,7 @@
         </div>
       </div>
 
+      <!-- Alertas -->
       @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
       sessionService.hasRole('MASTER_ADMIN') ||
       sessionService.hasRole('COMMON_ADMIN') ) {
@@ -43,11 +45,6 @@
         <i class="bi bi-info-square-fill"></i>
         Algumas informações não são permitidas para alterações. Se necessário,
         solicite ao administrador master do sistema.
-      </div>
-      } @if (mainProfileForm.invalid) {
-      <div class="alert alert-danger" role="alert">
-        <i class="bi bi-exclamation-square-fill"></i>
-        Uma ou mais informações estão incorretas, corrija e tente novamente.
       </div>
       } @if (invalidAvatar) {
       <div class="alert alert-danger" role="alert">
@@ -66,6 +63,7 @@
               id="floatingId"
               disabled
               [value]="myUser?.id"
+              placeholder="ID de Usuário"
             />
             <label for="floatingId" class="ps-4">ID de Usuário</label>
           </div>
@@ -76,6 +74,7 @@
               id="floatingUniversalUsername"
               disabled
               [value]="myUser?.universalUser?.name"
+              placeholder="Nome"
             />
             <label for="floatingUniversalUsername" class="ps-4">Nome</label>
           </div>
@@ -93,6 +92,7 @@
                 ?.concat(' - ')
                 ?.concat(myUser?.company?.name!)
             "
+            placeholder="Empresa"
           />
           <label for="floatingCompany">Empresa</label>
         </div>
@@ -109,6 +109,7 @@
                 ?.concat(' - ')
                 ?.concat(myUser?.department?.name!)
             "
+            placeholder="Departamento"
           />
           <label for="floatingDepartment">Departamento</label>
         </div>
@@ -120,21 +121,34 @@
               class="form-control"
               id="floatingUsername"
               formControlName="username"
-              [value]="myUser?.username"
-              [class.is-invalid]="invalidUsername"
+              [class.is-invalid]="
+                mainProfileForm.get('username')?.invalid &&
+                mainProfileForm.get('username')?.touched
+              "
+              placeholder="Nome de Usuário"
             />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
+            <div class="invalid-feedback">
+              Nome de usuário deve ter entre 8 e 64 caracteres.
+            </div>
           </div>
+
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
               id="floatingNickname"
               formControlName="nickname"
-              [value]="myUser?.nickname"
-              [class.is-invalid]="invalidNickname"
+              [class.is-invalid]="
+                mainProfileForm.get('nickname')?.invalid &&
+                mainProfileForm.get('nickname')?.touched
+              "
+              placeholder="Apelido"
             />
             <label for="floatingNickname" class="ps-4">Apelido</label>
+            <div class="invalid-feedback">
+              Apelido deve ter entre 4 e 32 caracteres.
+            </div>
           </div>
         </div>
 
@@ -145,6 +159,7 @@
             id="floatingEmail"
             [value]="myUser?.email"
             disabled
+            placeholder="E-Mail"
           />
           <label for="floatingEmail">E-Mail</label>
         </div>
@@ -156,6 +171,7 @@
             id="floatingRoles"
             [value]="rolesAsText"
             disabled
+            placeholder="Permissões"
           />
           <label for="floatingRoles">Permissões</label>
         </div>
@@ -167,6 +183,7 @@
             id="floatingLastLogin"
             [value]="myUser?.lastLoginAt"
             disabled
+            placeholder="Último Login em"
           />
           <label for="floatingLastLogin">Último Login em</label>
         </div>
@@ -179,6 +196,7 @@
               id="floatingCreatedAt"
               [value]="myUser?.audit?.createdAt"
               disabled
+              placeholder="Criado em"
             />
             <label for="floatingCreatedAt" class="ps-4">Criado em</label>
           </div>
@@ -189,6 +207,7 @@
               id="floatingCreatedBy"
               [value]="myUser?.audit?.createdBy"
               disabled
+              placeholder="Criado por"
             />
             <label for="floatingCreatedBy" class="ps-4">Criado por</label>
           </div>
@@ -202,6 +221,7 @@
               id="floatingUpdatedAt"
               [value]="myUser?.audit?.updatedAt || 'Não se aplica'"
               disabled
+              placeholder="Atualizado em"
             />
             <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
           </div>
@@ -212,6 +232,7 @@
               id="floatingUpdatedBy"
               [value]="myUser?.audit?.updatedBy || 'Não se aplica'"
               disabled
+              placeholder="Atualizado por"
             />
             <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
           </div>
@@ -225,6 +246,7 @@
               id="floatingLastInactive"
               [value]="myUser?.audit?.disabledAt || 'Não se aplica'"
               disabled
+              placeholder="Inativo pela última vez em"
             />
             <label for="floatingLastInactive" class="ps-4">
               Inativo pela última vez em
@@ -237,6 +259,7 @@
               id="floatingLastInactiveBy"
               [value]="myUser?.audit?.disabledBy || 'Não se aplica'"
               disabled
+              placeholder="Inativo pela última vez por"
             />
             <label for="floatingLastInactiveBy" class="ps-4">
               Inativo pela última vez por
@@ -244,7 +267,8 @@
           </div>
         </div>
 
-        <div class="text-center">
+        <!-- Botões -->
+        <div class="text-center mt-3">
           <button type="button" class="btn btn-primary" [routerLink]="['']">
             <i class="bi bi-arrow-left-square-fill"></i> Voltar
           </button>
@@ -272,18 +296,32 @@
 <ng-template #confirmationModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Deseja prosseguir com as atualizações?</h5>
-    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      (click)="modal.dismiss('Close click')"
+    ></button>
   </div>
   <div class="modal-body">
     <p>
-      Para fins de atualizações na sessão, ao confirmar você será deslogado e deverá entrar novamente. Deseja continuar?
+      Para fins de atualizações na sessão, ao confirmar você será deslogado e
+      deverá entrar novamente. Deseja continuar?
     </p>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="modal.dismiss('Fechar')"
+    >
       <i class="bi bi-x-square-fill"></i> Fechar
     </button>
-    <button type="button" class="btn btn-success" (click)="updateProfile(); modal.close('Salvar')">
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="updateProfile(); modal.close('Salvar')"
+    >
       <i class="bi bi-floppy-fill"></i> Salvar
     </button>
   </div>
@@ -293,12 +331,19 @@
 <ng-template #passwordChangeModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Deseja prosseguir com a alteração de senha?</h5>
-    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      (click)="modal.dismiss('Close click')"
+    ></button>
   </div>
   <div class="modal-body">
     <p>
-      Para fins de atualizações na sessão, ao confirmar, um código de alteração de senha será enviado ao seu e-mail
-      <b>{{ myUser?.email }}</b> e sua sessão será encerrada neste navegador. Deseja prosseguir?
+      Para fins de atualizações na sessão, ao confirmar, um código de alteração
+      de senha será enviado ao seu e-mail
+      <b>{{ myUser?.email }}</b> e sua sessão será encerrada neste navegador.
+      Deseja prosseguir?
     </p>
     <div class="text-center">
       <img src="assets/confirmation.svg" alt="Tarefas em dia" class="w-50" />
@@ -312,10 +357,18 @@
     }
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="modal.dismiss('Fechar')"
+    >
       <i class="bi bi-x-square-fill"></i> Fechar
     </button>
-    <button type="button" class="btn btn-success" (click)="sendRAC(); modal.close('Enviar Código')">
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="sendRAC(); modal.close('Enviar Código')"
+    >
       <i class="bi bi-send-fill"></i> Enviar Código de Recuperação
     </button>
   </div>
@@ -325,12 +378,19 @@
 <ng-template #cropperModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Ajustar foto de perfil</h5>
-    <button type="button" class="btn-close" aria-label="Fechar" (click)="closeCropperModal(); modal.dismiss('Close click')"></button>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar"
+      (click)="closeCropperModal(); modal.dismiss('Close click')"
+    ></button>
   </div>
   <div class="modal-body text-center">
     <div class="alert alert-primary" role="alert">
       <i class="bi bi-info-square-fill"></i>
-      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução baixa e com formato quadrado (1:1).
+      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de
+      preferência a fotos com fundo claro, resolução baixa e com formato
+      quadrado (1:1).
     </div>
 
     @if (isCropperVisible) {
@@ -346,10 +406,18 @@
     }
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="closeCropperModal(); modal.dismiss('Cancelar')">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="closeCropperModal(); modal.dismiss('Cancelar')"
+    >
       Cancelar
     </button>
-    <button type="button" class="btn btn-success" (click)="saveCroppedImage(); modal.close('Salvar')">
+    <button
+      type="button"
+      class="btn btn-success"
+      (click)="saveCroppedImage(); modal.close('Salvar')"
+    >
       Salvar
     </button>
   </div>

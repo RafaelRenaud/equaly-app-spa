@@ -2,8 +2,8 @@ import { Component } from "@angular/core";
 import {
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
+  ReactiveFormsModule,
 } from "@angular/forms";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { DepartmentService } from "../../../core/service/department/department.service";
@@ -14,19 +14,14 @@ import { CompanySearchComponent } from "../../company/search/company-search.comp
 
 @Component({
   selector: "app-department-create",
+  standalone: true,
   imports: [RouterModule, ReactiveFormsModule, CompanySearchComponent],
   templateUrl: "./department-create.component.html",
   styleUrl: "./department-create.component.scss",
-  standalone: true,
 })
 export class DepartmentCreateComponent {
   departmentForm!: FormGroup;
-
-  canSubmit: boolean = false;
-  invalidDepartmentName: boolean = false;
-  invalidDepartmentDescription: boolean = false;
   selectedCompany: CompanyResponse | null = null;
-
   isEqualyMasterAdmin: boolean = false;
 
   constructor(
@@ -55,14 +50,7 @@ export class DepartmentCreateComponent {
       ],
     });
 
-    // Observa mudanças no form e atualiza o canSubmit automaticamente
-    this.departmentForm.valueChanges.subscribe(() => {
-      this.canSubmit = this.departmentForm.valid;
-    });
-
-    if (sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
-      this.isEqualyMasterAdmin = true;
-    }
+    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
   }
 
   onSelectCompany(company: CompanyResponse | null) {
@@ -70,16 +58,8 @@ export class DepartmentCreateComponent {
   }
 
   submitDepartment() {
-    this.invalidDepartmentName = false;
-    this.invalidDepartmentDescription = false;
-
     if (this.departmentForm.invalid) {
-      if (this.departmentForm.get("departmentName")?.invalid) {
-        this.invalidDepartmentName = true;
-      }
-      if (this.departmentForm.get("departmentDescription")?.invalid) {
-        this.invalidDepartmentDescription = true;
-      }
+      this.departmentForm.markAllAsTouched();
       return;
     }
 
@@ -88,9 +68,7 @@ export class DepartmentCreateComponent {
       .createDepartment({
         name: this.departmentForm.get("departmentName")?.value,
         description: this.departmentForm.get("departmentDescription")?.value,
-        company: {
-          id: this.selectedCompany ? this.selectedCompany.id : null,
-        },
+        company: { id: this.selectedCompany?.id ?? null },
       })
       .subscribe({
         next: (response) => {

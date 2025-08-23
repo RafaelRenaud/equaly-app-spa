@@ -4,6 +4,7 @@
       <h3 class="text-white pt-3 pb-2">Minha Empresa</h3>
     </div>
     <div class="surface-container-body">
+      <!-- Alertas de permissão -->
       @if (sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
       sessionService.hasRole('MASTER_ADMIN')) {
       <div class="alert alert-primary" role="alert">
@@ -17,89 +18,86 @@
         Para editar informações da empresa, solicite ao administrador master do
         sistema.
       </div>
-      } @if(companyForm.invalid) {
-      <div class="alert alert-danger" role="alert">
-        <i class="bi bi-exclamation-square-fill"></i>
-        Uma ou mais informações estão incorretas, corrija e tente novamente.
-      </div>
       }
 
-      <form [formGroup]="companyForm" (ngSubmit)="editCompany()">
+      <form [formGroup]="companyForm" (ngSubmit)="confirmSave()">
+        <!-- Logo -->
         @if(myCompany?.logoUri) {
-        <div class="row text-center">
-          <div class="col m-3">
+        <div class="row text-center mb-3">
+          <div class="col">
             <img
               [src]="myCompany?.logoUri"
               alt="Logo da Empresa"
+              class="img-thumbnail"
               id="company-logo"
             />
           </div>
         </div>
         }
 
+        <!-- IDs e Status -->
         <div class="row">
           <div class="form-floating col">
             <input
               type="number"
               class="form-control"
-              id="floatingId"
+              placeholder="ID da Empresa"
               disabled
               [value]="myCompany?.id"
             />
-            <label for="floatingId" class="ps-4">ID da Empresa</label>
+            <label class="ps-4">ID da Empresa</label>
           </div>
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingAlias"
+              placeholder="Código da Empresa"
               disabled
               [value]="myCompany?.alias"
             />
-            <label for="floatingAlias" class="ps-4">Código da Empresa</label>
+            <label class="ps-4">Código da Empresa</label>
           </div>
         </div>
 
+        <!-- Nome da Empresa e Estado -->
         <div class="row">
           <div class="form-floating col">
             <input
               formControlName="companyDisplayName"
               type="text"
               class="form-control"
-              id="floatingDisplayName"
+              placeholder="Nome da Empresa"
               [disabled]="viewOnly"
               [class.is-invalid]="
                 companyForm.get('companyDisplayName')?.invalid &&
                 companyForm.get('companyDisplayName')?.touched
               "
             />
-            <label for="floatingDisplayName" class="ps-4"
-              >Nome da Empresa</label
-            >
+            <label class="ps-4">Nome da Empresa</label>
             <div class="invalid-feedback">
               Nome da Empresa é obrigatório e deve ter no máximo 128 caracteres.
             </div>
           </div>
-
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingStatus"
+              placeholder="Estado"
               disabled
               [value]="myCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'"
             />
-            <label for="floatingStatus" class="ps-4">Estado</label>
+            <label class="ps-4">Estado</label>
           </div>
         </div>
 
+        <!-- Nome Fantasia -->
         <div class="row">
           <div class="form-floating col">
             <input
               formControlName="companyName"
               type="text"
               class="form-control"
-              id="floatingName"
+              placeholder="Nome Fantasia"
               [disabled]="viewOnly"
               [class.is-invalid]="
                 (companyForm.get('companyName')?.invalid ||
@@ -108,20 +106,21 @@
               "
               (blur)="validateCompanyExists('name')"
             />
-            <label for="floatingName" class="ps-4">Nome Fantasia</label>
+            <label class="ps-4">Nome Fantasia</label>
             <div class="invalid-feedback">
               Nome Fantasia não preenchido ou já cadastrado.
             </div>
           </div>
         </div>
 
+        <!-- Razão Social -->
         <div class="row">
           <div class="form-floating col">
             <input
               formControlName="companyTradingName"
               type="text"
               class="form-control"
-              id="floatingTradingName"
+              placeholder="Razão Social"
               [disabled]="viewOnly"
               [class.is-invalid]="
                 (companyForm.get('companyTradingName')?.invalid ||
@@ -130,129 +129,99 @@
               "
               (blur)="validateCompanyExists('tradingName')"
             />
-            <label for="floatingTradingName" class="ps-4">Razão Social</label>
+            <label class="ps-4">Razão Social</label>
             <div class="invalid-feedback">
               Razão Social não preenchida ou já cadastrada.
             </div>
           </div>
         </div>
 
+        <!-- CNPJ -->
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingDocument"
+              placeholder="CNPJ"
               disabled
               [value]="myCompany?.document"
             />
-            <label for="floatingDocument" class="ps-4">CNPJ</label>
+            <label class="ps-4">CNPJ</label>
           </div>
         </div>
 
+        <!-- Contato -->
         <div class="row">
           <div class="form-floating col">
             <input
               formControlName="companyContact"
               type="email"
               class="form-control"
-              id="floatingContact"
+              placeholder="Contato Principal"
               [disabled]="viewOnly"
               [class.is-invalid]="
                 companyForm.get('companyContact')?.invalid &&
                 companyForm.get('companyContact')?.touched
               "
             />
-            <label for="floatingContact" class="ps-4">Contato Principal</label>
+            <label class="ps-4">Contato Principal</label>
             <div class="invalid-feedback">Informe um e-mail válido.</div>
           </div>
         </div>
 
+        <!-- Auditoria -->
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingCreatedAt"
+              placeholder="Criado em"
+              disabled
               [value]="myCompany?.audit?.createdAt"
-              disabled
             />
-            <label for="floatingCreatedAt" class="ps-4">Criado em</label>
+            <label class="ps-4">Criado em</label>
           </div>
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingCreatedBy"
+              placeholder="Criado por"
+              disabled
               [value]="myCompany?.audit?.createdBy"
-              disabled
             />
-            <label for="floatingCreatedBy" class="ps-4">Criado por</label>
+            <label class="ps-4">Criado por</label>
           </div>
         </div>
-
         <div class="row">
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingUpdatedAt"
+              placeholder="Atualizado em"
+              disabled
               [value]="myCompany?.audit?.updatedAt || 'Não se aplica'"
-              disabled
             />
-            <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
+            <label class="ps-4">Atualizado em</label>
           </div>
           <div class="form-floating col">
             <input
               type="text"
               class="form-control"
-              id="floatingUpdatedBy"
+              placeholder="Atualizado por"
+              disabled
               [value]="myCompany?.audit?.updatedBy || 'Não se aplica'"
-              disabled
             />
-            <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
+            <label class="ps-4">Atualizado por</label>
           </div>
         </div>
 
-        <div class="row">
-          <div class="form-floating col">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingLastInactive"
-              [value]="myCompany?.audit?.disabledAt || 'Não se aplica'"
-              disabled
-            />
-            <label for="floatingLastInactive" class="ps-4"
-              >Inativo pela última vez em</label
-            >
-          </div>
-          <div class="form-floating col">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingLastInactiveBy"
-              [value]="myCompany?.audit?.disabledBy || 'Não se aplica'"
-              disabled
-            />
-            <label for="floatingLastInactiveBy" class="ps-4"
-              >Inativo pela última vez por</label
-            >
-          </div>
-        </div>
-
+        <!-- Botões -->
         <div class="text-center mt-3">
           <button type="button" class="btn btn-primary" [routerLink]="['']">
             <i class="bi bi-arrow-left-square-fill"></i> Voltar
           </button>
-
-          @if(!viewOnly){
-          <button
-            type="button"
-            class="btn btn-success"
-            (click)="openModal(confirmationModal)"
-            [disabled]="cantSubmit"
-          >
+          @if(!viewOnly) {
+          <button type="submit" class="btn btn-success" [disabled]="cantSubmit">
             <i class="bi bi-floppy-fill"></i> Salvar
           </button>
           }
@@ -261,25 +230,3 @@
     </div>
   </div>
 </div>
-
-<!-- Modal de Confirmação -->
-<ng-template #confirmationModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Deseja prosseguir com as atualizações?</h5>
-    <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismiss('Close click')"></button>
-  </div>
-  <div class="modal-body">
-    <p>
-      Ao salvar os dados, sua sessão será encerrada e será necessário
-      realizar login novamente. Deseja continuar?
-    </p>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-danger" (click)="modal.dismiss('Fechar')">
-      <i class="bi bi-x-square-fill"></i> Fechar
-    </button>
-    <button type="button" class="btn btn-success" (click)="confirmSave(); modal.close('Salvar')">
-      <i class="bi bi-floppy-fill"></i> Salvar
-    </button>
-  </div>
-</ng-template>

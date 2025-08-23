@@ -1,256 +1,265 @@
 @if (flowType !== 'RECOVERY') {
-  <div class="login-div">
-    @if (flowType === 'COMMON_LOGIN' || flowType === 'COMPANY_LOGIN') {
-      <div class="col-4 mx-auto surface-container-centered">
-        <div class="surface-container-header">
-          <img
-            alt="Logo da Empresa"
-            id="equaly-logo"
-            [src]="
-              subflowType === 'COMPANY_CREDENTIALS' && selectedCompany?.logoUri
-                ? selectedCompany?.logoUri
-                : 'logo_white.png'
-            "
+<div class="login-div">
+  @if (flowType === 'COMMON_LOGIN' || flowType === 'COMPANY_LOGIN') {
+  <div class="col-4 mx-auto surface-container-centered">
+    <div class="surface-container-header">
+      <img
+        alt="Logo da Empresa"
+        id="equaly-logo"
+        [src]="
+          subflowType === 'COMPANY_CREDENTIALS' && selectedCompany?.logoUri
+            ? selectedCompany?.logoUri
+            : 'logo_white.png'
+        "
+      />
+    </div>
+
+    @if (flowType === 'COMMON_LOGIN') {
+    <div class="text-center surface-container-body" id="common-login">
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="submitLogin('COMMON_LOGIN')"
+        novalidate
+      >
+        <div class="form-floating col">
+          <input
+            formControlName="login"
+            type="text"
+            id="login"
+            class="form-control"
+            placeholder="Login ou E-mail"
+            [class.is-invalid]="invalidLogin"
           />
+          <label for="login">Login ou E-Mail</label>
         </div>
 
-        @if (flowType === 'COMMON_LOGIN') {
-          <div class="text-center surface-container-body" id="common-login">
-            <form
-              [formGroup]="loginForm"
-              (ngSubmit)="submitLogin('COMMON_LOGIN')"
-              novalidate
+        <div class="form-floating col">
+          <input
+            formControlName="password"
+            type="password"
+            id="password"
+            class="form-control"
+            placeholder="Senha"
+            [class.is-invalid]="invalidLogin"
+          />
+          <label for="password">Senha</label>
+        </div>
+
+        @if (invalidLogin) {
+        <div class="alert alert-danger">
+          Informações Incorretas, tente novamente.
+        </div>
+        }
+        <button class="btn btn-primary" type="submit">Entrar</button>
+        <button
+          class="btn btn-outline-primary"
+          (click)="changeView('COMPANY_SEARCH', $event)"
+        >
+          Entrar com Empresa
+        </button>
+      </form>
+      <br />
+      <div class="text-center">
+        <b
+          ><p>
+            <a
+              alt="Primeiro Acesso ou Recuperar Conta"
+              href="#"
+              (click)="changeView('RECOVERY', $event)"
             >
-              <input
-                formControlName="login"
-                type="text"
-                class="form-control"
-                placeholder="Login ou E-mail"
-                [class.is-invalid]="invalidLogin"
-              />
-              <input
-                formControlName="password"
-                type="password"
-                class="form-control"
-                placeholder="Senha"
-                [class.is-invalid]="invalidLogin"
-              />
-              @if (invalidLogin) {
-                <div class="alert alert-danger">
-                  Informações Incorretas, tente novamente.
-                </div>
-              }
-              <button class="btn btn-primary" type="submit">Entrar</button>
-              <button
-                class="btn btn-outline-primary"
-                (click)="changeView('COMPANY_SEARCH', $event)"
-              >
-                Entrar com Empresa
-              </button>
-            </form>
-            <br />
-            <div class="text-center">
-              <b><p>
-                <a
-                  alt="Primeiro Acesso ou Recuperar Conta"
-                  href="#"
-                  (click)="changeView('RECOVERY', $event)"
-                >
-                  Primeiro Acesso ou Recuperar Conta
-                </a></p></b
-              >
-            </div>
-          </div>
-        }
-
-        @if (flowType === 'COMPANY_LOGIN') {
-          <div class="text-center surface-container-body" id="company-login">
-            @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST') {
-              <div class="company-search">
-                <form
-                  [formGroup]="companySearchForm"
-                  (ngSubmit)="searchCompanies()"
-                  class="input-group"
-                >
-                  <input
-                    formControlName="customerDocument"
-                    type="text"
-                    class="form-control"
-                    placeholder="CPF ou RNE"
-                  />
-                  <button
-                    class="bi bi-search btn btn-primary float-left"
-                    type="submit"
-                  ></button>
-                </form>
-              </div>
-            }
-
-            @if (companiesSearched && subflowType === 'COMPANY_LIST') {
-              <div class="company-list">
-                <table class="table table-striped table-hover">
-                  <tbody>
-                    @for (company of companies; track company.id) {
-                      <tr>
-                        <td class="col-9">
-                          <p>{{ company.name }}</p>
-                          <p>{{ company.tradingName }}</p>
-                          <p>{{ company.document }}</p>
-                        </td>
-                        <td>
-                          <button
-                            class="btn btn-primary col"
-                            (click)="selectCompany(company, $event)"
-                          >
-                            Acessar
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-                <nav>
-                  <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="page === 0">
-                      <button class="page-link" (click)="loadPage(page - 1)">
-                        Anterior
-                      </button>
-                    </li>
-
-                    @for (p of pages; track p) {
-                      <li class="page-item" [class.active]="p === page">
-                        <button class="page-link" (click)="loadPage(p)">
-                          {{ p + 1 }}
-                        </button>
-                      </li>
-                    }
-
-                    <li class="page-item" [class.disabled]="page >= totalPages - 1">
-                      <button class="page-link" (click)="loadPage(page + 1)">
-                        Próximo
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            }
-
-            @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST') {
-              <button
-                class="btn btn-outline-primary"
-                (click)="changeView('COMMON_LOGIN', $event)"
-              >
-                Voltar
-              </button>
-            }
-
-            @if (subflowType === 'COMPANY_CREDENTIALS') {
-              <div class="company-form">
-                <div class="company-info">
-                  <p><i><b>Empresa: </b>{{ selectedCompany?.name }}</i></p>
-                  <p><i><b>Razão Social: </b>{{ selectedCompany?.tradingName }}</i></p>
-                  <p><i><b>CNPJ: </b>{{ selectedCompany?.document }}</i></p>
-                  <p><i><b>Código da Empresa: </b>{{ selectedCompany?.alias }}</i></p>
-                </div>
-                <br />
-                <div class="login-container-body">
-                  @if (invalidLogin) {
-                    <div class="alert alert-danger">
-                      Informações Incorretas, tente novamente.
-                    </div>
-                  }
-                  <form
-                    [formGroup]="companyLoginForm"
-                    (ngSubmit)="submitLogin('COMPANY_LOGIN')"
-                  >
-                    <input
-                      formControlName="password"
-                      class="form-control"
-                      type="password"
-                      placeholder="Senha"
-                      [class.is-invalid]="invalidLogin"
-                    />
-                    <button class="btn btn-primary" type="submit">Entrar</button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-primary"
-                      (click)="changeView('COMPANY_LIST', $event)"
-                    >
-                      Voltar
-                    </button>
-                  </form>
-                </div>
-                <p>ou</p>
-                <button
-                  class="btn btn-outline-primary"
-                  (click)="changeView('COMMON_LOGIN', $event)"
-                >
-                  Entrar com Login
-                </button>
-              </div>
-            }
-          </div>
-        }
+              Primeiro Acesso ou Recuperar Conta
+            </a>
+          </p></b
+        >
       </div>
-    }
-  </div>
-}
-
-@if (flowType === 'RECOVERY') {
-  <div class="login-div">
-    <div class="col-4 mx-auto surface-container-centered">
-      <div class="surface-container-header"><br /></div>
-      <div class="surface-container-body">
-        <h2 class="text-center">Recuperar Conta</h2>
-        @if (!recoveryCodeSent) {
-          <p>
-            Digite seu Login e o código da sua Empresa. Caso não possua nenhuma
-            destas informações, entre em contato com o administrador de seu sistema.
-          </p>
-        }
-        <form [formGroup]="recoveryForm" (ngSubmit)="sendRAC()" novalidate>
-          @if (!recoveryCodeSent) {
-            <input
-              formControlName="login"
-              type="text"
-              class="form-control"
-              placeholder="Login"
-              [class.is-invalid]="invalidRecovery"
-            />
-            <input
-              formControlName="companyAlias"
-              type="text"
-              class="form-control"
-              placeholder="Código da Empresa"
-              [class.is-invalid]="invalidRecovery"
-            />
-          }
-          @if (recoveryCodeSent) {
-            <div class="alert alert-success">
-              Código enviado com sucesso! Verifique sua caixa de entrada ou spam.
-            </div>
-          }
-          @if (invalidRecovery) {
-            <div class="alert alert-danger">
-              Informações Incorretas, tente novamente.
-            </div>
-          }
-          <div class="text-center">
-            @if (!recoveryCodeSent) {
-              <button type="submit" class="btn btn-primary">
-                Enviar Código de Recuperação
-              </button>
+    </div>
+    } @if (flowType === 'COMPANY_LOGIN') {
+    <div class="text-center surface-container-body" id="company-login">
+      @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST') {
+      <div class="company-search">
+        <form
+          [formGroup]="companySearchForm"
+          (ngSubmit)="searchCompanies()"
+          class="input-group"
+        >
+          <input
+            formControlName="customerDocument"
+            type="text"
+            class="form-control"
+            placeholder="CPF ou RNE"
+          />
+          <button
+            class="bi bi-search btn btn-primary float-left"
+            type="submit"
+          ></button>
+        </form>
+      </div>
+      } @if (companiesSearched && subflowType === 'COMPANY_LIST') {
+      <div class="company-list">
+        <table class="table table-striped table-hover">
+          <tbody>
+            @for (company of companies; track company.id) {
+            <tr>
+              <td class="col-9">
+                <p>{{ company.name }}</p>
+                <p>{{ company.tradingName }}</p>
+                <p>{{ company.document }}</p>
+              </td>
+              <td>
+                <button
+                  class="btn btn-primary col"
+                  (click)="selectCompany(company, $event)"
+                >
+                  Acessar
+                </button>
+              </td>
+            </tr>
             }
+          </tbody>
+        </table>
+        <nav>
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="page === 0">
+              <button class="page-link" (click)="loadPage(page - 1)">
+                Anterior
+              </button>
+            </li>
+
+            @for (p of pages; track p) {
+            <li class="page-item" [class.active]="p === page">
+              <button class="page-link" (click)="loadPage(p)">
+                {{ p + 1 }}
+              </button>
+            </li>
+            }
+
+            <li class="page-item" [class.disabled]="page >= totalPages - 1">
+              <button class="page-link" (click)="loadPage(page + 1)">
+                Próximo
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+      } @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST')
+      {
+      <button
+        class="btn btn-outline-primary"
+        (click)="changeView('COMMON_LOGIN', $event)"
+      >
+        Voltar
+      </button>
+      } @if (subflowType === 'COMPANY_CREDENTIALS') {
+      <div class="company-form">
+        <div class="company-info">
+          <p>
+            <i><b>Empresa: </b>{{ selectedCompany?.name }}</i>
+          </p>
+          <p>
+            <i><b>Razão Social: </b>{{ selectedCompany?.tradingName }}</i>
+          </p>
+          <p>
+            <i><b>CNPJ: </b>{{ selectedCompany?.document }}</i>
+          </p>
+          <p>
+            <i><b>Código da Empresa: </b>{{ selectedCompany?.alias }}</i>
+          </p>
+        </div>
+        <br />
+        <div class="login-container-body">
+          @if (invalidLogin) {
+          <div class="alert alert-danger">
+            Informações Incorretas, tente novamente.
+          </div>
+          }
+          <form
+            [formGroup]="companyLoginForm"
+            (ngSubmit)="submitLogin('COMPANY_LOGIN')"
+          >
+            <input
+              formControlName="password"
+              class="form-control"
+              type="password"
+              placeholder="Senha"
+              [class.is-invalid]="invalidLogin"
+            />
+            <button class="btn btn-primary" type="submit">Entrar</button>
             <button
               type="button"
               class="btn btn-outline-primary"
-              (click)="changeView('COMMON_LOGIN', $event)"
+              (click)="changeView('COMPANY_LIST', $event)"
             >
               Voltar
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
+        <p>ou</p>
+        <button
+          class="btn btn-outline-primary"
+          (click)="changeView('COMMON_LOGIN', $event)"
+        >
+          Entrar com Login
+        </button>
       </div>
+      }
+    </div>
+    }
+  </div>
+  }
+</div>
+} @if (flowType === 'RECOVERY') {
+<div class="login-div">
+  <div class="col-4 mx-auto surface-container-centered">
+    <div class="surface-container-header"><br /></div>
+    <div class="surface-container-body">
+      <h2 class="text-center">Recuperar Conta</h2>
+      @if (!recoveryCodeSent) {
+      <p>
+        Digite seu Login e o código da sua Empresa. Caso não possua nenhuma
+        destas informações, entre em contato com o administrador de seu sistema.
+      </p>
+      }
+      <form [formGroup]="recoveryForm" (ngSubmit)="sendRAC()" novalidate>
+        @if (!recoveryCodeSent) {
+        <input
+          formControlName="login"
+          type="text"
+          class="form-control"
+          placeholder="Login"
+          [class.is-invalid]="invalidRecovery"
+        />
+        <input
+          formControlName="companyAlias"
+          type="text"
+          class="form-control"
+          placeholder="Código da Empresa"
+          [class.is-invalid]="invalidRecovery"
+        />
+        } @if (recoveryCodeSent) {
+        <div class="alert alert-success">
+          Código enviado com sucesso! Verifique sua caixa de entrada ou spam.
+        </div>
+        } @if (invalidRecovery) {
+        <div class="alert alert-danger">
+          Informações Incorretas, tente novamente.
+        </div>
+        }
+        <div class="text-center">
+          @if (!recoveryCodeSent) {
+          <button type="submit" class="btn btn-primary">
+            Enviar Código de Recuperação
+          </button>
+          }
+          <button
+            type="button"
+            class="btn btn-outline-primary"
+            (click)="changeView('COMMON_LOGIN', $event)"
+          >
+            Voltar
+          </button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 }

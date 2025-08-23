@@ -24,14 +24,18 @@ export class CompanyEditComponent {
   selectedCompany: CompanyResponse | null = null;
   companyForm!: FormGroup;
 
+  // Flags de API
   invalidCompanyName = false;
-  invalidCompanyDisplayName = false;
   invalidCompanyTradingName = false;
+
+  // Flags de validação local
+  invalidCompanyDisplayName = false;
   invalidCompanyContact = false;
 
+  // Controle do botão
   cantSubmit: boolean = true;
 
-  //Image Variables
+  // Controle de imagem
   fileType: "png" | "jpeg" = "png";
   imageChangedEvent: Event | null = null;
   imageName: string | null = null;
@@ -61,25 +65,21 @@ export class CompanyEditComponent {
         "",
         [Validators.required, Validators.maxLength(128)],
       ],
-      companyAlias: ["", [Validators.required, Validators.maxLength(32)]],
-      companyTradingName: ["", [Validators.maxLength(128)]],
-      companyDocument: [
-        "",
-        [Validators.required, Validators.pattern(/^\d{14}$/)],
-      ],
+      companyAlias: [{ value: "", disabled: true }],
+      companyTradingName: ["", [Validators.maxLength(128), Validators.required]],
+      companyDocument: [{ value: "", disabled: true }],
       companyContact: ["", [Validators.required, Validators.email]],
     });
 
-    this.companyForm.statusChanges.subscribe(() => {
-      this.updateFormValidity();
-    });
+    // Observa alterações no form e atualiza o estado do botão
+    this.companyForm.statusChanges.subscribe(() => this.updateFormValidity());
   }
 
   ngOnInit() {
     this.loadingService.show();
     const idParam = this.route.snapshot.paramMap.get("id");
+
     if (!idParam) {
-      // Tratar caso o id não exista
       this.router.navigate(["/companies"], {
         queryParams: {
           action: "ERROR",
@@ -94,7 +94,7 @@ export class CompanyEditComponent {
       next: (company: CompanyResponse) => {
         this.selectedCompany = company;
 
-        if (company.logoUri !== null) {
+        if (company.logoUri) {
           this.companyHasLogo = true;
         }
 
@@ -110,29 +110,15 @@ export class CompanyEditComponent {
         this.loadingService.hide();
       },
       error: () => {
+        this.loadingService.hide();
         this.router.navigate(["/companies"], {
           queryParams: {
             action: "ERROR",
             message: "Erro ao carregar empresa",
           },
         });
-        this.loadingService.hide();
       },
     });
-  }
-
-  ngAfterViewInit() {
-    const modalEl = this.cropperModal.nativeElement;
-    this.cropperModalInstance = new (window as any).bootstrap.Modal(modalEl, {
-      backdrop: "static",
-      keyboard: false,
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.cropperModalInstance) {
-      this.cropperModalInstance.dispose();
-    }
   }
 
   validateCompanyExists(field: "name" | "tradingName") {
@@ -151,40 +137,40 @@ export class CompanyEditComponent {
           const exists =
             res.companies.length > 0 &&
             res.companies[0].id !== this.selectedCompany?.id;
-          switch (field) {
-            case "name":
-              this.invalidCompanyName = exists;
-              break;
-            case "tradingName":
-              this.invalidCompanyTradingName = exists;
-              break;
-          }
+
+          if (field === "name") this.invalidCompanyName = exists;
+          if (field === "tradingName") this.invalidCompanyTradingName = exists;
+
           this.updateFormValidity();
         },
         error: () => {
-          switch (field) {
-            case "name":
-              this.invalidCompanyName = true;
-              break;
-            case "tradingName":
-              this.invalidCompanyTradingName = true;
-              break;
-          }
+          if (field === "name") this.invalidCompanyName = true;
+          if (field === "tradingName") this.invalidCompanyTradingName = true;
+
           this.updateFormValidity();
         },
       });
   }
 
   private updateFormValidity() {
-    const someInvalid =
+    // validações locais
+    this.invalidCompanyDisplayName =
+      this.companyForm.get("companyDisplayName")?.invalid ?? false;
+
+    this.invalidCompanyContact =
+      this.companyForm.get("companyContact")?.invalid ?? false;
+
+    // botão só libera se tudo estiver ok
+    this.cantSubmit =
+      this.companyForm.invalid ||
       this.invalidCompanyName ||
       this.invalidCompanyTradingName ||
-      this.companyForm.invalid;
-    this.cantSubmit = someInvalid;
+      this.invalidCompanyDisplayName ||
+      this.invalidCompanyContact;
   }
 
   editCompany() {
-    if (this.cantSubmit || this.companyForm.invalid) {
+    if (this.cantSubmit) {
       this.markAllFieldsAsTouched();
       return;
     }
@@ -198,50 +184,52 @@ export class CompanyEditComponent {
       contact: this.companyForm.value.companyContact.trim(),
     };
 
-    this.companyService.updateCompany(this.selectedCompany!.id.toString(), companyRequest).subscribe({
-      next: (response) => {
-        if (this.logoIsSelected) {
-          this.companyService
-            .updateCompanyLogo(
-              this.selectedCompany!.id.toString(),
-              this.croppedBlob!,
-              this.imageName!
-            )
-            .pipe(
-              finalize(() => {
-                this.loadingService.hide();
-                this.navigateSuccess();
-              })
-            )
-            .subscribe({
-              error: () => {
-                this.router.navigate([], {
-                  queryParams: {
-                    action: "ERROR",
-                    message:
-                      "Empresa atualizada, mas houve erro ao enviar o logo.",
-                  },
-                });
-              },
-            });
-        } else {
+    this.companyService
+      .updateCompany(this.selectedCompany!.id.toString(), companyRequest)
+      .subscribe({
+        next: () => {
+          if (this.logoIsSelected) {
+            this.companyService
+              .updateCompanyLogo(
+                this.selectedCompany!.id.toString(),
+                this.croppedBlob!,
+                this.imageName!
+              )
+              .pipe(
+                finalize(() => {
+                  this.loadingService.hide();
+                  this.navigateSuccess();
+                })
+              )
+              .subscribe({
+                error: () => {
+                  this.router.navigate([], {
+                    queryParams: {
+                      action: "ERROR",
+                      message:
+                        "Empresa atualizada, mas houve erro ao enviar o logo.",
+                    },
+                  });
+                },
+              });
+          } else {
+            this.loadingService.hide();
+            this.navigateSuccess();
+          }
+        },
+        error: () => {
           this.loadingService.hide();
-          this.navigateSuccess();
-        }
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.router.navigate([], {
-          queryParams: {
-            action: "ERROR",
-            message: "Erro ao atualizar empresa",
-          },
-        });
-      },
-    });
+          this.router.navigate([], {
+            queryParams: {
+              action: "ERROR",
+              message: "Erro ao atualizar empresa",
+            },
+          });
+        },
+      });
   }
 
-  private navigateSuccess(): void {
+  private navigateSuccess() {
     this.router.navigate(["/companies"], {
       queryParams: {
         action: "SUCCESS",
@@ -251,39 +239,31 @@ export class CompanyEditComponent {
   }
 
   private markAllFieldsAsTouched() {
-    Object.values(this.companyForm.controls).forEach((control) => {
-      control.markAsTouched();
-    });
+    Object.values(this.companyForm.controls).forEach((c) => c.markAsTouched());
   }
 
   private getFormControlName(field: string): string {
     switch (field) {
       case "name":
         return "companyName";
-      case "alias":
-        return "companyAlias";
       case "tradingName":
         return "companyTradingName";
-      case "document":
-        return "companyDocument";
       default:
         return "";
     }
   }
 
+  // Cropper
   fileChangeEvent(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
       this.imageName = file.name;
-
-      if (file.type === "image/png") {
-        this.fileType = "png";
-      } else if (file.type === "image/jpeg" || file.type === "image/jpg") {
-        this.fileType = "jpeg";
-      } else {
-        this.fileType = "png";
-      }
-
+      this.fileType =
+        file.type === "image/png"
+          ? "png"
+          : file.type === "image/jpeg" || file.type === "image/jpg"
+          ? "jpeg"
+          : "png";
       this.imageChangedEvent = event;
       this.openCropperModal();
     }
@@ -291,10 +271,8 @@ export class CompanyEditComponent {
 
   openCropperModal() {
     this.isCropperVisible = false;
-
     const modalEl = this.cropperModal.nativeElement;
     const modal = new (window as any).bootstrap.Modal(modalEl);
-
     modal.show();
 
     const onShown = () => {
@@ -313,11 +291,6 @@ export class CompanyEditComponent {
   imageCropped(event: ImageCroppedEvent) {
     this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.objectUrl!);
     this.croppedBlob = event.blob!;
-    console.log(
-      "Tamanho do blob recortado:",
-      this.croppedBlob.size / 1024,
-      "KB"
-    );
     this.logoIsSelected = true;
   }
 

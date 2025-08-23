@@ -53,7 +53,10 @@ export class MyCompanyComponent {
         "",
         [Validators.required, Validators.maxLength(128)],
       ],
-      companyTradingName: ["", [Validators.maxLength(128)]],
+      companyTradingName: [
+        "",
+        [Validators.required, Validators.maxLength(128)],
+      ],
       companyContact: ["", [Validators.required, Validators.email]],
     });
 

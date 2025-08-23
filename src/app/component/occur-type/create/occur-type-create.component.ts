@@ -3,8 +3,8 @@ import { CompanySearchComponent } from "../../company/search/company-search.comp
 import {
   FormBuilder,
   FormGroup,
-  ReactiveFormsModule,
   Validators,
+  ReactiveFormsModule,
 } from "@angular/forms";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
@@ -14,19 +14,14 @@ import { Router, RouterModule } from "@angular/router";
 
 @Component({
   selector: "app-occur-type-create",
+  standalone: true,
   imports: [CompanySearchComponent, ReactiveFormsModule, RouterModule],
   templateUrl: "./occur-type-create.component.html",
   styleUrl: "./occur-type-create.component.scss",
-  standalone: true
 })
 export class OccurTypeCreateComponent {
   occurTypeForm!: FormGroup;
-
-  canSubmit: boolean = false;
-  invalidOccurTypeName: boolean = false;
-  invalidOccurTypeDescription: boolean = false;
   selectedCompany: CompanyResponse | null = null;
-
   isEqualyMasterAdmin: boolean = false;
 
   constructor(
@@ -55,9 +50,7 @@ export class OccurTypeCreateComponent {
       ],
     });
 
-    if (sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
-      this.isEqualyMasterAdmin = true;
-    }
+    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
   }
 
   onSelectCompany(company: CompanyResponse | null) {
@@ -65,22 +58,8 @@ export class OccurTypeCreateComponent {
   }
 
   submitOccurType() {
-    this.invalidOccurTypeName = false;
-    this.invalidOccurTypeDescription = false;
-
     if (this.occurTypeForm.invalid) {
-      if (this.occurTypeForm.get("occurTypeName")?.invalid) {
-        this.invalidOccurTypeName = true;
-      }
-      if (this.occurTypeForm.get("occurTypeDescription")?.invalid) {
-        this.invalidOccurTypeDescription = true;
-      }
-      this.canSubmit = false;
-    } else {
-      this.canSubmit = true;
-    }
-
-    if (!this.canSubmit) {
+      this.occurTypeForm.markAllAsTouched();
       return;
     }
 
@@ -89,9 +68,7 @@ export class OccurTypeCreateComponent {
       .createOccurType({
         name: this.occurTypeForm.get("occurTypeName")?.value,
         description: this.occurTypeForm.get("occurTypeDescription")?.value,
-        company: {
-          id: this.selectedCompany ? this.selectedCompany.id : null,
-        },
+        company: { id: this.selectedCompany?.id ?? null },
       })
       .subscribe({
         next: (response) => {
@@ -99,8 +76,7 @@ export class OccurTypeCreateComponent {
           this.router.navigate(["/occur-types"], {
             queryParams: {
               action: "SUCCESS",
-              message:
-                `Tipo de Ocorrência ` + response.id + ` cadastrada com sucesso`,
+              message: `Tipo de Ocorrência ${response.id} cadastrada com sucesso`,
             },
           });
         },

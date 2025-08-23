@@ -20,12 +20,12 @@
             type="text"
             maxlength="64"
             class="form-control"
-            [class.is-invalid]="invalidOccurTypeName"
             formControlName="occurTypeName"
+            [class.is-invalid]="occurTypeForm.get('occurTypeName')?.invalid && (occurTypeForm.get('occurTypeName')?.touched || occurTypeForm.get('occurTypeName')?.dirty)"
             title="Nome do Tipo de Ocorrência"
           />
           <label class="ps-4">Nome do Tipo de Ocorrência</label>
-          @if(invalidOccurTypeName){
+          @if(occurTypeForm.get('occurTypeName')?.invalid && (occurTypeForm.get('occurTypeName')?.touched || occurTypeForm.get('occurTypeName')?.dirty)){
           <div class="invalid-feedback pb-2">
             Tipo de Ocorrência não preenchido ou inválido.
           </div>
@@ -35,16 +35,14 @@
 
       <div class="form-floating">
         <textarea
-          type="text"
           maxlength="256"
           class="form-control"
           id="descriptionLabel"
-          [class.is-invalid]="invalidOccurTypeDescription"
           formControlName="occurTypeDescription"
+          [class.is-invalid]="occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched || occurTypeForm.get('occurTypeDescription')?.dirty)"
         ></textarea>
         <label for="descriptionLabel">Descrição</label>
-
-        @if(invalidOccurTypeDescription){
+        @if(occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched || occurTypeForm.get('occurTypeDescription')?.dirty)){
         <div class="invalid-feedback pb-2">
           Descrição não preenchida ou inválida.
         </div>
@@ -57,7 +55,7 @@
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar
           </button>
-          <button type="submit" class="btn btn-success">
+          <button type="submit" class="btn btn-success" [disabled]="occurTypeForm.invalid">
             <i class="bi bi-plus-square-fill"></i>
             Cadastrar
           </button>

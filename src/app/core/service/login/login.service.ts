@@ -52,7 +52,7 @@ export class LoginService {
     });
 
     return this.http.get<LoginCompanySearchResponse>(
-      this.companyEndpoint.concat(`/${customerDocument}/companies?page=${page}&size=10`),
+      this.companyEndpoint.concat(`/user/${customerDocument}/companies?page=${page}&size=10`),
       {
         headers,
       }

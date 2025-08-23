@@ -20,12 +20,12 @@
             type="text"
             maxlength="64"
             class="form-control"
-            [class.is-invalid]="invalidDepartmentName"
+            [class.is-invalid]="departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)"
             formControlName="departmentName"
             placeholder="Nome do Departamento"
           />
           <label class="ps-4">Nome do Departamento</label>
-          @if(invalidDepartmentName){
+          @if(departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)){
           <div class="invalid-feedback pb-2">
             Nome do Departamento não preenchido ou inválido.
           </div>
@@ -37,14 +37,13 @@
         <textarea
           class="form-control"
           id="departmentDescriptionLabel"
-          [class.is-invalid]="invalidDepartmentDescription"
+          [class.is-invalid]="departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)"
           formControlName="departmentDescription"
           maxlength="256"
           placeholder="Descrição"
         ></textarea>
         <label for="departmentDescriptionLabel">Descrição</label>
-
-        @if(invalidDepartmentDescription){
+        @if(departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)){
         <div class="invalid-feedback pb-2">
           Descrição não preenchida ou inválida.
         </div>
@@ -57,7 +56,7 @@
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar
           </button>
-          <button type="submit" class="btn btn-success" [disabled]="!canSubmit">
+          <button type="submit" class="btn btn-success" [disabled]="departmentForm.invalid">
             <i class="bi bi-plus-square-fill"></i>
             Cadastrar
           </button>

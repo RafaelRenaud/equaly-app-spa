@@ -21,6 +21,7 @@ import { OccurTypeEditComponent } from "./component/occur-type/edit/occur-type-e
 import { DepartmentEditComponent } from "./component/department/edit/department-edit.component";
 import { UserHubComponent } from "./component/user/hub/user-hub.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
+import { UserEditComponent } from "./component/user/edit/user-edit.component";
 
 export const routes: Routes = [
   {
@@ -158,13 +159,13 @@ export const routes: Routes = [
             },
             component: UserCreateComponent,
           },
-          // {
-          //   path: "edit/:id",
-          //   data: {
-          //     roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
-          //   },
-          //   component: ,
-          // },
+          {
+            path: "edit/:id",
+            data: {
+              roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN"],
+            },
+            component: UserEditComponent,
+          },
         ],
       },
     ],

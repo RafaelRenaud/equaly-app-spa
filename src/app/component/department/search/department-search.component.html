@@ -4,7 +4,7 @@
     <input
       class="form-control mt-3"
       id="departmentSearchInput"
-      placeholder="Digite o nome do departamento"
+      [placeholder]="placeholder"
       list="departmentDatalist"
       (input)="searchDepartments($event)"
       [class.is-invalid]="!validDepartmentSelected"

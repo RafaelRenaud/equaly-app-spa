@@ -21,6 +21,7 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 })
 export class DepartmentSearchComponent {
   @Input() selectedDepartmentValue: DepartmentResponse | null = null;
+  @Input() placeholder: string = "Digite o nome do departamento";
   @Output() selectedDepartment = new EventEmitter<DepartmentResponse | null>();
 
   searchedDepartments: DepartmentResponse[] = [];

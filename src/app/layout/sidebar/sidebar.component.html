@@ -1,3 +1,25 @@
+<!-- Topbar apenas para viewport normal -->
+<div class="top-info-bar surface-container">
+  <div class="user-profile-top">
+    <div class="user-info-top">
+      <strong>{{ userDisplayName }}</strong>
+      <small>{{ companyDisplayName }}</small>
+      <div class="links-top">
+        <a href="/#" [routerLink]="['/my-account']">Meu Perfil</a>
+        |
+        <a href="#" (click)="logout($event)">Sair</a>
+      </div>
+    </div>
+    <img
+      [src]="userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'"
+      alt="Avatar"
+      class="avatar-top"
+    />
+  </div>
+</div>
+
+<!-- Sidebar -->
+
 <nav class="navbar navbar-expand-sm navbar-dark" id="main-sidebar">
   <button
     class="navbar-toggler"
@@ -197,7 +219,11 @@
           ><small>{{ companyDisplayName }}</small> </i
         ><br />
         <small>
-          <a href="/#" [routerLink]="['/my-account']" class="text-white text-decoration-none">
+          <a
+            href="/#"
+            [routerLink]="['/my-account']"
+            class="text-white text-decoration-none"
+          >
             Meu Perfil
           </a>
           |

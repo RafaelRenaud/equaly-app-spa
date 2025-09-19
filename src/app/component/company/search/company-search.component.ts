@@ -61,55 +61,7 @@ export class CompanySearchComponent implements OnChanges {
     this.searchedCompanies = [];
   }
 
-  searchCompanies(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input?.value || "";
-
-    this.selectedCompany.emit(null);
-
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-    }
-
-    if (value.trim() === "") {
-      this.searchedCompanies = [];
-      this.validCompanySelected = true;
-      return;
-    }
-
-    if (value.length <= 1) {
-      this.searchedCompanies = [];
-      this.validCompanySelected = false;
-      return;
-    }
-
-    const companyId = value.split(" - ")[0];
-    const foundCompany = this.searchedCompanies.find(
-      (c) => c.id.toString() === companyId
-    );
-
-    if (foundCompany) {
-      this.selectedCompany.emit(foundCompany);
-      this.validCompanySelected = true;
-    } else {
-      this.validCompanySelected = false;
-    }
-
-    this.timeoutId = setTimeout(() => {
-      this.companyService
-        .getCompanies("name", value, "ACTIVE", 0, 5)
-        .subscribe({
-          next: (response) => {
-            this.searchedCompanies = response.companies;
-          },
-          error: () => {
-            this.searchedCompanies = [];
-          },
-        });
-    }, 1000);
-  }
-
-  internalSearchCompanies(): void {
+  searchCompanies(): void {
     this.loadingService.show();
     this.companyService
       .getCompanies(
@@ -132,13 +84,13 @@ export class CompanySearchComponent implements OnChanges {
     this.searchValue = "";
     this.selectedStatus = "NONE";
     this.currentPage = 0;
-    this.internalSearchCompanies();
+    this.searchCompanies();
   }
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages) {
       this.currentPage = page;
-      this.internalSearchCompanies();
+      this.searchCompanies();
     }
   }
 

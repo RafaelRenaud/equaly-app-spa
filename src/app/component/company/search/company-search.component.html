@@ -2,19 +2,13 @@
 <div class="row">
   <div class="col-9">
     <input
+      disabled
       class="form-control mt-3"
       id="companySearchInput"
-      placeholder="Digite o nome da empresa"
-      list="companyDatalist"
-      (input)="searchCompanies($event)"
+      placeholder="Nenhuma empresa selecionada"
       [class.is-invalid]="!validCompanySelected"
       #companySearchInputRef
     />
-    <datalist id="companyDatalist">
-      @for(company of searchedCompanies; track company.id) {
-      <option [value]="company.id + ' - ' + company.name"></option>
-      }
-    </datalist>
   </div>
   <div class="col-3">
     <button
@@ -23,8 +17,8 @@
       data-bs-toggle="modal"
       data-bs-target="#companySearchModal"
     >
-      <i class="bi bi-funnel-fill"></i>
-      Avançado
+      <i class="bi bi-search-fill"></i>
+      Buscar
     </button>
   </div>
 </div>
@@ -42,7 +36,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="companySearchModalLabel">
-          Pesquisa Avançada de Empresa
+          Filtrar por Empresa
         </h5>
         <button
           type="button"
@@ -100,10 +94,7 @@
           <div class="col-6">
             <div class="row">
               <div class="col">
-                <button
-                  class="btn btn-primary"
-                  (click)="internalSearchCompanies()"
-                >
+                <button class="btn btn-primary" (click)="searchCompanies()">
                   <i class="bi bi-search"></i>
                   Buscar
                 </button>
@@ -132,7 +123,11 @@
                 </thead>
                 <tbody>
                   @for (company of searchedCompanies; track company.id) {
-                  <tr style="cursor: pointer;" data-bs-dismiss="modal" (click)="selectCompanyFromModal(company)">
+                  <tr
+                    style="cursor: pointer"
+                    data-bs-dismiss="modal"
+                    (click)="selectCompanyFromModal(company)"
+                  >
                     <td class="align-middle">{{ company.id }}</td>
                     <td class="align-middle">{{ company.name }}</td>
                     <td class="align-middle">{{ company.tradingName }}</td>

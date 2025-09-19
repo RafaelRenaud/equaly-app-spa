@@ -63,55 +63,7 @@ export class UniversalUserSearchComponent {
     this.searchedUniversalUsers = [];
   }
 
-  searchUniversalUsers(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input?.value || "";
-
-    this.selectedUniversalUser.emit(null);
-
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-    }
-
-    if (value.trim() === "") {
-      this.searchedUniversalUsers = [];
-      this.validUniversalUserSelected = true;
-      return;
-    }
-
-    if (value.length <= 1) {
-      this.searchedUniversalUsers = [];
-      this.validUniversalUserSelected = false;
-      return;
-    }
-
-    const userId = value.split(" - ")[0];
-    const foundUser = this.searchedUniversalUsers.find(
-      (u) => u.id.toString() === userId
-    );
-
-    if (foundUser) {
-      this.selectedUniversalUser.emit(foundUser);
-      this.validUniversalUserSelected = true;
-    } else {
-      this.validUniversalUserSelected = false;
-    }
-
-    this.timeoutId = setTimeout(() => {
-      this.universalUserService
-        .getUsers("name", value, this.currentPage, this.pageSize)
-        .subscribe({
-          next: (response) => {
-            this.searchedUniversalUsers = response.universalUsers;
-          },
-          error: () => {
-            this.searchedUniversalUsers = [];
-          },
-        });
-    }, 1000);
-  }
-
-  internalSearchUniversalUsers(): void {
+  searchUniversalUsers(): void {
     this.loadingService.show();
     this.universalUserService
       .getUsers(
@@ -132,13 +84,13 @@ export class UniversalUserSearchComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.currentPage = 0;
-    this.internalSearchUniversalUsers();
+    this.searchUniversalUsers();
   }
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages) {
       this.currentPage = page;
-      this.internalSearchUniversalUsers();
+      this.searchUniversalUsers();
     }
   }
 

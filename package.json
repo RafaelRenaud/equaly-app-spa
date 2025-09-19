@@ -1,6 +1,6 @@
 {
   "name": "equaly-app-spa",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "styles": [
     "node_modules/bootstrap/dist/css/bootstrap.min.css",
     "src/styles.scss"

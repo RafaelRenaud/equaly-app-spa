@@ -11,6 +11,7 @@ import { FormsModule } from "@angular/forms";
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { DepartmentService } from "../../../core/service/department/department.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
 
 @Component({
   selector: "app-department-search",
@@ -21,11 +22,10 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 })
 export class DepartmentSearchComponent {
   @Input() selectedDepartmentValue: DepartmentResponse | null = null;
-  @Input() placeholder: string = "Digite o nome do departamento";
+  @Input() selectedCompany: CompanyResponse | null = null;
   @Output() selectedDepartment = new EventEmitter<DepartmentResponse | null>();
 
   searchedDepartments: DepartmentResponse[] = [];
-  private timeoutId: any;
   validDepartmentSelected: boolean = true;
 
   // Filtros do Modal
@@ -64,61 +64,13 @@ export class DepartmentSearchComponent {
     this.searchedDepartments = [];
   }
 
-  searchDepartments(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const value = input?.value || "";
-
-    this.selectedDepartment.emit(null);
-
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-    }
-
-    if (value.trim() === "") {
-      this.searchedDepartments = [];
-      this.validDepartmentSelected = true;
-      return;
-    }
-
-    if (value.length <= 1) {
-      this.searchedDepartments = [];
-      this.validDepartmentSelected = false;
-      return;
-    }
-
-    const departmentId = value.split(" - ")[0];
-    const foundDepartment = this.searchedDepartments.find(
-      (c) => c.id.toString() === departmentId
-    );
-
-    if (foundDepartment) {
-      this.selectedDepartment.emit(foundDepartment);
-      this.validDepartmentSelected = true;
-    } else {
-      this.validDepartmentSelected = false;
-    }
-
-    this.timeoutId = setTimeout(() => {
-      this.departmentService
-        .getDepartments("name", value, null, "ACTIVE", 0, 5)
-        .subscribe({
-          next: (response) => {
-            this.searchedDepartments = response.departments;
-          },
-          error: () => {
-            this.searchedDepartments = [];
-          },
-        });
-    }, 1000);
-  }
-
-  internalSearchDepartments(): void {
+  searchDepartments(): void {
     this.loadingService.show();
     this.departmentService
       .getDepartments(
         this.selectedFilter,
         this.searchValue,
-        null,
+        this.selectedCompany ? this.selectedCompany.id : null,
         this.selectedStatus,
         this.currentPage,
         this.pageSize
@@ -136,13 +88,13 @@ export class DepartmentSearchComponent {
     this.searchValue = "";
     this.selectedStatus = "NONE";
     this.currentPage = 0;
-    this.internalSearchDepartments();
+    this.searchDepartments();
   }
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages) {
       this.currentPage = page;
-      this.internalSearchDepartments();
+      this.searchDepartments();
     }
   }
 

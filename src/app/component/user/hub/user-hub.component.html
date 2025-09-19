@@ -60,6 +60,15 @@
               @if(sessionService.hasRole("EQUALY_MASTER_ADMIN")) {
               <div class="row">
                 <div class="col">
+                  <div class="alert alert-primary" role="alert">
+                    <i class="bi bi-info-square-fill"></i>
+                    Para pesquisar por departamento, selecione primeiramente uma
+                    empresa.
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
                   <app-company-search
                     [selectedCompanyValue]="selectedCompany"
                     (selectedCompany)="onSelectCompany($event)"
@@ -69,10 +78,11 @@
               </div>
               }
 
-              <div class="row">
+              <div class="row" [hidden]="sessionService.hasRole('EQUALY_MASTER_ADMIN') && !selectedCompany">
                 <div class="col">
                   <app-department-search
                     [selectedDepartmentValue]="selectedDepartment"
+                    [selectedCompany]="selectedCompany"
                     (selectedDepartment)="onSelectDepartment($event)"
                   >
                   </app-department-search>
@@ -184,7 +194,7 @@
                     data-bs-target="#confirmRecoveryModal"
                     (click)="onSelectUserToRecovery(user)"
                   >
-                    <i class="bi bi-arrow-repeat"></i>
+                    <i class="bi bi-lock-fill"></i>
                   </button>
                   } @else { @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
                   sessionService.hasRole("MASTER_ADMIN")){
@@ -534,7 +544,9 @@
         </div>
 
         <div class="form-floating">
-          <textarea id="floatingRoles" disabled class="form-control">{{ userRoles === null ? "Sem Permissões" : userRoles }}</textarea>
+          <textarea id="floatingRoles" disabled class="form-control">{{
+            userRoles === null ? "Sem Permissões" : userRoles
+          }}</textarea>
           <label for="floatingRoles">Permissões</label>
         </div>
         <br />

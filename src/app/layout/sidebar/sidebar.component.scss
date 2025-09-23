@@ -112,18 +112,6 @@
   .navbar-toggler {
     display: none;
   }
-  
-  /* No desktop, mostrar sempre o collapse */
-  #navbarToggler {
-    display: flex !important;
-    flex-direction: column;
-    height: 100%;
-  }
-  
-  .sidebar-content {
-    display: flex !important;
-    height: 100%;
-  }
 }
 
 /* VIEWPORT MÉDIO (tablet) */
@@ -144,14 +132,17 @@
     z-index: 1050;
     margin: 0;
     border-radius: 0;
+    max-height: 100vh;
+    overflow: hidden
   }
   
   .navbar-collapse {
     background-color: var(--primary-color);
     margin-top: 0.5rem;
     border-radius: 0 0 8px 8px;
-    max-height: 80vh;
+    max-height: 70vh;
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .navbar-toggler {
@@ -159,12 +150,21 @@
     margin-bottom: 0.5rem;
     z-index: 1060;
   }
+
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    min-height: auto;
+  }
   
   .sidebar-footer {
     display: block;
     margin: 1rem -1rem -1rem -1rem;
     padding: 1rem;
     border-radius: 0 0 8px 8px;
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
   }
   
   .content {
@@ -190,6 +190,8 @@
     z-index: 1050;
     margin: 0;
     border-radius: 0;
+    max-height: 100vh;
+    overflow: hidden;
   }
   
   .navbar-toggler {
@@ -198,11 +200,18 @@
     z-index: 1060;
   }
   
-  .sidebar-footer {
+  /* CORREÇÃO: Footer só aparece quando o menu está expandido */
+  .navbar-collapse:not(.show) + .sidebar-footer,
+  .navbar-collapse.collapsing + .sidebar-footer {
+    display: none;
+  }
+  
+  .navbar-collapse.show + .sidebar-footer {
     display: block;
     margin: 1rem -1rem -1rem -1rem;
     padding: 1rem;
     border-radius: 0 0 8px 8px;
+    background-color: var(--primary-color);
   }
   
   .content {

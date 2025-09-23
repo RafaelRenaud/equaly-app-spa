@@ -1,5 +1,5 @@
 <!-- Topbar apenas para viewport normal -->
-<div class="top-info-bar surface-container">
+<div class="top-info-bar">
   <div class="user-profile-top">
     <div class="user-info-top">
       <strong>{{ userDisplayName }}</strong>
@@ -13,13 +13,12 @@
     <img
       [src]="userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'"
       alt="Avatar"
-      class="avatar-top"
+      class="avatar-top rounded"
     />
   </div>
 </div>
 
 <!-- Sidebar -->
-
 <nav class="navbar navbar-expand-sm navbar-dark" id="main-sidebar">
   <button
     class="navbar-toggler"
@@ -29,6 +28,7 @@
     aria-controls="navbarToggler"
     aria-expanded="false"
     aria-label="Toggle navigation"
+    data-bs-auto-close="true"
   >
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -197,43 +197,43 @@
         </li>
         }
       </ul>
-    </div>
 
-    <!-- RODAPÉ: perfil -->
-    <div class="sidebar-footer row text-white">
-      <div class="col-4">
-        <img
-          [src]="
-            userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
-          "
-          alt="Avatar"
-          width="64"
-          height="64"
-          class="rounded"
-        />
-      </div>
-      <div class="col-8">
-        <strong>{{ userDisplayName }}</strong
-        ><br />
-        <i
-          ><small>{{ companyDisplayName }}</small> </i
-        ><br />
-        <small>
-          <a
-            href="/#"
-            [routerLink]="['/my-account']"
-            class="text-white text-decoration-none"
-          >
-            Meu Perfil
-          </a>
-          |
-          <a
-            class="text-white text-decoration-none"
-            (click)="logout($event)"
-            href="#"
-            >Sair</a
-          >
-        </small>
+      <!-- RODAPÉ: perfil - AGORA DENTRO DO sidebar-content -->
+      <div class="sidebar-footer row text-white">
+        <div class="col-4">
+          <img
+            [src]="
+              userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
+            "
+            alt="Avatar"
+            width="64"
+            height="64"
+            class="rounded"
+          />
+        </div>
+        <div class="col-8">
+          <strong>{{ userDisplayName }}</strong
+          ><br />
+          <i
+            ><small>{{ companyDisplayName }}</small></i
+          ><br />
+          <small>
+            <a
+              href="#"
+              [routerLink]="['/my-account']"
+              class="text-white text-decoration-none"
+            >
+              Meu Perfil
+            </a>
+            |
+            <a
+              class="text-white text-decoration-none"
+              (click)="logout($event)"
+              href="#"
+              >Sair</a
+            >
+          </small>
+        </div>
       </div>
     </div>
   </div>

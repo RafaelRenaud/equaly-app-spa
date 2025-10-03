@@ -28,9 +28,16 @@ export class LoginService {
         .set("companyId", data.companyId)
         .set("document", data.document);
     } else {
-      body = new HttpParams()
-        .set("login", data.login)
-        .set("password", data.password);
+      if(this.isEmail(data.login)) {
+        data.email = data.login;
+        body = new HttpParams()
+          .set("email", data.email)
+          .set("password", data.password);
+      }else{
+        body = new HttpParams()
+          .set("login", data.login)
+          .set("password", data.password);
+      }      
     }
 
     const headers = new HttpHeaders({
@@ -52,7 +59,9 @@ export class LoginService {
     });
 
     return this.http.get<LoginCompanySearchResponse>(
-      this.companyEndpoint.concat(`/user/${customerDocument}/companies?page=${page}&size=10`),
+      this.companyEndpoint.concat(
+        `/user/${customerDocument}/companies?page=${page}&size=10`
+      ),
       {
         headers,
       }
@@ -83,5 +92,10 @@ export class LoginService {
         headers,
       }
     );
+  }
+
+  private isEmail(value: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
   }
 }

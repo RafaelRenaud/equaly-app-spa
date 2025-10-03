@@ -54,8 +54,22 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.formBuilder.group({
-      login: ["", [Validators.minLength(4), Validators.maxLength(32)]],
-      password: ["", [Validators.minLength(8), Validators.maxLength(16)]],
+      login: [
+        "",
+        [
+          Validators.minLength(4),
+          Validators.maxLength(32),
+          Validators.required,
+        ],
+      ],
+      password: [
+        "",
+        [
+          Validators.minLength(8),
+          Validators.maxLength(16),
+          Validators.required,
+        ],
+      ],
     });
 
     this.recoveryForm = this.formBuilder.group({
@@ -105,11 +119,11 @@ export class LoginComponent {
       credentials.companyId = this.selectedCompany!.id;
       credentials.document = this.selectedUserDocument!;
 
-      if (this.companyLoginForm.invalid) {
-        this.invalidLogin = true;
-      } else {
-        this.invalidLogin = false;
-      }
+        if (this.companyLoginForm.invalid) {
+          this.invalidLogin = true;
+        } else {
+          this.invalidLogin = false;
+        }
     } else {
       credentials = this.loginForm.value as LoginRequest;
 

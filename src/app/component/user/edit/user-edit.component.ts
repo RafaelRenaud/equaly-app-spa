@@ -210,14 +210,15 @@ export class UserEditComponent implements OnInit {
       .getUsers("login", loginCtrl.value, null, null, null, "NONE", 0, 1)
       .subscribe({
         next: (res) => {
-          // Verifica se existe algum usuário com este login que não seja o próprio usuário
           this.invalidLogin = res.users.some(
-            (user) => user.id !== this.user!.id
+            (user) =>
+              user.login === loginCtrl.value && user.id !== this.user!.id
           );
         },
         error: () => this.handleValidationError("Erro ao validar login."),
         complete: () => this.loadingService.hide(),
       });
+
   }
 
   checkEmailExists() {
@@ -237,12 +238,14 @@ export class UserEditComponent implements OnInit {
         next: (res) => {
           // Verifica se existe algum usuário com este email que não seja o próprio usuário
           this.invalidEmail = res.users.some(
-            (user) => user.id !== this.user!.id
+            (user) =>
+              user.email === emailCtrl.value && user.id !== this.user!.id
           );
         },
         error: () => this.handleValidationError("Erro ao validar email."),
         complete: () => this.loadingService.hide(),
       });
+
   }
 
   private handleValidationError(message: string) {

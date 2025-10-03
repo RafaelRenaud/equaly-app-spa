@@ -138,8 +138,14 @@ export class CompanyEditComponent {
             res.companies.length > 0 &&
             res.companies[0].id !== this.selectedCompany?.id;
 
-          if (field === "name") this.invalidCompanyName = exists;
-          if (field === "tradingName") this.invalidCompanyTradingName = exists;
+          if (field === "name" && res.companies.some((c) => c.name === value)) {
+            this.invalidCompanyName = exists;
+          } else if (
+            field === "tradingName" &&
+            res.companies.some((c) => c.tradingName === value)
+          ) {
+            this.invalidCompanyTradingName = exists;
+          }
 
           this.updateFormValidity();
         },

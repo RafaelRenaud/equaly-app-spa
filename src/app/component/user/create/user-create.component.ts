@@ -181,10 +181,15 @@ export class UserCreateComponent implements OnInit {
     this.userService
       .getUsers("login", loginCtrl.value, null, null, null, "NONE", 0, 1)
       .subscribe({
-        next: (res) => (this.invalidLogin = res.users.length > 0),
+        next: (res) => {
+          this.invalidLogin = res.users.some(
+            (u) => u.login === loginCtrl.value
+          );
+        },
         error: () => this.handleValidationError("Erro ao validar login."),
         complete: () => this.loadingService.hide(),
       });
+
   }
 
   checkEmailExists() {
@@ -195,7 +200,11 @@ export class UserCreateComponent implements OnInit {
     this.userService
       .getUsers("email", emailCtrl.value, null, null, null, "NONE", 0, 1)
       .subscribe({
-        next: (res) => (this.invalidEmail = res.users.length > 0),
+        next: (res) => {
+          this.invalidEmail = res.users.some(
+            (u) => u.email === emailCtrl.value
+          );
+        },
         error: () => this.handleValidationError("Erro ao validar email."),
         complete: () => this.loadingService.hide(),
       });

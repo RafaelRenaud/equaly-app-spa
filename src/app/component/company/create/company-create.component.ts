@@ -89,19 +89,24 @@ export class CompanyCreateComponent {
       .subscribe({
         next: (res) => {
           const exists = res.companies.length > 0;
-          switch (field) {
-            case "name":
-              this.invalidCompanyName = exists;
-              break;
-            case "alias":
-              this.invalidCompanyAlias = exists;
-              break;
-            case "tradingName":
-              this.invalidCompanyTradingName = exists;
-              break;
-            case "document":
-              this.invalidCompanyDocument = exists;
-              break;
+
+          if (field === "name" && res.companies.some((c) => c.name === value)) {
+            this.invalidCompanyName = exists;
+          } else if (
+            field === "alias" &&
+            res.companies.some((c) => c.alias === value)
+          ) {
+            this.invalidCompanyAlias = exists;
+          } else if (
+            field === "tradingName" &&
+            res.companies.some((c) => c.tradingName === value)
+          ) {
+            this.invalidCompanyTradingName = exists;
+          } else if (
+            field === "document" &&
+            res.companies.some((c) => c.document === value)
+          ) {
+            this.invalidCompanyDocument = exists;
           }
         },
         error: () => {

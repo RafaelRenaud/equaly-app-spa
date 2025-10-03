@@ -111,6 +111,7 @@
 
         <div class="row">
           <app-department-search
+            [selectedCompany]="selectedCompany"
             (selectedDepartment)="onSelectDepartment($event)"
           ></app-department-search>
         </div>

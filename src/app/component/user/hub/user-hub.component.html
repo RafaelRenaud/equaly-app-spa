@@ -119,12 +119,16 @@
           </div>
         </div>
       </div>
-      <div class="col-6 text-end">
+
+      @if(sessionService.hasRole("EQUALY_MASTER_ADMIN") ||
+      sessionService.hasRole("MASTER_ADMIN")){
+        <div class="col-6 text-end">
         <button class="btn btn-success" [routerLink]="['/users/create']">
           <i class="bi bi-plus-square-fill"></i>
           Cadastrar Usuário
         </button>
       </div>
+      }
     </div>
     <div class="row mt-4">
       <div class="col">

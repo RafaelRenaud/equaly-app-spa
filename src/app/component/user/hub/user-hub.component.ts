@@ -22,6 +22,7 @@ import {
   NgbAccordionModule,
   NgbModule,
 } from "@ng-bootstrap/ng-bootstrap";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-user-hub",
@@ -32,6 +33,7 @@ import {
     DepartmentSearchComponent,
     UniversalUserSearchComponent,
     NgbAccordionModule,
+    UserSystemPipe
   ],
   templateUrl: "./user-hub.component.html",
   styleUrl: "./user-hub.component.scss",

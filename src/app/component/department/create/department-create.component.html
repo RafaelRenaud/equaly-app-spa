@@ -6,7 +6,7 @@
     <form [formGroup]="departmentForm" (ngSubmit)="submitDepartment()">
       @if(isEqualyMasterAdmin){
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <app-company-search
             (selectedCompany)="onSelectCompany($event)"
           ></app-company-search>
@@ -15,7 +15,7 @@
       }
 
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             type="text"
             maxlength="64"
@@ -51,7 +51,7 @@
       </div>
 
       <div class="row">
-        <div class="col text-center">
+        <div class="col-md text-center">
           <button class="btn btn-primary" [routerLink]="['/departments']">
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar

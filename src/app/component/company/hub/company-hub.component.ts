@@ -7,11 +7,12 @@ import { Modal } from "bootstrap";
 import { isPlatformBrowser } from "@angular/common";
 import { Router, RouterModule } from "@angular/router";
 import { response } from "express";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "company-hub",
   standalone: true,
-  imports: [FormsModule, RouterModule],
+  imports: [FormsModule, RouterModule, UserSystemPipe],
   templateUrl: "./company-hub.component.html",
   styleUrl: "./company-hub.component.scss",
 })

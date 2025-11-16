@@ -9,10 +9,11 @@ import { CompanyResponse } from "../../../core/model/company/company-response.mo
 import { Modal } from "bootstrap";
 import { DepartmentService } from "../../../core/service/department/department.service";
 import { isPlatformBrowser } from "@angular/common";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-department-hub",
-  imports: [CompanySearchComponent, RouterModule, FormsModule],
+  imports: [CompanySearchComponent, RouterModule, FormsModule, UserSystemPipe],
   templateUrl: "./department-hub.component.html",
   styleUrl: "./department-hub.component.scss",
   standalone: true,

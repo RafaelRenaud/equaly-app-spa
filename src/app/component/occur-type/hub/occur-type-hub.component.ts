@@ -9,10 +9,11 @@ import { OccurTypeService } from "../../../core/service/occurType/occur-type.ser
 import { isPlatformBrowser } from "@angular/common";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-occur-type-hub",
-  imports: [FormsModule, RouterModule, CompanySearchComponent],
+  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe],
   templateUrl: "./occur-type-hub.component.html",
   styleUrl: "./occur-type-hub.component.scss",
   standalone: true,

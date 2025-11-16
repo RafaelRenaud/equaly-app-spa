@@ -9,10 +9,11 @@ import { isPlatformBrowser } from "@angular/common";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { error } from "console";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "credential-hub",
-  imports: [FormsModule, RouterModule, CompanySearchComponent],
+  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe],
   templateUrl: "./credential-hub.component.html",
   styleUrl: "./credential-hub.component.scss",
   standalone: true,

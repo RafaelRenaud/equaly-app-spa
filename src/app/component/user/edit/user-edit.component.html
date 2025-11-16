@@ -6,7 +6,7 @@
     <div class="surface-container-body">
       <form [formGroup]="editUserForm">
         <div class="row">
-          <div class="col text-center">
+          <div class="col-md text-center">
             <div
               class="position-relative d-inline-block profile-image-container"
             >
@@ -55,7 +55,7 @@
 
         <!-- Informações não editáveis -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -66,7 +66,7 @@
             />
             <label for="floatingDocumentType" class="ps-4">Tipo de Documento</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -80,7 +80,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -94,7 +94,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -109,7 +109,7 @@
 
         <!-- Departamento Atual -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -124,7 +124,7 @@
 
         <!-- Alterar Departamento -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <app-department-search
               [selectedDepartmentValue]="selectedDepartment"
               (selectedDepartment)="onSelectDepartment($event)"
@@ -134,7 +134,7 @@
 
         <!-- Campos editáveis -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -149,7 +149,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -162,7 +162,7 @@
             <label for="floatingLogin" class="ps-4">Login</label>
             <div class="invalid-feedback pb-2">Login inválido</div>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -177,7 +177,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="email"
               class="form-control"
@@ -273,7 +273,7 @@
 
         <div class="row">
           @if(isEqualyMasterAdmin){
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -291,7 +291,7 @@
               ></i>
             </label>
           </div>
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -311,7 +311,7 @@
           </div>
           }
 
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -334,7 +334,7 @@
         <br />
 
         <div class="row">
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -352,7 +352,7 @@
               ></i>
             </label>
           </div>
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -370,7 +370,7 @@
               ></i>
             </label>
           </div>
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -393,7 +393,7 @@
         <br />
 
         <div class="row">
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -411,7 +411,7 @@
               ></i>
             </label>
           </div>
-          <div class="col form-check">
+          <div class="col-md form-check">
             <input
               class="form-check-input"
               type="checkbox"
@@ -421,7 +421,7 @@
               (change)="onCheckboxChange($event)"
             />
             <label class="form-check-label" for="commonRncReporter">
-              USUÁRIO COMUM
+              PREENCHEDOR DE RNC
               <i
                 class="bi bi-info-square-fill"
                 placement="top"
@@ -433,7 +433,7 @@
 
         <!-- Botões -->
         <div class="row">
-          <div class="col text-center">
+          <div class="col-md text-center">
             <button class="btn btn-primary" [routerLink]="['/users']">
               <i class="bi bi-arrow-left-square-fill"></i>
               Voltar

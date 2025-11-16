@@ -4,7 +4,7 @@
   </div>
   <div class="surface-container-body">
     <div class="row">
-      <div class="col-3">
+      <div class="col-md-3">
         <div class="form-floating">
           <select
             class="form-select form-control"
@@ -21,7 +21,7 @@
           <label>Filtro</label>
         </div>
       </div>
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="form-floating">
           <input
             type="text"
@@ -32,7 +32,7 @@
           <label>Busca</label>
         </div>
       </div>
-      <div class="col-3">
+      <div class="col-md-3">
         <div class="form-floating">
           <select
             class="form-select form-control"
@@ -49,7 +49,7 @@
     </div>
 
     <div class="row mt-3">
-      <div class="col-6">
+      <div class="col-md-6">
         <div class="row">
           <div class="col">
             <button class="btn btn-primary" (click)="searchCompanies()">
@@ -63,7 +63,7 @@
           </div>
         </div>
       </div>
-      <div class="col-6 text-end">
+      <div class="col-md-6 text-end">
         <button class="btn btn-success" [routerLink]="['/companies/create']">
           <i class="bi bi-plus-square-fill"></i>
           Cadastrar Empresa
@@ -263,7 +263,7 @@
       <div class="modal-body text-center">
         <div class="row">
           @if(selectedCompany?.logoUri){
-          <div class="col m-3">
+          <div class="col-md m-3">
             <img
               [src]="selectedCompany?.logoUri"
               alt="Logo da Empresa"
@@ -273,7 +273,7 @@
           }
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="number"
               class="form-control"
@@ -283,7 +283,7 @@
             />
             <label for="floatingId" class="ps-4">ID da Empresa</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -295,7 +295,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -307,7 +307,7 @@
               >Nome da Empresa</label
             >
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -321,7 +321,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -333,7 +333,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -345,7 +345,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -357,7 +357,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -370,7 +370,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -380,12 +380,12 @@
             />
             <label for="floatingCreatedAt" class="ps-4">Criado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingCreatedBy"
-              [value]="selectedCompany?.audit?.createdBy"
+              [value]="selectedCompany?.audit!.createdBy | systemName"
               disabled
             />
             <label for="floatingCreatedBy" class="ps-4">Criado por</label>
@@ -393,7 +393,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -403,12 +403,12 @@
             />
             <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingUpdatedBy"
-              [value]="selectedCompany?.audit?.updatedBy || 'Não se aplica'"
+              [value]="selectedCompany?.audit?.updatedBy || 'Não se aplica' | systemName"
               disabled
             />
             <label for="floatingUpdatedBy" class="ps-4">Atualizado por</label>
@@ -416,7 +416,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -428,12 +428,12 @@
               >Inativo pela última vez em</label
             >
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingLastInactiveBy"
-              [value]="selectedCompany?.audit?.disabledBy || 'Não se aplica'"
+              [value]="selectedCompany?.audit?.disabledBy || 'Não se aplica' | systemName"
               disabled
             />
             <label for="floatingLastInactiveBy" class="ps-4"

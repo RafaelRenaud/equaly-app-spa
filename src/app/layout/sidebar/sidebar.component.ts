@@ -1,15 +1,16 @@
-import { Component, Inject, PLATFORM_ID } from "@angular/core";
+import { Component } from "@angular/core";
 import { SessionService } from "../../core/service/session/session.service";
 import { RouterModule } from "@angular/router";
 import { LoginService } from "../../core/service/login/login.service";
 import { LoadingService } from "../../core/service/loading/loading.service";
+import { NgbCollapseModule } from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: "app-sidebar",
   standalone: true,
   templateUrl: "./sidebar.component.html",
-  styleUrl: "./sidebar.component.scss",
-  imports: [RouterModule],
+  styleUrls: ["./sidebar.component.scss"],
+  imports: [RouterModule, NgbCollapseModule],
 })
 export class SidebarComponent {
   companyLogo: string | null = null;
@@ -17,6 +18,8 @@ export class SidebarComponent {
   userDisplayName: string | null = null;
   companyDisplayName: string | null = null;
   departmentName: string | null = null;
+
+  isMenuCollapsed = true; // controla collapse mobile
 
   constructor(
     public sessionService: SessionService,
@@ -36,9 +39,15 @@ export class SidebarComponent {
     event.preventDefault();
     this.loadingService.show();
     this.loginService.logout().then(() => {
-      setTimeout(() => {
-        this.loadingService.hide();
-      }, 500);
+      setTimeout(() => this.loadingService.hide(), 500);
     });
+  }
+
+  toggleMenu() {
+    this.isMenuCollapsed = !this.isMenuCollapsed;
+  }
+
+  closeMenu() {
+    this.isMenuCollapsed = true;
   }
 }

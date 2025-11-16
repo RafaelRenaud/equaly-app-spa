@@ -24,7 +24,7 @@
         <!-- Logo -->
         @if(myCompany?.logoUri) {
         <div class="row text-center mb-3">
-          <div class="col">
+          <div class="col-md">
             <img
               [src]="myCompany?.logoUri"
               alt="Logo da Empresa"
@@ -37,7 +37,7 @@
 
         <!-- IDs e Status -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="number"
               class="form-control"
@@ -47,7 +47,7 @@
             />
             <label class="ps-4">ID da Empresa</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -61,7 +61,7 @@
 
         <!-- Nome da Empresa e Estado -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               formControlName="companyDisplayName"
               type="text"
@@ -78,7 +78,7 @@
               Nome da Empresa é obrigatório e deve ter no máximo 128 caracteres.
             </div>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -92,7 +92,7 @@
 
         <!-- Nome Fantasia -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               formControlName="companyName"
               type="text"
@@ -115,7 +115,7 @@
 
         <!-- Razão Social -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               formControlName="companyTradingName"
               type="text"
@@ -138,7 +138,7 @@
 
         <!-- CNPJ -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -152,7 +152,7 @@
 
         <!-- Contato -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               formControlName="companyContact"
               type="email"
@@ -171,7 +171,7 @@
 
         <!-- Auditoria -->
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -181,19 +181,19 @@
             />
             <label class="ps-4">Criado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               placeholder="Criado por"
               disabled
-              [value]="myCompany?.audit?.createdBy"
+              [value]="myCompany?.audit!.createdBy | systemName"
             />
             <label class="ps-4">Criado por</label>
           </div>
         </div>
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -203,13 +203,13 @@
             />
             <label class="ps-4">Atualizado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               placeholder="Atualizado por"
               disabled
-              [value]="myCompany?.audit?.updatedBy || 'Não se aplica'"
+              [value]="myCompany?.audit!.updatedBy || 'Não se aplica' | systemName"
             />
             <label class="ps-4">Atualizado por</label>
           </div>

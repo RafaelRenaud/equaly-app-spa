@@ -18,11 +18,12 @@ import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
 import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { RecoveryService } from "../../core/service/recovery/recovery.service";
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
+import { UserSystemPipe } from "../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-my-account",
   standalone: true,
-  imports: [RouterModule, ReactiveFormsModule, ImageCropperComponent],
+  imports: [RouterModule, ReactiveFormsModule, ImageCropperComponent, UserSystemPipe],
   templateUrl: "./my-account.component.html",
   styleUrl: "./my-account.component.scss",
 })

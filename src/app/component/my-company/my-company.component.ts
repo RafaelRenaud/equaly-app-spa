@@ -13,10 +13,11 @@ import { Router, RouterModule } from "@angular/router";
 import { finalize } from "rxjs";
 import { LoginService } from "../../core/service/login/login.service";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { UserSystemPipe } from "../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-my-company",
-  imports: [RouterModule, ReactiveFormsModule],
+  imports: [RouterModule, ReactiveFormsModule, UserSystemPipe],
   templateUrl: "./my-company.component.html",
   styleUrls: ["./my-company.component.scss"],
   standalone: true,

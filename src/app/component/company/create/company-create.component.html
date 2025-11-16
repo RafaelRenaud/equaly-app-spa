@@ -4,7 +4,7 @@
   </div>
   <div class="surface-container-body">
     <div class="row">
-      <div class="col text-end">
+      <div class="col-md text-end">
         <div class="logo-image-wrapper position-relative d-inline-block">
           @if(logoIsSelected){
           <img
@@ -25,7 +25,7 @@
           }
         </div>
       </div>
-      <div class="col text-start">
+      <div class="col-md text-start">
         <button class="btn btn-primary mt-5" (click)="fileInput.click()">
           <i class="bi bi-upload"></i>
           Upload do Logo da Empresa
@@ -44,7 +44,7 @@
     <form [formGroup]="companyForm">
       <!-- Nome Fantasia -->
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyName"
             type="text"
@@ -74,7 +74,7 @@
 
       <!-- Nome da Empresa + Código -->
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyDisplayName"
             type="text"
@@ -96,7 +96,7 @@
           </div>
         </div>
 
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyAlias"
             type="text"
@@ -126,7 +126,7 @@
 
       <!-- Razão Social + CNPJ -->
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyTradingName"
             type="text"
@@ -150,7 +150,7 @@
           </div>
         </div>
 
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyDocument"
             type="text"
@@ -180,7 +180,7 @@
 
       <!-- E-mail -->
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="companyContact"
             type="email"
@@ -205,7 +205,7 @@
 
       <!-- Botões -->
       <div class="row">
-        <div class="col text-center">
+        <div class="col-md text-center">
           <button class="btn btn-primary" [routerLink]="['/companies']">
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar

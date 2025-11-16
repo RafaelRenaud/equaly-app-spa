@@ -56,7 +56,7 @@
 
       <form [formGroup]="mainProfileForm">
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="number"
               class="form-control"
@@ -67,7 +67,7 @@
             />
             <label for="floatingId" class="ps-4">ID de Usuário</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -115,7 +115,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -133,7 +133,7 @@
             </div>
           </div>
 
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -189,7 +189,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -200,12 +200,12 @@
             />
             <label for="floatingCreatedAt" class="ps-4">Criado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingCreatedBy"
-              [value]="myUser?.audit?.createdBy"
+              [value]="myUser?.audit!.createdBy | systemName"
               disabled
               placeholder="Criado por"
             />
@@ -214,7 +214,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -225,12 +225,12 @@
             />
             <label for="floatingUpdatedAt" class="ps-4">Atualizado em</label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingUpdatedBy"
-              [value]="myUser?.audit?.updatedBy || 'Não se aplica'"
+              [value]="myUser?.audit!.updatedBy || 'Não se aplica' | systemName"
               disabled
               placeholder="Atualizado por"
             />
@@ -239,7 +239,7 @@
         </div>
 
         <div class="row">
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
@@ -252,12 +252,12 @@
               Inativo pela última vez em
             </label>
           </div>
-          <div class="form-floating col">
+          <div class="form-floating col-md">
             <input
               type="text"
               class="form-control"
               id="floatingLastInactiveBy"
-              [value]="myUser?.audit?.disabledBy || 'Não se aplica'"
+              [value]="myUser?.audit!.disabledBy || 'Não se aplica' | systemName"
               disabled
               placeholder="Inativo pela última vez por"
             />

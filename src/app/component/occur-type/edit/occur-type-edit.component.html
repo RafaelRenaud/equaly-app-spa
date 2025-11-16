@@ -5,7 +5,7 @@
   <div class="surface-container-body">
     <form [formGroup]="occurTypeForm" (ngSubmit)="editOccurType()">
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             type="number"
             class="form-control"
@@ -19,7 +19,7 @@
       </div>
 
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             type="text"
             class="form-control"
@@ -37,7 +37,7 @@
       </div>
 
       <div class="row">
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             type="text"
             maxlength="64"
@@ -72,7 +72,7 @@
       </div>
 
       <div class="row">
-        <div class="col text-center">
+        <div class="col-md text-center">
           <button class="btn btn-primary" [routerLink]="['/occur-types']">
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar

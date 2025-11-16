@@ -20,20 +20,19 @@
 
 <!-- Sidebar -->
 <nav class="navbar navbar-expand-sm navbar-dark" id="main-sidebar">
+  <!-- Toggler -->
   <button
     class="navbar-toggler"
     type="button"
-    data-bs-toggle="collapse"
-    data-bs-target="#navbarToggler"
-    aria-controls="navbarToggler"
-    aria-expanded="false"
+    (click)="toggleMenu()"
+    [attr.aria-expanded]="!isMenuCollapsed"
     aria-label="Toggle navigation"
-    data-bs-auto-close="true"
   >
     <span class="navbar-toggler-icon"></span>
   </button>
 
-  <div class="collapse navbar-collapse" id="navbarToggler">
+  <!-- Collapse usando ng-bootstrap -->
+  <div [ngbCollapse]="isMenuCollapsed" class="navbar-collapse">
     <div class="sidebar-content">
       <!-- LOGO -->
       <a href="/" class="mx-auto navbar-brand">
@@ -49,11 +48,11 @@
       <ul class="navbar-nav nav-pills flex-column">
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/']"
             routerLinkActive="active"
             [routerLinkActiveOptions]="{ exact: true }"
+            (click)="closeMenu()"
           >
             <i class="bi bi-house-fill p-2"></i>
             Início
@@ -61,14 +60,13 @@
         </li>
 
         <!-- ADMINISTRATIVO -->
-
         @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/companies']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-buildings-fill p-2"></i>
             Empresas
@@ -78,10 +76,10 @@
 
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/my-company']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-building-fill p-2"></i>
             Minha Empresa
@@ -91,10 +89,10 @@
         @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/credentials']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-award-fill p-2"></i>
             Credenciais
@@ -105,10 +103,10 @@
         sessionService.hasRole('COMMON_ADMIN') ) {
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/departments']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-diagram-2-fill p-2"></i>
             Departamentos
@@ -117,16 +115,15 @@
 
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/users']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-people-fill p-2"></i>
             Usuários
           </a>
         </li>
-
         } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
         sessionService.hasRole('MASTER_ADMIN') ||
         sessionService.hasRole('COMMON_ADMIN') ||
@@ -134,10 +131,10 @@
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
         <li class="nav-item p-1">
           <a
-            href="#"
             class="nav-link"
             [routerLink]="['/occur-types']"
             routerLinkActive="active"
+            (click)="closeMenu()"
           >
             <i class="bi bi-ui-checks p-2"></i>
             Tipos de Ocorrências
@@ -146,11 +143,10 @@
         }
 
         <!-- OPERACIONAL -->
-
         @if ( sessionService.hasRole('MASTER_EVENT_OPENER') ||
         sessionService.hasRole('COMMON_EVENT_OPENER') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-chat-left-fill p-2"></i>
             Feedbacks
           </a>
@@ -160,7 +156,7 @@
         sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-file-post-fill p-2"></i>
             Ocorrências
           </a>
@@ -169,7 +165,7 @@
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ||
         sessionService.hasRole('COMMON_RNC_REPORTER') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-clipboard2-minus-fill p-2"></i>
             Não Conformidades
           </a>
@@ -178,19 +174,19 @@
         !sessionService.hasRole('MASTER_ADMIN') &&
         !sessionService.hasRole('COMMON_ADMIN') ) {
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" arouterLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-bar-chart-line-fill p-2"></i>
             Dashboards
           </a>
         </li>
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-bookmark-fill p-2"></i>
             Salvos
           </a>
         </li>
         <li class="nav-item p-1">
-          <a href="#" class="nav-link" routerLinkActive="active">
+          <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-archive-fill p-2"></i>
             Arquivados
           </a>
@@ -198,40 +194,26 @@
         }
       </ul>
 
-      <!-- RODAPÉ: perfil - AGORA DENTRO DO sidebar-content -->
-      <div class="sidebar-footer row text-white">
-        <div class="col-4">
-          <img
-            [src]="
-              userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
-            "
-            alt="Avatar"
-            width="64"
-            height="64"
-            class="rounded"
-          />
-        </div>
-        <div class="col-8">
-          <strong>{{ userDisplayName }}</strong
-          ><br />
+      <!-- FOOTER -->
+      <div class="sidebar-footer text-white">
+        <img
+          [src]="
+            userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
+          "
+          alt="Avatar"
+          class="rounded"
+        />
+        <div class="footer-info">
+          <strong>{{ userDisplayName }}</strong>
           <i
             ><small>{{ companyDisplayName }}</small></i
           ><br />
           <small>
-            <a
-              href="#"
-              [routerLink]="['/my-account']"
-              class="text-white text-decoration-none"
+            <a href="#" [routerLink]="['/my-account']" (click)="closeMenu()"
+              >Meu Perfil</a
             >
-              Meu Perfil
-            </a>
             |
-            <a
-              class="text-white text-decoration-none"
-              (click)="logout($event)"
-              href="#"
-              >Sair</a
-            >
+            <a href="#" (click)="logout($event)">Sair</a>
           </small>
         </div>
       </div>

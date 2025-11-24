@@ -1,7 +1,7 @@
 @if (flowType !== 'RECOVERY') {
 <div class="login-div">
   @if (flowType === 'COMMON_LOGIN' || flowType === 'COMPANY_LOGIN') {
-  <div class="col-4 mx-auto surface-container-centered">
+  <div class="col-md-4 mx-auto surface-container-centered">
     <div class="surface-container-header">
       <img
         alt="Logo da Empresa"
@@ -21,7 +21,7 @@
         (ngSubmit)="submitLogin('COMMON_LOGIN')"
         novalidate
       >
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="login"
             type="text"
@@ -33,7 +33,7 @@
           <label for="login">Login ou E-Mail</label>
         </div>
 
-        <div class="form-floating col">
+        <div class="form-floating col-md">
           <input
             formControlName="password"
             type="password"
@@ -97,21 +97,22 @@
       } @if (companiesSearched && subflowType === 'COMPANY_LIST') {
       <div class="company-list">
         <table class="table table-striped table-hover">
+          <thead>
+            <th>Empresa</th>
+            <th>Razão Social</th>
+            <th>CNPJ</th>
+          </thead>
           <tbody>
             @for (company of companies; track company.id) {
-            <tr>
-              <td class="col-9">
-                <p>{{ company.name }}</p>
-                <p>{{ company.tradingName }}</p>
-                <p>{{ company.document }}</p>
+            <tr (click)="selectCompany(company, $event)">
+              <td class="col-md">
+                {{ company.name }}
               </td>
-              <td>
-                <button
-                  class="btn btn-primary col"
-                  (click)="selectCompany(company, $event)"
-                >
-                  Acessar
-                </button>
+              <td class="col-md">
+                {{ company.tradingName }}
+              </td>
+              <td class="col-md">
+                {{ company.document }}
               </td>
             </tr>
             }
@@ -175,14 +176,17 @@
           <form
             [formGroup]="companyLoginForm"
             (ngSubmit)="submitLogin('COMPANY_LOGIN')"
+            class="form-floating"
           >
             <input
               formControlName="password"
               class="form-control"
               type="password"
+              id="password"
               placeholder="Senha"
               [class.is-invalid]="invalidLogin"
             />
+            <label for="password">Senha</label>
             <button class="btn btn-primary" type="submit">Entrar</button>
             <button
               type="button"
@@ -193,7 +197,6 @@
             </button>
           </form>
         </div>
-        <p>ou</p>
         <button
           class="btn btn-outline-primary"
           (click)="changeView('COMMON_LOGIN', $event)"
@@ -209,7 +212,7 @@
 </div>
 } @if (flowType === 'RECOVERY') {
 <div class="login-div">
-  <div class="col-4 mx-auto surface-container-centered">
+  <div class="col-md-4 mx-auto surface-container-centered">
     <div class="surface-container-header"><br /></div>
     <div class="surface-container-body">
       <h2 class="text-center">Recuperar Conta</h2>

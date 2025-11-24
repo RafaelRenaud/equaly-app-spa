@@ -10,7 +10,7 @@ bootstrapApplication(AppComponent, appConfig)
       setTimeout(() => {
         splash.classList.add("hidden");
         setTimeout(() => splash.remove(), 300);
-      }, 200);
+      }, 1500);
     }
   })
   .catch((err) => console.error(err));

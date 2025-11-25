@@ -77,6 +77,10 @@
     <div class="text-center surface-container-body" id="company-login">
       @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST') {
       <div class="company-search">
+        <p>
+          Para entrar com a empresa, digite o seu documento e selecione a
+          empresa específica.
+        </p>
         <form
           [formGroup]="companySearchForm"
           (ngSubmit)="searchCompanies()"
@@ -224,20 +228,31 @@
       }
       <form [formGroup]="recoveryForm" (ngSubmit)="sendRAC()" novalidate>
         @if (!recoveryCodeSent) {
-        <input
-          formControlName="login"
-          type="text"
-          class="form-control"
-          placeholder="Login"
-          [class.is-invalid]="invalidRecovery"
-        />
-        <input
-          formControlName="companyAlias"
-          type="text"
-          class="form-control"
-          placeholder="Código da Empresa"
-          [class.is-invalid]="invalidRecovery"
-        />
+        <!-- Primeiro campo com form-floating -->
+        <div class="form-floating mb-3">
+          <input
+            formControlName="login"
+            type="text"
+            class="form-control"
+            id="recoveryLogin"
+            placeholder="Login"
+            [class.is-invalid]="invalidRecovery"
+          />
+          <label for="recoveryLogin">Login</label>
+        </div>
+
+        <!-- Segundo campo com form-floating -->
+        <div class="form-floating mb-3">
+          <input
+            formControlName="companyAlias"
+            type="text"
+            class="form-control"
+            id="recoveryCompanyAlias"
+            placeholder="Código da Empresa"
+            [class.is-invalid]="invalidRecovery"
+          />
+          <label for="recoveryCompanyAlias">Código da Empresa</label>
+        </div>
         } @if (recoveryCodeSent) {
         <div class="alert alert-success">
           Código enviado com sucesso! Verifique sua caixa de entrada ou spam.
@@ -247,6 +262,7 @@
           Informações Incorretas, tente novamente.
         </div>
         }
+
         <div class="text-center">
           @if (!recoveryCodeSent) {
           <button type="submit" class="btn btn-primary">

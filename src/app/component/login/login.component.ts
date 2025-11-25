@@ -1,5 +1,4 @@
 import { Component } from "@angular/core";
-import { LoadingService } from "../../core/service/loading/loading.service";
 import { CommonModule } from "@angular/common";
 import {
   ReactiveFormsModule,
@@ -7,20 +6,23 @@ import {
   Validators,
   FormGroup,
 } from "@angular/forms";
-import { LoginRequest } from "../../core/model/login/login-request.model";
+import { Router } from "@angular/router";
+
+import { LoadingService } from "../../core/service/loading/loading.service";
 import { LoginService } from "../../core/service/login/login.service";
 import { SessionService } from "../../core/service/session/session.service";
-import { SendRecovery } from "../../core/model/recovery/send-recovery.model";
-import { LoginCompanySearchRequest } from "../../core/model/login/login-company-search-request.model";
-import { Company } from "../../core/model/login/login-company.model";
-import { Router } from "@angular/router";
 import { RecoveryService } from "../../core/service/recovery/recovery.service";
+
+import { LoginRequest } from "../../core/model/login/login-request.model";
+import { LoginCompanySearchRequest } from "../../core/model/login/login-company-search-request.model";
+import { SendRecovery } from "../../core/model/recovery/send-recovery.model";
+import { Company } from "../../core/model/login/login-company.model";
 
 @Component({
   selector: "app-login",
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: "./login.component.html",
-  styleUrl: "./login.component.scss",
+  styleUrls: ["./login.component.scss"],
   standalone: true,
 })
 export class LoginComponent {
@@ -37,10 +39,10 @@ export class LoginComponent {
   totalPages = 0;
   pages: number[] = [];
 
-  loginForm!: FormGroup;
-  recoveryForm!: FormGroup;
-  companySearchForm!: FormGroup;
-  companyLoginForm!: FormGroup;
+  loginForm: FormGroup;
+  recoveryForm: FormGroup;
+  companySearchForm: FormGroup;
+  companyLoginForm: FormGroup;
 
   selectedCompany: Company | null = null;
   selectedUserDocument: string | null = null;
@@ -89,49 +91,89 @@ export class LoginComponent {
     });
   }
 
+  // ==============================
+  // Getters para simplificar template
+  // ==============================
+  get isCommonLogin() {
+    return this.flowType === "COMMON_LOGIN";
+  }
+  get isCompanyLogin() {
+    return this.flowType === "COMPANY_LOGIN";
+  }
+  get isRecovery() {
+    return this.flowType === "RECOVERY";
+  }
+
+  get isCompanySearch() {
+    return this.subflowType === "COMPANY_SEARCH";
+  }
+  get isCompanyList() {
+    return this.subflowType === "COMPANY_LIST";
+  }
+  get isCompanyCredentials() {
+    return this.subflowType === "COMPANY_CREDENTIALS";
+  }
+
+  // ==============================
+  // Controle de views
+  // ==============================
   changeView(viewName: string, event: Event) {
     event.preventDefault();
+    this.invalidLogin = false;
+    this.invalidRecovery = false;
 
-    if (viewName === "RECOVERY") {
-      this.flowType = "RECOVERY";
-      this.subflowType = "";
-    } else if (viewName === "COMMON_LOGIN") {
-      this.flowType = "COMMON_LOGIN";
-      this.subflowType = "";
-    } else if (viewName === "COMPANY_SEARCH") {
-      this.flowType = "COMPANY_LOGIN";
-      this.subflowType = "COMPANY_SEARCH";
-    } else if (viewName === "COMPANY_LIST") {
-      this.flowType = "COMPANY_LOGIN";
-      this.subflowType = "COMPANY_LIST";
-    } else if (viewName === "COMPANY_CREDENTIALS") {
-      this.flowType = "COMPANY_LOGIN";
-      this.subflowType = "COMPANY_CREDENTIALS";
+    switch (viewName) {
+      case "RECOVERY":
+        this.flowType = "RECOVERY";
+        this.subflowType = "";
+        break;
+      case "COMMON_LOGIN":
+        this.flowType = "COMMON_LOGIN";
+        this.subflowType = "";
+        break;
+      case "COMPANY_SEARCH":
+        this.flowType = "COMPANY_LOGIN";
+        this.subflowType = "COMPANY_SEARCH";
+        break;
+      case "COMPANY_LIST":
+        this.flowType = "COMPANY_LOGIN";
+        this.subflowType = "COMPANY_LIST";
+        break;
+      case "COMPANY_CREDENTIALS":
+        this.flowType = "COMPANY_LOGIN";
+        this.subflowType = "COMPANY_CREDENTIALS";
+        break;
     }
   }
 
+  // ==============================
+  // Login
+  // ==============================
   submitLogin(loginType: string) {
     this.loadingService.show();
+
     let credentials: LoginRequest;
 
     if (loginType === "COMPANY_LOGIN") {
-      credentials = this.companyLoginForm.value as LoginRequest;
-      credentials.companyId = this.selectedCompany!.id;
-      credentials.document = this.selectedUserDocument!;
+      if (!this.selectedCompany || !this.selectedUserDocument) {
+        this.invalidLogin = true;
+        this.loadingService.hide();
+        return;
+      }
 
-        if (this.companyLoginForm.invalid) {
-          this.invalidLogin = true;
-        } else {
-          this.invalidLogin = false;
-        }
+      credentials = this.companyLoginForm.value as LoginRequest;
+      credentials.companyId = this.selectedCompany.id;
+      credentials.document = this.selectedUserDocument;
+
+      this.invalidLogin = this.companyLoginForm.invalid;
     } else {
       credentials = this.loginForm.value as LoginRequest;
+      this.invalidLogin = this.loginForm.invalid;
+    }
 
-      if (this.loginForm.invalid) {
-        this.invalidLogin = true;
-      } else {
-        this.invalidLogin = false;
-      }
+    if (this.invalidLogin) {
+      this.loadingService.hide();
+      return;
     }
 
     this.loginService.login(credentials, loginType).subscribe({
@@ -153,40 +195,37 @@ export class LoginComponent {
     });
   }
 
+  // ==============================
+  // Recuperação de conta
+  // ==============================
   sendRAC() {
-    const recoveryData: SendRecovery = this.recoveryForm.value as SendRecovery;
+    this.invalidRecovery = this.recoveryForm.invalid;
+    if (this.invalidRecovery) return;
 
+    const recoveryData: SendRecovery = this.recoveryForm.value as SendRecovery;
     this.loadingService.show();
+
     this.recoveryService.sendRAC(recoveryData).subscribe({
-      next: (res) => {
+      next: () => {
         this.recoveryCodeSent = true;
-        console.info("Código RAC Enviado! ");
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao chamar API de Recuperação: ", err);
+        console.error("Erro ao enviar RAC: ", err);
         this.invalidRecovery = true;
         this.loadingService.hide();
       },
     });
-
-    if (this.recoveryForm.invalid) {
-      this.invalidRecovery = true;
-    } else {
-      this.invalidRecovery = false;
-    }
   }
 
-  loadPage(page: number) {
-    this.page = page;
-    this.searchCompanies();
-  }
-
+  // ==============================
+  // Busca de empresas
+  // ==============================
   searchCompanies() {
     const companySearchData: LoginCompanySearchRequest = this.companySearchForm
       .value as LoginCompanySearchRequest;
-
     this.loadingService.show();
+
     this.loginService.searchCompanies(companySearchData, this.page).subscribe({
       next: (res) => {
         this.companies = res.companies;
@@ -200,14 +239,22 @@ export class LoginComponent {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao chamar API de Consulta de Empresas: ", err);
+        console.error("Erro ao buscar empresas: ", err);
         this.loadingService.hide();
       },
     });
   }
 
+  loadPage(page: number) {
+    if (page < 0 || page >= this.totalPages) return;
+    this.page = page;
+    this.searchCompanies();
+  }
+
   selectCompany(company: Company, event: Event) {
-    this.changeView("COMPANY_CREDENTIALS", event);
+    event.preventDefault();
     this.selectedCompany = company;
+    this.flowType = "COMPANY_LOGIN";
+    this.subflowType = "COMPANY_CREDENTIALS";
   }
 }

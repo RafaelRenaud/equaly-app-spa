@@ -21,6 +21,8 @@ export class SidebarComponent {
 
   isMenuCollapsed = true; // controla collapse mobile
 
+  isOccurrencesCollapsed = true;
+
   constructor(
     public sessionService: SessionService,
     private loginService: LoginService,
@@ -49,5 +51,9 @@ export class SidebarComponent {
 
   closeMenu() {
     this.isMenuCollapsed = true;
+  }
+
+  toggleOccurrences() {
+    this.isOccurrencesCollapsed = !this.isOccurrencesCollapsed;
   }
 }

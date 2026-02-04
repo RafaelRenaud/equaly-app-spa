@@ -50,20 +50,43 @@ export class LoginService {
   }
 
   searchCompanies(
-    data: LoginCompanySearchRequest,
-    page: number
+    customerDocument: string | null,
+    companyAlias: string | null,
+    companyDocument: string | null,
+    status: string | null,
+    page: number | null,
+    size: number | null
   ): Observable<LoginCompanySearchResponse> {
-    const customerDocument = data.customerDocument;
+    let httpParams = new HttpParams();
+    if (customerDocument) {
+      httpParams = httpParams.set("userId", customerDocument);
+    }
+    if (companyAlias) {
+      httpParams = httpParams.set("alias", companyAlias);
+    }
+    if (companyDocument) {
+      httpParams = httpParams.set("document", companyDocument);
+    }
+    if (status) {
+      httpParams = httpParams.set("status", status);
+    }
+    if (page) {
+      httpParams = httpParams.set("page", page.toString());
+    }
+    if (size) {
+      httpParams = httpParams.set("size", size.toString());
+    }
     const headers = new HttpHeaders({
       "Content-Type": "application/json",
     });
 
     return this.http.get<LoginCompanySearchResponse>(
       this.companyEndpoint.concat(
-        `/user/${customerDocument}/companies?page=${page}&size=10`
+        `/companies`
       ),
       {
         headers,
+        params: httpParams,
       }
     );
   }
@@ -72,7 +95,7 @@ export class LoginService {
     const headers = new HttpHeaders({
       "Content-Type": "application/json",
       "X-Application-Key": this.sessionService.getItem("clientKey")!,
-      Authorization: this.sessionService.getItem("Authorization")!,
+      "Authorization": this.sessionService.getItem("Authorization")!,
     });
     return lastValueFrom(this.http.delete(this.authEndpoint.concat("/logout"), { headers })).then(() => {
       sessionStorage.clear();

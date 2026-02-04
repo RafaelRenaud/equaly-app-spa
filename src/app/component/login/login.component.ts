@@ -226,7 +226,7 @@ export class LoginComponent {
       .value as LoginCompanySearchRequest;
     this.loadingService.show();
 
-    this.loginService.searchCompanies(companySearchData, this.page).subscribe({
+    this.loginService.searchCompanies(companySearchData.customerDocument, null, null,null, this.page, 10).subscribe({
       next: (res) => {
         this.companies = res.companies;
         this.page = res.pageable.number;

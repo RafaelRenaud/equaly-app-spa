@@ -1,0 +1,172 @@
+<!-- <div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Cadastrar Nova Ocorrência</h3>
+    </div>
+    <div class="surface-container-body">
+        <form>
+            <div class="row">
+                <div class="form-floating col-md">
+                    <occur-type-search (selectedOccurType)="onSelectOccurType($event)"></occur-type-search>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select class="form-select form-control" [(ngModel)]="selectedPriority"
+                            title="Selecione a prioridade da Ocorrência">
+                            <option value="NONE" selected>Selecione</option>
+                            <option value="LOW">Baixa</option>
+                            <option value="MEDIUM">Média</option>
+                            <option value="HIGH">Alta</option>
+                        </select>
+                        <label>Prioridade</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <inspector-search (selectedInspector)="onSelectInspector($event)"></inspector-search>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <label>Data do Ocorrido</label>
+                    <input type="text" ngbDatepicker #d="ngbDatepicker" />
+                </div>
+            </div>
+
+            <div ngbAccordion>
+                <div ngbAccordionItem [collapsed]="true">
+                    <h2 ngbAccordionHeader>
+                        <button ngbAccordionButton class="accordion-button">
+                            Notas Fiscais
+                        </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                        <div ngbAccordionBody>
+                            <ng-template>
+                                <div class="row">
+                                    <div class="col-md form-floating">
+                                        <input type="text" class="form-control" [(ngModel)]="nf1"
+                                            placeholder="Nota Fiscal 1" />
+                                        <label>Nota Fiscal 1</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md form-floating">
+                                        <input type="text" class="form-control" [(ngModel)]="nf2"
+                                            placeholder="Nota Fiscal 2" />
+                                        <label>Nota Fiscal 2</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md form-floating">
+                                        <input type="text" class="form-control" [(ngModel)]="nf3"
+                                            placeholder="Nota Fiscal 3" />
+                                        <label>Nota Fiscal 3</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md form-floating">
+                                        <input type="text" class="form-control" [(ngModel)]="nf4"
+                                            placeholder="Nota Fiscal 4" />
+                                        <label>Nota Fiscal 4</label>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md form-floating">
+                                        <input type="text" class="form-control" [(ngModel)]="nf5"
+                                            placeholder="Nota Fiscal 5" />
+                                        <label>Nota Fiscal 5</label>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <label>Título</label>
+                    <input type="text" class="form-control" [(ngModel)]="occurTitle"
+                        placeholder="Título da Ocorrência" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <label>Descrição</label>
+                    <textarea class="form-control" maxlength="512"
+                        placeholder="Descrição Breve da Ocorrência"></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <label>Complemento</label>
+                    <textarea class="form-control" maxlength="256" placeholder="Informações Complementares"></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-floating col-md">
+                    <label>Número do Pedido, se houver</label>
+                    <input type="text" class="form-control" [(ngModel)]="orderId" placeholder="Número do Pedido" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-floating">
+                        <select class="form-select form-control" [(ngModel)]="complaintType" title="Tipo de Ocorrência">
+                            <option value="NONE" selected>Selecione</option>
+                            <option value="INTERNAL">Interna - O reclamante faz parte da organização</option>
+                            <option value="EXTERNAL">Externa - O reclamante é cliente ou não faz parte da organização
+                            </option>
+                        </select>
+                        <label>Tipo de Reclamação</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
+                    (change)="onAnonymousCheckboxChange($event)" />
+                <label class="form-check-label">
+                    Inserir Informações do Reclamante?
+                </label>
+            </div>
+
+            <div class="form-floating">
+                <textarea class="form-control" id="departmentDescriptionLabel"
+                    [class.is-invalid]="departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)"
+                    formControlName="departmentDescription" maxlength="256" placeholder="Descrição"></textarea>
+                <label for="departmentDescriptionLabel">Descrição</label>
+                @if(departmentForm.get('departmentDescription')?.invalid &&
+                (departmentForm.get('departmentDescription')?.touched ||
+                departmentForm.get('departmentDescription')?.dirty)){
+                <div class="invalid-feedback pb-2">
+                    Descrição não preenchida ou inválida.
+                </div>
+                }
+            </div>
+
+            <div class="row">
+                <div class="col-md text-center">
+                    <button class="btn btn-primary" [routerLink]="['/departments']">
+                        <i class="bi bi-arrow-left-square-fill"></i>
+                        Voltar
+                    </button>
+                    <button type="submit" class="btn btn-success" [disabled]="departmentForm.invalid">
+                        <i class="bi bi-plus-square-fill"></i>
+                        Cadastrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div> -->

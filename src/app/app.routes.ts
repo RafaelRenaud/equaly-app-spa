@@ -22,6 +22,7 @@ import { DepartmentEditComponent } from "./component/department/edit/department-
 import { UserHubComponent } from "./component/user/hub/user-hub.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
+import { OccurCreateComponent } from "./component/occur/create/occur-create.component";
 
 export const routes: Routes = [
   {
@@ -168,6 +169,20 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: "occurs",
+        children: [
+          {
+            path: "create",
+            data: {
+              roles: [
+                "COMMON_EVENT_OPENER"
+              ],
+            },
+            component: OccurCreateComponent,
+          }
+        ],
+      }
     ],
   },
 

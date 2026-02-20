@@ -1,172 +1,390 @@
-<!-- <div class="surface-container">
+<div class="surface-container">
     <div class="surface-container-header">
-        <h3 class="text-white pt-3 pb-2">Cadastrar Nova Ocorrência</h3>
+        <h3 class="text-white pt-3 pb-2">Cadastrar Ocorrência</h3>
     </div>
     <div class="surface-container-body">
-        <form>
-            <div class="row">
-                <div class="form-floating col-md">
-                    <occur-type-search (selectedOccurType)="onSelectOccurType($event)"></occur-type-search>
+        <form [formGroup]="occurrenceForm">
+            <!-- Seção: Dados da Ocorrência -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h5 class="border-bottom pb-2">Dados da Ocorrência</h5>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-floating">
-                        <select class="form-select form-control" [(ngModel)]="selectedPriority"
-                            title="Selecione a prioridade da Ocorrência">
-                            <option value="NONE" selected>Selecione</option>
-                            <option value="LOW">Baixa</option>
-                            <option value="MEDIUM">Média</option>
-                            <option value="HIGH">Alta</option>
-                        </select>
-                        <label>Prioridade</label>
+            <!-- Tipo de Ocorrência -->
+            <div class="row mb-3">
+                <div class="form-floating col-md-12">
+                    <input type="text" class="form-control" id="floatingOccurrenceType" placeholder="Tipo de Ocorrência"
+                        formControlName="occurrenceType" />
+                    <label for="floatingOccurrenceType" class="ps-4">Tipo de Ocorrência</label>
+                </div>
+            </div>
+
+            <!-- Responsável Inspeção de Qualidade -->
+            <div class="row mb-3">
+                <div class="form-floating col-md-12">
+                    <input type="text" class="form-control" id="floatingQualityInspector"
+                        placeholder="Responsável Inspeção de Qualidade" formControlName="qualityInspector" />
+                    <label for="floatingQualityInspector" class="ps-4">Responsável Inspeção de Qualidade</label>
+                </div>
+            </div>
+
+            <!-- Prioridade + Data do Ocorrido -->
+            <div class="row mb-3">
+                <div class="form-floating col-md-6">
+                    <select class="form-select" id="floatingPriority" title="Selecione a prioridade"
+                        formControlName="priority">
+                        <option value="" selected disabled>Selecione</option>
+                        <option value="LOW">Baixa</option>
+                        <option value="MEDIUM">Média</option>
+                        <option value="HIGH">Alta</option>
+                    </select>
+                    <label for="floatingPriority" class="ps-4">Prioridade</label>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating position-relative">
+                        <input type="text" class="form-control" id="floatingOccurrenceDate"
+                            placeholder="Data do Ocorrido" [value]="getFormattedDate()" readonly
+                            (click)="toggleDatePicker()" />
+                        <label for="floatingOccurrenceDate" class="ps-4">Data do Ocorrido</label>
+                        <button class="btn btn-outline-secondary position-absolute end-0 top-0 h-100 border-start-0"
+                            type="button" (click)="toggleDatePicker()">
+                            <i class="bi bi-calendar"></i>
+                        </button>
+                        @if (showDatePicker) {
+                        <div class="position-absolute top-100 start-0 mt-1" style="z-index: 1050;">
+                            <ngb-datepicker #datePicker (dateSelect)="onDateSelect($event)"></ngb-datepicker>
+                        </div>
+                        }
                     </div>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row mb-3">
                 <div class="form-floating col-md">
-                    <inspector-search (selectedInspector)="onSelectInspector($event)"></inspector-search>
+                    <input type="text" class="form-control" id="floatingTitle" placeholder="Título"
+                        formControlName="title" />
+                    <label for="floatingTitle" class="ps-4">Título</label>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row mb-3">
                 <div class="form-floating col-md">
-                    <label>Data do Ocorrido</label>
-                    <input type="text" ngbDatepicker #d="ngbDatepicker" />
+                    <textarea class="form-control" id="floatingDescription" placeholder="Descrição" rows="3"
+                        formControlName="description"></textarea>
+                    <label for="floatingDescription" class="ps-4">Descrição</label>
                 </div>
             </div>
 
-            <div ngbAccordion>
-                <div ngbAccordionItem [collapsed]="true">
-                    <h2 ngbAccordionHeader>
-                        <button ngbAccordionButton class="accordion-button">
-                            Notas Fiscais
-                        </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                        <div ngbAccordionBody>
-                            <ng-template>
-                                <div class="row">
-                                    <div class="col-md form-floating">
-                                        <input type="text" class="form-control" [(ngModel)]="nf1"
-                                            placeholder="Nota Fiscal 1" />
-                                        <label>Nota Fiscal 1</label>
-                                    </div>
+            <!-- Accordion para Notas Fiscais -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div ngbAccordion>
+                        <div ngbAccordionItem [collapsed]="true">
+                            <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton class="accordion-button">
+                                    Notas Fiscais (NFs)
+                                </button>
+                            </h2>
+                            <div ngbAccordionCollapse>
+                                <div ngbAccordionBody>
+                                    <ng-template>
+                                        <div class="row mb-2">
+                                            <div class="form-floating col-md">
+                                                <input type="text" class="form-control" id="floatingNf1"
+                                                    placeholder="NF1" formControlName="nf1" />
+                                                <label for="floatingNf1" class="ps-4">NF1</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="form-floating col-md">
+                                                <input type="text" class="form-control" id="floatingNf2"
+                                                    placeholder="NF2" formControlName="nf2" />
+                                                <label for="floatingNf2" class="ps-4">NF2</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="form-floating col-md">
+                                                <input type="text" class="form-control" id="floatingNf3"
+                                                    placeholder="NF3" formControlName="nf3" />
+                                                <label for="floatingNf3" class="ps-4">NF3</label>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-2">
+                                            <div class="form-floating col-md">
+                                                <input type="text" class="form-control" id="floatingNf4"
+                                                    placeholder="NF4" formControlName="nf4" />
+                                                <label for="floatingNf4" class="ps-4">NF4</label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-floating col-md">
+                                                <input type="text" class="form-control" id="floatingNf5"
+                                                    placeholder="NF5" formControlName="nf5" />
+                                                <label for="floatingNf5" class="ps-4">NF5</label>
+                                            </div>
+                                        </div>
+                                    </ng-template>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md form-floating">
-                                        <input type="text" class="form-control" [(ngModel)]="nf2"
-                                            placeholder="Nota Fiscal 2" />
-                                        <label>Nota Fiscal 2</label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md form-floating">
-                                        <input type="text" class="form-control" [(ngModel)]="nf3"
-                                            placeholder="Nota Fiscal 3" />
-                                        <label>Nota Fiscal 3</label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md form-floating">
-                                        <input type="text" class="form-control" [(ngModel)]="nf4"
-                                            placeholder="Nota Fiscal 4" />
-                                        <label>Nota Fiscal 4</label>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md form-floating">
-                                        <input type="text" class="form-control" [(ngModel)]="nf5"
-                                            placeholder="Nota Fiscal 5" />
-                                        <label>Nota Fiscal 5</label>
-                                    </div>
-                                </div>
-                            </ng-template>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row mb-4">
                 <div class="form-floating col-md">
-                    <label>Título</label>
-                    <input type="text" class="form-control" [(ngModel)]="occurTitle"
-                        placeholder="Título da Ocorrência" />
+                    <textarea class="form-control" id="floatingComplement" placeholder="Complemento" rows="2"
+                        formControlName="complement"></textarea>
+                    <label for="floatingComplement" class="ps-4">Complemento</label>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="form-floating col-md">
-                    <label>Descrição</label>
-                    <textarea class="form-control" maxlength="512"
-                        placeholder="Descrição Breve da Ocorrência"></textarea>
+            <!-- Seção: Dados da Reclamação -->
+            <div class="row mt-4 mb-3">
+                <div class="col-md-12">
+                    <h5 class="border-bottom pb-2">Dados da Reclamação</h5>
                 </div>
             </div>
 
-            <div class="row">
-                <div class="form-floating col-md">
-                    <label>Complemento</label>
-                    <textarea class="form-control" maxlength="256" placeholder="Informações Complementares"></textarea>
+            <div class="row mb-3">
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingOrderNumber" placeholder="Número do Pedido"
+                        formControlName="orderNumber" />
+                    <label for="floatingOrderNumber" class="ps-4">Número do Pedido</label>
                 </div>
-            </div>
-
-            <div class="row">
-                <div class="form-floating col-md">
-                    <label>Número do Pedido, se houver</label>
-                    <input type="text" class="form-control" [(ngModel)]="orderId" placeholder="Número do Pedido" />
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="form-floating">
-                        <select class="form-select form-control" [(ngModel)]="complaintType" title="Tipo de Ocorrência">
-                            <option value="NONE" selected>Selecione</option>
-                            <option value="INTERNAL">Interna - O reclamante faz parte da organização</option>
-                            <option value="EXTERNAL">Externa - O reclamante é cliente ou não faz parte da organização
-                            </option>
-                        </select>
-                        <label>Tipo de Reclamação</label>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <div class="form-label mb-2 d-flex align-items-center">
+                            Tipo de Reclamação
+                            <i class="bi bi-info-square-fill ms-2"
+                                ngbTooltip="Interna: Reclamante interno da organização deve se identificar. Externa: Reclamante externo pode optar por não se identificar conforme LGPD."
+                                placement="top"></i>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="complaintTypeInternal" value="INTERNAL"
+                                formControlName="complaintType">
+                            <label class="form-check-label" for="complaintTypeInternal">Interna</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" id="complaintTypeExternal" value="EXTERNAL"
+                                formControlName="complaintType">
+                            <label class="form-check-label" for="complaintTypeExternal">Externa</label>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="row">
-                <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
-                    (change)="onAnonymousCheckboxChange($event)" />
-                <label class="form-check-label">
-                    Inserir Informações do Reclamante?
-                </label>
-            </div>
-
-            <div class="form-floating">
-                <textarea class="form-control" id="departmentDescriptionLabel"
-                    [class.is-invalid]="departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)"
-                    formControlName="departmentDescription" maxlength="256" placeholder="Descrição"></textarea>
-                <label for="departmentDescriptionLabel">Descrição</label>
-                @if(departmentForm.get('departmentDescription')?.invalid &&
-                (departmentForm.get('departmentDescription')?.touched ||
-                departmentForm.get('departmentDescription')?.dirty)){
-                <div class="invalid-feedback pb-2">
-                    Descrição não preenchida ou inválida.
+            <div class="row mb-3">
+                <div class="form-floating col-md">
+                    <textarea class="form-control" id="floatingComplaintDescription"
+                        placeholder="Descrição da Reclamação" rows="3"
+                        formControlName="complaintDescription"></textarea>
+                    <label for="floatingComplaintDescription" class="ps-4">Descrição da Reclamação</label>
                 </div>
-                }
             </div>
 
-            <div class="row">
-                <div class="col-md text-center">
-                    <button class="btn btn-primary" [routerLink]="['/departments']">
+            <div class="row mb-4">
+                <div class="form-floating col-md">
+                    <textarea class="form-control" id="floatingComplaintComplement"
+                        placeholder="Informações Complementares da Reclamação" rows="2"
+                        formControlName="complaintComplement"></textarea>
+                    <label for="floatingComplaintComplement" class="ps-4">Informações Complementares da
+                        Reclamação</label>
+                </div>
+            </div>
+
+            <!-- Checkbox para não identificação -->
+            @if (showAnonymousOption) {
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="anonymousComplainer"
+                            formControlName="anonymousComplainer" />
+                        <label class="form-check-label" for="anonymousComplainer">
+                            Reclamante Deseja Não se Identificar
+                            <i class="bi bi-info-square-fill ms-1"
+                                ngbTooltip="O reclamante não será identificado e não receberá atualizações sobre a ocorrência."
+                                placement="top"></i>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- Seção: Dados do Reclamante -->
+            @if (showComplainerSection) {
+            <div class="row mt-4 mb-3">
+                <div class="col-md-12">
+                    <h5 class="border-bottom pb-2">Dados do Reclamante</h5>
+                </div>
+            </div>
+            }
+
+            @if (showInternalId && showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md">
+                    <input type="text" class="form-control" id="floatingInternalComplainer"
+                        placeholder="Buscar Reclamante Interno" formControlName="internalComplainer" />
+                    <label for="floatingInternalComplainer" class="ps-4">Buscar Reclamante Interno</label>
+                </div>
+            </div>
+            }
+
+            @if (showInternalId && showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md">
+                    <input type="text" class="form-control" id="floatingComplainerId" placeholder="ID"
+                        formControlName="complainerId" [disabled]="true" />
+                    <label for="floatingComplainerId" class="ps-4">ID</label>
+                </div>
+            </div>
+            }
+
+            @if (showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md">
+                    <input type="text" class="form-control" id="floatingComplainerName" placeholder="Nome"
+                        formControlName="complainerName" [disabled]="isInternalComplaint()" />
+                    <label for="floatingComplainerName" class="ps-4">Nome</label>
+                </div>
+            </div>
+            }
+
+            @if (showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingComplainerPhone" placeholder="Telefone"
+                        formControlName="complainerPhone" />
+                    <label for="floatingComplainerPhone" class="ps-4">Telefone</label>
+                </div>
+                <div class="form-floating col-md-6">
+                    <input type="email" class="form-control" id="floatingComplainerEmail" placeholder="Email"
+                        formControlName="complainerEmail" />
+                    <label for="floatingComplainerEmail" class="ps-4">Email</label>
+                </div>
+            </div>
+            }
+
+            @if (showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingComplainerCep" placeholder="CEP"
+                        formControlName="complainerCep" (input)="applyCepMask($event)" (input)="searchCep()"/>
+                    <label for="floatingComplainerCep" class="ps-4">CEP</label>
+                </div>
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingComplainerStreet" placeholder="Logradouro"
+                        formControlName="complainerStreet" />
+                    <label for="floatingComplainerStreet" class="ps-4">Logradouro</label>
+                </div>
+            </div>
+            }
+
+            @if (showComplainerSection) {
+            <div class="row mb-3">
+                <div class="form-floating col-md-4">
+                    <input type="text" class="form-control" id="floatingComplainerNumber" placeholder="Número"
+                        formControlName="complainerNumber" />
+                    <label for="floatingComplainerNumber" class="ps-4">Número</label>
+                </div>
+                <div class="form-floating col-md-4">
+                    <input type="text" class="form-control" id="floatingComplainerDistrict"
+                        placeholder="Bairro/Distrito" formControlName="complainerDistrict" />
+                    <label for="floatingComplainerDistrict" class="ps-4">Bairro/Distrito</label>
+                </div>
+                <div class="form-floating col-md-4">
+                    <input type="text" class="form-control" id="floatingComplainerAddressComplement"
+                        placeholder="Complemento" formControlName="complainerAddressComplement" />
+                    <label for="floatingComplainerAddressComplement" class="ps-4">Complemento</label>
+                </div>
+            </div>
+            }
+
+            @if (showComplainerSection) {
+            <div class="row mb-4">
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingComplainerCity" placeholder="Cidade"
+                        formControlName="complainerCity"  [disabled]="true" />
+                    <label for="floatingComplainerCity" class="ps-4">Cidade</label>
+                </div>
+                <div class="form-floating col-md-6">
+                    <input type="text" class="form-control" id="floatingComplainerState" placeholder="UF"
+                        formControlName="complainerState"  [disabled]="true" />
+                    <label for="floatingComplainerState" class="ps-4">UF</label>
+                </div>
+            </div>
+            }
+
+            <!-- Seção: Anexos -->
+            <div class="row mt-4 mb-3">
+                <div class="col-md-12">
+                    <h5 class="border-bottom pb-2">Anexos</h5>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="alert alert-primary" role="alert">
+                        <i class="bi bi-info-square-fill"></i>
+                        É possível anexar até 10 arquivos. Formatos suportados: PDF, JPG, PNG, HEIC, XML.
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <button class="btn btn-primary" (click)="fileInput.click()">
+                        <i class="bi bi-upload"></i>
+                        Adicionar Arquivo
+                    </button>
+                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
+                        (change)="onFileSelected($event)" />
+                </div>
+            </div>
+
+            <!-- Lista de arquivos anexados -->
+            @if (attachedFiles.length > 0) {
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="border rounded p-3">
+                        <h6 class="mb-3">Arquivos Anexados ({{ attachedFiles.length }}/10)</h6>
+                        @for (file of attachedFiles; track $index) {
+                        <div class="mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                                <div>
+                                    <div class="fw-bold">{{ file.name }}</div>
+                                    <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger btn-sm" title="Remover" (click)="removeFile($index)">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+
+            <!-- Botões de Ação -->
+            <div class="row mt-5">
+                <div class="col-md-12 text-center">
+                    <button class="btn btn-primary me-2" type="button" (click)="goBack()">
                         <i class="bi bi-arrow-left-square-fill"></i>
                         Voltar
                     </button>
-                    <button type="submit" class="btn btn-success" [disabled]="departmentForm.invalid">
+                    <button class="btn btn-warning me-2" type="button" (click)="saveDraft()">
+                        <i class="bi bi-file-earmark-text"></i>
+                        Cadastrar Rascunho
+                    </button>
+                    <button class="btn btn-success" type="button" (click)="createOccurrence()">
                         <i class="bi bi-plus-square-fill"></i>
-                        Cadastrar
+                        Cadastrar Ocorrência
                     </button>
                 </div>
             </div>
         </form>
     </div>
-</div> -->
+</div>

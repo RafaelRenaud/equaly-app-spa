@@ -7,26 +7,16 @@
       <form [formGroup]="createUserForm">
         <div class="row">
           <div class="col-md text-end">
-            <div
-              class="position-relative d-inline-block profile-image-container"
-            >
+            <div class="position-relative d-inline-block profile-image-container">
               @if(avatarSelected){
-              <img
-                [src]="croppedImage"
-                alt="Imagem de Perfil"
-                id="user-avatar"
-                class="rounded profile-image img-thumbnail"
-              />
+              <img [src]="croppedImage" alt="Imagem de Perfil" id="user-avatar"
+                class="rounded profile-image img-thumbnail" />
               <div class="overlay rounded" (click)="removeAvatar()">
                 <span><i class="bi bi-trash-fill"></i> Remover</span>
               </div>
               } @else {
-              <img
-                src="avatar.png"
-                alt="Imagem do Perfil"
-                id="user-avatar"
-                class="rounded profile-image img-thumbnail"
-              />
+              <img src="avatar.png" alt="Imagem do Perfil" id="user-avatar"
+                class="rounded profile-image img-thumbnail" />
               }
             </div>
           </div>
@@ -36,16 +26,15 @@
               <i class="bi bi-upload"></i>
               Upload da Foto de Perfil
             </button>
-            <input
-              #fileInput
-              type="file"
-              accept="image/png, image/jpeg"
-              (change)="fileChangeEvent($event)"
-              hidden
-            />
+            <input #fileInput type="file" accept="image/png, image/jpeg" (change)="fileChangeEvent($event)" hidden />
           </div>
         </div>
         <br />
+
+        <div class="alert alert-warning" role="alert">
+          <i class="bi bi-exclamation-square-fill"></i>
+          Não será permitido alterar o CPF, a empresa ou departamento do usuário após o cadastro.
+        </div>
 
         @if(universalUserExists){
         <div class="alert alert-primary" role="alert">
@@ -58,11 +47,7 @@
 
         <div class="row">
           <div class="form-floating col-md">
-            <select
-              class="form-select form-control"
-              title="Tipo de Documento"
-              formControlName="documentType"
-            >
+            <select class="form-select form-control" title="Tipo de Documento" formControlName="documentType">
               <option value="NONE" selected>Selecione</option>
               <option value="CPF">CPF</option>
               <option value="RNE">RNE (Estrangeiro)</option>
@@ -71,15 +56,8 @@
             <label for="floatingDocument" class="ps-4">Tipo de Documento</label>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingDocument"
-              formControlName="document"
-              (blur)="checkUniversalUserExists()"
-              [class.is-invalid]="invalidDocument"
-              placeholder="Documento"
-            />
+            <input type="text" class="form-control" id="floatingDocument" formControlName="document"
+              (blur)="checkUniversalUserExists()" [class.is-invalid]="invalidDocument" placeholder="Documento" />
             <label for="floatingDocument" class="ps-4">Documento</label>
             <div class="invalid-feedback pb-2">Documento inválido</div>
           </div>
@@ -87,15 +65,8 @@
 
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingName"
-              formControlName="name"
-              [value]="universalUser?.name"
-              [class.is-invalid]="invalidName"
-              placeholder="Nome Completo"
-            />
+            <input type="text" class="form-control" id="floatingName" formControlName="name"
+              [value]="universalUser?.name" [class.is-invalid]="invalidName" placeholder="Nome Completo" />
             <label for="floatingName" class="ps-4">Nome Completo</label>
             <div class="invalid-feedback pb-2">Nome inválido</div>
           </div>
@@ -103,30 +74,19 @@
 
         @if(isEqualyMasterAdmin){
         <div class="row">
-          <app-company-search
-            (selectedCompany)="onSelectCompany($event)"
-          ></app-company-search>
+          <app-company-search (selectedCompany)="onSelectCompany($event)"></app-company-search>
         </div>
         }
 
         <div class="row">
-          <app-department-search
-            [selectedCompany]="selectedCompany"
-            (selectedDepartment)="onSelectDepartment($event)"
-          ></app-department-search>
+          <app-department-search [selectedCompany]="selectedCompany"
+            (selectedDepartment)="onSelectDepartment($event)"></app-department-search>
         </div>
 
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingUsername"
-              (blur)="setNickname()"
-              formControlName="username"
-              [class.is-invalid]="invalidUsername"
-              placeholder="Nome de Usuário"
-            />
+            <input type="text" class="form-control" id="floatingUsername" (blur)="setNickname()"
+              formControlName="username" [class.is-invalid]="invalidUsername" placeholder="Nome de Usuário" />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
             <div class="invalid-feedback pb-2">Nome de usuário inválido</div>
           </div>
@@ -134,27 +94,14 @@
 
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingLogin"
-              formControlName="login"
-              [class.is-invalid]="invalidLogin"
-              (blur)="checkLoginExists()"
-              placeholder="Login"
-            />
+            <input type="text" class="form-control" id="floatingLogin" formControlName="login"
+              [class.is-invalid]="invalidLogin" (blur)="checkLoginExists()" placeholder="Login" />
             <label for="floatingLogin" class="ps-4">Login</label>
             <div class="invalid-feedback pb-2">Login inválido</div>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              id="floatingNickname"
-              formControlName="nickname"
-              placeholder="Apelido"
-              [class.is-invalid]="invalidNickname"
-            />
+            <input type="text" class="form-control" id="floatingNickname" formControlName="nickname"
+              placeholder="Apelido" [class.is-invalid]="invalidNickname" />
             <label for="floatingNickname" class="ps-4">Apelido</label>
             <div class="invalid-feedback pb-2">Apelido inválido</div>
           </div>
@@ -162,15 +109,8 @@
 
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="email"
-              class="form-control"
-              id="floatingEmail"
-              formControlName="email"
-              placeholder="E-Mail"
-              [class.is-invalid]="invalidEmail"
-              (blur)="checkEmailExists()"
-            />
+            <input type="email" class="form-control" id="floatingEmail" formControlName="email" placeholder="E-Mail"
+              [class.is-invalid]="invalidEmail" (blur)="checkEmailExists()" />
             <label for="floatingEmail" class="ps-4">E-Mail</label>
             <div class="invalid-feedback pb-2">E-Mail inválido</div>
           </div>
@@ -189,10 +129,8 @@
             departamentos no geral, além do controle das parametrizações do
             sistema.
           </p>
-          <b
-            >Não utilize essa opção para cadastrar usuários se não tiver certeza
-            do que fazer</b
-          >
+          <b>Não utilize essa opção para cadastrar usuários se não tiver certeza
+            do que fazer</b>
         </ng-template>
 
         <ng-template #masterAdmin>
@@ -201,10 +139,8 @@
             Permite o cadastro de usuários, departamentos e parâmetros para a
             empresa associada.
           </p>
-          <b
-            >Essa permissão fornece o controle total do usuário a empresa
-            cadastrada.</b
-          >
+          <b>Essa permissão fornece o controle total do usuário a empresa
+            cadastrada.</b>
         </ng-template>
 
         <ng-template #commonAdmin>
@@ -213,10 +149,8 @@
             Permite visualização de usuários, departamentos e parâmetros para a
             empresa associada.
           </p>
-          <b
-            >Essa permissão fornece o visualização total do usuário a empresa
-            cadastrada.</b
-          >
+          <b>Essa permissão fornece o visualização total do usuário a empresa
+            cadastrada.</b>
         </ng-template>
 
         <ng-template #masterEventOpener>
@@ -257,56 +191,29 @@
         <div class="row">
           @if(isEqualyMasterAdmin){
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="EQUALY_MASTER_ADMIN"
-              id="equalyMasterAdmin"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="EQUALY_MASTER_ADMIN" id="equalyMasterAdmin"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="equalyMasterAdmin">
               ADMINISTRADOR MASTER EQUALY
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="equalyMasterAdmin"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="equalyMasterAdmin"></i>
             </label>
           </div>
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="MASTER_ADMIN"
-              id="masterAdmin"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="MASTER_ADMIN" id="masterAdmin"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="masterAdmin">
               ADMINISTRADOR MASTER
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="masterAdmin"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterAdmin"></i>
             </label>
           </div>
           }
 
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="COMMON_ADMIN"
-              id="commonAdmin"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="COMMON_ADMIN" id="commonAdmin"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="commonAdmin">
               ADMINISTRADOR
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="commonAdmin"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonAdmin"></i>
             </label>
           </div>
         </div>
@@ -315,54 +222,27 @@
 
         <div class="row">
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="MASTER_EVENT_OPENER"
-              id="masterEventOpener"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="masterEventOpener">
               AGENTE DE EVENTOS MASTER
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="masterEventOpener"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterEventOpener"></i>
             </label>
           </div>
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="COMMON_EVENT_OPENER"
-              id="commonEventOpener"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="COMMON_EVENT_OPENER" id="commonEventOpener"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="commonEventOpener">
               AGENTE DE EVENTOS
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="commonEventOpener"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonEventOpener"></i>
             </label>
           </div>
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="MASTER_QUALITY_INSPECTOR"
-              id="masterQualityInspector"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="MASTER_QUALITY_INSPECTOR" id="masterQualityInspector"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="masterQualityInspector">
               AGENTE DE QUALIDADE MASTER
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="masterQualityInspector"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterQualityInspector"></i>
             </label>
           </div>
         </div>
@@ -371,37 +251,19 @@
 
         <div class="row">
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="COMMON_QUALITY_INSPECTOR"
-              id="commonQualityInspector"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="COMMON_QUALITY_INSPECTOR" id="commonQualityInspector"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="commonQualityInspector">
               AGENTE DE QUALIDADE
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="commonQualityInspector"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonQualityInspector"></i>
             </label>
           </div>
           <div class="col-md form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              value="COMMON_RNC_REPORTER"
-              id="commonRncReporter"
-              (change)="onCheckboxChange($event)"
-            />
+            <input class="form-check-input" type="checkbox" value="COMMON_RNC_REPORTER" id="commonRncReporter"
+              (change)="onCheckboxChange($event)" />
             <label class="form-check-label" for="commonRncReporter">
               PREENCHEDOR DE RNC
-              <i
-                class="bi bi-info-square-fill"
-                placement="top"
-                [ngbTooltip]="commonRncReporter"
-              ></i>
+              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonRncReporter"></i>
             </label>
           </div>
         </div>
@@ -412,11 +274,7 @@
               <i class="bi bi-arrow-left-square-fill"></i>
               Voltar
             </button>
-            <button
-              type="submit"
-              class="btn btn-success"
-              (click)="saveUser()"
-              [disabled]="
+            <button type="submit" class="btn btn-success" (click)="saveUser()" [disabled]="
                 createUserForm.invalid ||
                 invalidDocument ||
                 invalidName ||
@@ -424,8 +282,7 @@
                 invalidLogin ||
                 invalidNickname ||
                 invalidEmail
-              "
-            >
+              ">
               <i class="bi bi-plus-square-fill"></i>
               Cadastrar
             </button>
@@ -440,34 +297,20 @@
 <ng-template #cropperModal let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="cropperModal">Ajustar Foto do Usuário</h4>
-    <button
-      type="button"
-      class="btn-close"
-      aria-label="Close"
-      (click)="modal.dismiss()"
-    ></button>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
   </div>
   <div class="modal-body">
     <div class="alert alert-primary" role="alert">
       <i class="bi bi-info-square-fill"></i>
-      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução baixa e com formato quadrado (1:1).
+      A imagem deve ser do tipo PNG ou JPEG e possuir no máximo 2MB, de preferência a fotos com fundo claro, resolução
+      baixa e com formato quadrado (1:1).
     </div>
-    <image-cropper
-      [imageChangedEvent]="imageChangedEvent"
-      [maintainAspectRatio]="true"
-      [aspectRatio]="1 / 1"
-      [format]="fileType"
-      (imageCropped)="imageCropped($event)"
-      (loadImageFailed)="loadImageFailed()"
-      [resizeToWidth]="256"
-    ></image-cropper>
+    <image-cropper [imageChangedEvent]="imageChangedEvent" [maintainAspectRatio]="true" [aspectRatio]="1 / 1"
+      [format]="fileType" (imageCropped)="imageCropped($event)" (loadImageFailed)="loadImageFailed()"
+      [resizeToWidth]="256"></image-cropper>
   </div>
   <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      (click)="modal.close('Save click')"
-    >
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.close('Save click')">
       Save
     </button>
   </div>

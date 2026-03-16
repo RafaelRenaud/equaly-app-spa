@@ -16,6 +16,7 @@ export interface UserResponse {
     id: number;
     name: string;
   };
+  roles: string[];
   login: string;
   username: string;
   nickname: string;

@@ -76,7 +76,7 @@ export class UserHubComponent {
     public companyService: CompanyService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.searchUsers();
@@ -263,24 +263,8 @@ export class UserHubComponent {
     this.loadingService.show();
     this.userRoles = null;
     this.selectedUser = user;
-    this.userService.getUserRoles(this.selectedUser.id.toString()).subscribe({
-      next: (resonse) => {
-        if(resonse.roles.length > 0){
-          this.userRoles = this.userService.parseRoles(resonse.roles);
-        }
-
-        this.loadingService.hide();
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.router.navigate(["/users"], {
-          queryParams: {
-            action: "ERROR",
-            message: "Erro ao consultar permissões do usuário",
-          },
-        });
-      },
-    });
+    this.userRoles = this.userService.parseStringRoles(this.selectedUser.roles);
+    this.loadingService.hide();
   }
 
   onSelectCompany(company: CompanyResponse | null): void {

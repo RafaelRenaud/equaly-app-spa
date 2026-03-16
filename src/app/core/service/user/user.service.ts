@@ -19,7 +19,7 @@ export class UserService {
   private http = inject(HttpClient);
   private readonly endpoint = `${environment.api.administration}/users`;
 
-  constructor(private session: SessionService) {}
+  constructor(private session: SessionService) { }
 
   roleNameMapping: Record<string, string> = {
     EQUALY_MASTER_ADMIN: "ADMINISTRADOR MASTER EQUALY",
@@ -204,6 +204,12 @@ export class UserService {
   parseRoles(rolesResponse: RoleResponse[]): string[] {
     return rolesResponse.map(
       (role) => this.roleNameMapping[role.name] || role.name
+    );
+  }
+
+  parseStringRoles(rolesResponse: string[]): string[] {
+    return rolesResponse.map(
+      (role) => this.roleNameMapping[role] || role
     );
   }
 

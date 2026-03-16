@@ -10,5 +10,14 @@
     "secure": true,
     "changeOrigin": true,
     "logLevel": "info"
+  },
+  "/viacep/*": {
+    "target": "https://viacep.com.br",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/viacep": "/ws"
+    },
+    "logLevel": "debug"
   }
 }

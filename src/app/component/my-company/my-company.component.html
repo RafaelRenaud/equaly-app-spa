@@ -4,57 +4,41 @@
       <h3 class="text-white pt-3 pb-2">Minha Empresa</h3>
     </div>
     <div class="surface-container-body">
-      <!-- Alertas de permissão -->
-      @if (sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-      sessionService.hasRole('MASTER_ADMIN')) {
-      <div class="alert alert-primary" role="alert">
-        <i class="bi bi-info-square-fill"></i>
-        Algumas informações podem não ser editáveis por aqui, para editá-las
-        acesse diretamente o menu de Empresas.
-      </div>
-      } @if(sessionService.hasRole('COMMON_ADMIN')) {
-      <div class="alert alert-primary" role="alert">
-        <i class="bi bi-info-square-fill"></i>
-        Para editar informações da empresa, solicite ao administrador master do
-        sistema.
-      </div>
-      }
-
       <form [formGroup]="companyForm" (ngSubmit)="confirmSave()">
         <!-- Logo -->
         @if(myCompany?.logoUri) {
         <div class="row text-center mb-3">
           <div class="col-md">
-            <img
-              [src]="myCompany?.logoUri"
-              alt="Logo da Empresa"
-              class="img-thumbnail"
-              id="company-logo"
-            />
+            <img [src]="myCompany?.logoUri" alt="Logo da Empresa" class="img-thumbnail" id="company-logo" />
           </div>
+        </div>
+        }
+
+        <!-- Alertas de permissão -->
+        @if (sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+        sessionService.hasRole('MASTER_ADMIN')) {
+        <div class="alert alert-primary" role="alert">
+          <i class="bi bi-info-square-fill"></i>
+          Algumas informações podem não ser editáveis por aqui, para editá-las
+          acesse diretamente o menu de Empresas.
+        </div>
+        } @if(sessionService.hasRole('COMMON_ADMIN')) {
+        <div class="alert alert-primary" role="alert">
+          <i class="bi bi-info-square-fill"></i>
+          Para editar informações da empresa, solicite ao administrador master do
+          sistema.
         </div>
         }
 
         <!-- IDs e Status -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="number"
-              class="form-control"
-              placeholder="ID da Empresa"
-              disabled
-              [value]="myCompany?.id"
-            />
+            <input type="number" class="form-control" placeholder="ID da Empresa" disabled [value]="myCompany?.id" />
             <label class="ps-4">ID da Empresa</label>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Código da Empresa"
-              disabled
-              [value]="myCompany?.alias"
-            />
+            <input type="text" class="form-control" placeholder="Código da Empresa" disabled
+              [value]="myCompany?.alias" />
             <label class="ps-4">Código da Empresa</label>
           </div>
         </div>
@@ -62,30 +46,19 @@
         <!-- Nome da Empresa e Estado -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              formControlName="companyDisplayName"
-              type="text"
-              class="form-control"
-              placeholder="Nome da Empresa"
-              [disabled]="viewOnly"
-              [class.is-invalid]="
+            <input formControlName="companyDisplayName" type="text" class="form-control" placeholder="Nome da Empresa"
+              [disabled]="viewOnly" [class.is-invalid]="
                 companyForm.get('companyDisplayName')?.invalid &&
                 companyForm.get('companyDisplayName')?.touched
-              "
-            />
+              " />
             <label class="ps-4">Nome da Empresa</label>
             <div class="invalid-feedback">
               Nome da Empresa é obrigatório e deve ter no máximo 128 caracteres.
             </div>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Estado"
-              disabled
-              [value]="myCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'"
-            />
+            <input type="text" class="form-control" placeholder="Estado" disabled
+              [value]="myCompany?.status === 'ACTIVE' ? 'Ativa' : 'Inativa'" />
             <label class="ps-4">Estado</label>
           </div>
         </div>
@@ -93,19 +66,12 @@
         <!-- Nome Fantasia -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              formControlName="companyName"
-              type="text"
-              class="form-control"
-              placeholder="Nome Fantasia"
-              [disabled]="viewOnly"
-              [class.is-invalid]="
+            <input formControlName="companyName" type="text" class="form-control" placeholder="Nome Fantasia"
+              [disabled]="viewOnly" [class.is-invalid]="
                 (companyForm.get('companyName')?.invalid ||
                   invalidCompanyName) &&
                 companyForm.get('companyName')?.touched
-              "
-              (blur)="validateCompanyExists('name')"
-            />
+              " (blur)="validateCompanyExists('name')" />
             <label class="ps-4">Nome Fantasia</label>
             <div class="invalid-feedback">
               Nome Fantasia não preenchido ou já cadastrado.
@@ -116,19 +82,12 @@
         <!-- Razão Social -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              formControlName="companyTradingName"
-              type="text"
-              class="form-control"
-              placeholder="Razão Social"
-              [disabled]="viewOnly"
-              [class.is-invalid]="
+            <input formControlName="companyTradingName" type="text" class="form-control" placeholder="Razão Social"
+              [disabled]="viewOnly" [class.is-invalid]="
                 (companyForm.get('companyTradingName')?.invalid ||
                   invalidCompanyTradingName) &&
                 companyForm.get('companyTradingName')?.touched
-              "
-              (blur)="validateCompanyExists('tradingName')"
-            />
+              " (blur)="validateCompanyExists('tradingName')" />
             <label class="ps-4">Razão Social</label>
             <div class="invalid-feedback">
               Razão Social não preenchida ou já cadastrada.
@@ -139,13 +98,7 @@
         <!-- CNPJ -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="CNPJ"
-              disabled
-              [value]="myCompany?.document"
-            />
+            <input type="text" class="form-control" placeholder="CNPJ" disabled [value]="myCompany?.document" />
             <label class="ps-4">CNPJ</label>
           </div>
         </div>
@@ -153,17 +106,11 @@
         <!-- Contato -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              formControlName="companyContact"
-              type="email"
-              class="form-control"
-              placeholder="Contato Principal"
-              [disabled]="viewOnly"
-              [class.is-invalid]="
+            <input formControlName="companyContact" type="email" class="form-control" placeholder="Contato Principal"
+              [disabled]="viewOnly" [class.is-invalid]="
                 companyForm.get('companyContact')?.invalid &&
                 companyForm.get('companyContact')?.touched
-              "
-            />
+              " />
             <label class="ps-4">Contato Principal</label>
             <div class="invalid-feedback">Informe um e-mail válido.</div>
           </div>
@@ -172,45 +119,25 @@
         <!-- Auditoria -->
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Criado em"
-              disabled
-              [value]="myCompany?.audit?.createdAt"
-            />
+            <input type="text" class="form-control" placeholder="Criado em" disabled
+              [value]="myCompany?.audit?.createdAt" />
             <label class="ps-4">Criado em</label>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Criado por"
-              disabled
-              [value]="myCompany?.audit!.createdBy | systemName"
-            />
+            <input type="text" class="form-control" placeholder="Criado por" disabled
+              [value]="myCompany?.audit!.createdBy | systemName" />
             <label class="ps-4">Criado por</label>
           </div>
         </div>
         <div class="row">
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Atualizado em"
-              disabled
-              [value]="myCompany?.audit?.updatedAt || 'Não se aplica'"
-            />
+            <input type="text" class="form-control" placeholder="Atualizado em" disabled
+              [value]="myCompany?.audit?.updatedAt || 'Não se aplica'" />
             <label class="ps-4">Atualizado em</label>
           </div>
           <div class="form-floating col-md">
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Atualizado por"
-              disabled
-              [value]="myCompany?.audit!.updatedBy || 'Não se aplica' | systemName"
-            />
+            <input type="text" class="form-control" placeholder="Atualizado por" disabled
+              [value]="myCompany?.audit!.updatedBy || 'Não se aplica' | systemName" />
             <label class="ps-4">Atualizado por</label>
           </div>
         </div>

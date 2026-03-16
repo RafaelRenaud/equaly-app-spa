@@ -1,5 +1,6 @@
 export interface JWT{
     jti: string;
+    iss: string;
     sub: string;
     azp: string;
     roles: string[];
@@ -24,4 +25,5 @@ export interface JWT{
         username: string;
     };
     iat: number;
+    exp: number;
 }

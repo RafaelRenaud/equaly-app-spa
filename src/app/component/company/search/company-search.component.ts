@@ -45,7 +45,7 @@ export class CompanySearchComponent implements OnChanges {
   constructor(
     private companyService: CompanyService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes["selectedCompanyValue"] && this.selectedCompanyValue === null) {
@@ -63,20 +63,40 @@ export class CompanySearchComponent implements OnChanges {
 
   searchCompanies(): void {
     this.loadingService.show();
-    this.companyService
-      .getCompanies(
-        this.selectedFilter,
-        this.searchValue,
-        this.selectedStatus,
-        this.currentPage,
-        this.pageSize
-      )
-      .subscribe((response) => {
-        this.searchedCompanies = response.companies;
-        this.totalPages = response.pageable.totalPages;
-        this.notFoundIndicator = this.searchedCompanies.length === 0;
-        this.loadingService.hide();
-      });
+    if (this.selectedFilter === "id") {
+      this.companyService
+        .getCompany(
+          Number(this.searchValue),
+        )
+        .subscribe({
+          next: (response) => {
+            this.searchedCompanies = Array.of(response);
+            this.totalPages = 1;
+            this.loadingService.hide();
+          },
+          error: (err) => {
+            this.searchedCompanies = [];
+            this.totalPages = 0;
+            this.notFoundIndicator = true;
+            this.loadingService.hide();
+          }
+        });
+    } else {
+      this.companyService
+        .getCompanies(
+          this.selectedFilter,
+          this.searchValue,
+          this.selectedStatus,
+          this.currentPage,
+          this.pageSize
+        )
+        .subscribe((response) => {
+          this.searchedCompanies = response.companies;
+          this.totalPages = response.pageable.totalPages;
+          this.notFoundIndicator = this.searchedCompanies.length === 0;
+          this.loadingService.hide();
+        });
+    }
   }
 
   clearFilters(): void {

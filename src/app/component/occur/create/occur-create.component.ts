@@ -1,11 +1,15 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbAccordionModule, NgbDatepickerModule, NgbTooltipModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbDatepickerModule, NgbTooltipModule, NgbDateStruct, NgbDatepicker } from '@ng-bootstrap/ng-bootstrap';
 import { LoadingService } from '../../../core/service/loading/loading.service';
 import { SessionService } from '../../../core/service/session/session.service';
 import { CommonModule } from '@angular/common';
 import { AddressService } from '../../../core/service/address/address.service';
+import { OccurTypeHeadSearchComponent } from "../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
+import { UserTypeHeadSearchComponent } from "../../user/search/user-type-head-search/user-type-head-search.component";
+import { UserResponse } from '../../../core/model/user/user-response.model';
+import { OccurTypeResponse } from '../../../core/model/occurType/occur-type-response.model';
 
 @Component({
   selector: 'app-occur-create',
@@ -17,11 +21,16 @@ import { AddressService } from '../../../core/service/address/address.service';
     NgbAccordionModule,
     NgbDatepickerModule,
     NgbTooltipModule,
+    OccurTypeHeadSearchComponent,
+    UserTypeHeadSearchComponent
   ],
   templateUrl: './occur-create.component.html',
   styleUrl: './occur-create.component.scss'
 })
 export class OccurCreateComponent implements OnInit {
+  @ViewChild('datePicker') datePicker!: NgbDatepicker;
+  @ViewChild('cepInput') cepInput!: ElementRef;
+
   occurrenceForm!: FormGroup;
   complaintType: 'INTERNAL' | 'EXTERNAL' | null = null;
   showAnonymousOption = false;
@@ -30,14 +39,27 @@ export class OccurCreateComponent implements OnInit {
   showDatePicker = false;
   attachedFiles: File[] = [];
   maxFiles = 10;
+  isLoadingCep: boolean = false;
+
+  // Propriedades para o datepicker
+  maxDate: NgbDateStruct;
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
     public loadingService: LoadingService,
     public sessionService: SessionService,
-    public addressService: AddressService
-  ) { }
+    public addressService: AddressService,
+    private cdr: ChangeDetectorRef
+  ) {
+    // Configurar datas mínima e máxima
+    const today = new Date();
+    this.maxDate = {
+      year: today.getFullYear(),
+      month: today.getMonth() + 1,
+      day: today.getDate()
+    };
+  }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -69,7 +91,7 @@ export class OccurCreateComponent implements OnInit {
 
       // Dados do Reclamante
       internalComplainer: [''],
-      complainerId: [{ value: '', disabled: true }], // Desabilitado no formBuilder também
+      complainerId: [{ value: '', disabled: true }],
       complainerName: ['', Validators.maxLength(200)],
       complainerPhone: ['', Validators.pattern(/^\(\d{2}\) \d{4,5}-\d{4}$/)],
       complainerEmail: ['', Validators.email],
@@ -78,8 +100,8 @@ export class OccurCreateComponent implements OnInit {
       complainerNumber: ['', Validators.maxLength(10)],
       complainerDistrict: ['', Validators.maxLength(100)],
       complainerAddressComplement: ['', Validators.maxLength(100)],
-      complainerCity: [{ value: '', disabled: true }], // Desabilitado no formBuilder também
-      complainerState: [{ value: '', disabled: true }] // Desabilitado no formBuilder também
+      complainerCity: [{ value: '', disabled: true }],
+      complainerState: [{ value: '', disabled: true }]
     });
   }
 
@@ -90,19 +112,14 @@ export class OccurCreateComponent implements OnInit {
       this.showAnonymousOption = value === 'EXTERNAL';
       this.showInternalId = value === 'INTERNAL';
 
-      // Habilita/desabilita campos baseado no tipo
       const nameControl = this.occurrenceForm.get('complainerName');
       if (value === 'INTERNAL') {
         nameControl?.disable();
-        // Se for interna, forçar mostrar seção do reclamante
         this.showComplainerSection = true;
-        // Forçar checkbox de anônimo como false
         this.occurrenceForm.get('anonymousComplainer')?.setValue(false);
-        // Desabilitar o checkbox de anônimo
         this.occurrenceForm.get('anonymousComplainer')?.disable();
       } else {
         nameControl?.enable();
-        // Habilitar o checkbox de anônimo para externa
         this.occurrenceForm.get('anonymousComplainer')?.enable();
       }
     });
@@ -110,18 +127,8 @@ export class OccurCreateComponent implements OnInit {
     // Monitora mudanças no checkbox de anonimato
     this.occurrenceForm.get('anonymousComplainer')?.valueChanges.subscribe(value => {
       this.showComplainerSection = !value;
-
-      // Se anônimo, limpa os campos do reclamante
       if (value) {
         this.clearComplainerFields();
-      }
-    });
-
-    // Monitora mudanças no CEP para futura integração com API
-    this.occurrenceForm.get('complainerCep')?.valueChanges.subscribe(cep => {
-      if (cep && cep.length === 9) {
-        // Aqui será implementada a chamada à API de CEP
-        this.mockCepApiCall(cep);
       }
     });
   }
@@ -138,6 +145,7 @@ export class OccurCreateComponent implements OnInit {
       target !== dateInput &&
       !calendarButton) {
       this.showDatePicker = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -154,31 +162,13 @@ export class OccurCreateComponent implements OnInit {
     });
   }
 
-  private mockCepApiCall(cep: string): void {
-    // Mock para demonstração - substituir por chamada real à API
-    console.log('Buscando dados do CEP:', cep);
-
-    // Simulando resposta da API
-    setTimeout(() => {
-      if (cep === '01001-000') {
-        this.occurrenceForm.patchValue({
-          complainerStreet: 'Praça da Sé',
-          complainerDistrict: 'Sé',
-          complainerCity: 'São Paulo',
-          complainerState: 'SP - São Paulo'
-        });
-      }
-    }, 500);
-  }
-
   getFormattedDate(): string {
     const date = this.occurrenceForm.get('occurrenceDate')?.value;
     if (!date) return '';
 
-    if (date instanceof Date) {
-      return date.toLocaleDateString('pt-BR');
+    if (typeof date === 'string' && date.includes('/')) {
+      return date;
     } else if (typeof date === 'object' && date.year) {
-      // Se for NgbDateStruct
       const day = date.day.toString().padStart(2, '0');
       const month = date.month.toString().padStart(2, '0');
       const year = date.year;
@@ -189,11 +179,60 @@ export class OccurCreateComponent implements OnInit {
 
   toggleDatePicker(): void {
     this.showDatePicker = !this.showDatePicker;
+    this.cdr.detectChanges();
   }
 
   onDateSelect(date: NgbDateStruct): void {
     this.occurrenceForm.get('occurrenceDate')?.setValue(date);
     this.showDatePicker = false;
+    this.cdr.detectChanges();
+  }
+
+  // Método para permitir digitação manual da data
+  onDateInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, '');
+
+    // Aplicar máscara DD/MM/AAAA
+    if (value.length >= 2 && value.length < 4) {
+      value = value.slice(0, 2) + '/' + value.slice(2);
+    } else if (value.length >= 4 && value.length < 6) {
+      value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4);
+    } else if (value.length >= 6) {
+      value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4, 8);
+    }
+
+    input.value = value;
+
+    // Validar data
+    if (value.length === 10) {
+      const [day, month, year] = value.split('/').map(Number);
+      const date = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Validar se a data é válida
+      if (date instanceof Date && !isNaN(date.getTime())) {
+        // Validar se não é data futura
+        if (date > today) {
+          this.occurrenceForm.get('occurrenceDate')?.setErrors({ futureDate: true });
+        } else {
+          this.occurrenceForm.get('occurrenceDate')?.setErrors(null);
+          // Atualizar o valor do form com a data
+          this.occurrenceForm.get('occurrenceDate')?.setValue({
+            year: year,
+            month: month,
+            day: day
+          });
+        }
+      } else {
+        this.occurrenceForm.get('occurrenceDate')?.setErrors({ invalidDate: true });
+      }
+    } else if (value.length > 0 && value.length < 10) {
+      this.occurrenceForm.get('occurrenceDate')?.setErrors({ incompleteDate: true });
+    }
+
+    this.cdr.detectChanges();
   }
 
   isInternalComplaint(): boolean {
@@ -207,13 +246,11 @@ export class OccurCreateComponent implements OnInit {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
-        // Validação de quantidade máxima
         if (this.attachedFiles.length >= this.maxFiles) {
           alert(`Limite de ${this.maxFiles} arquivos atingido`);
           break;
         }
 
-        // Validação de tipo de arquivo
         const allowedTypes = [
           'application/pdf',
           'image/jpeg',
@@ -229,8 +266,7 @@ export class OccurCreateComponent implements OnInit {
           continue;
         }
 
-        // Validação de tamanho (10MB máximo)
-        const maxSize = 10 * 1024 * 1024; // 10MB
+        const maxSize = 10 * 1024 * 1024;
         if (file.size > maxSize) {
           alert(`Arquivo muito grande: ${file.name} (máximo 10MB)`);
           continue;
@@ -239,7 +275,6 @@ export class OccurCreateComponent implements OnInit {
         this.attachedFiles.push(file);
       }
 
-      // Limpa o input de arquivo para permitir nova seleção
       event.target.value = '';
     }
   }
@@ -265,7 +300,6 @@ export class OccurCreateComponent implements OnInit {
     this.loadingService.show();
     console.log('Salvando rascunho:', this.occurrenceForm.value);
 
-    // Simulando chamada à API
     setTimeout(() => {
       this.loadingService.hide();
       this.router.navigate(['/occurs'], {
@@ -285,18 +319,15 @@ export class OccurCreateComponent implements OnInit {
 
     this.loadingService.show();
 
-    // Preparar dados para envio
     const formData = new FormData();
     formData.append('occurrenceData', JSON.stringify(this.occurrenceForm.value));
 
-    // Adicionar arquivos ao FormData
     this.attachedFiles.forEach((file, index) => {
       formData.append(`file${index}`, file, file.name);
     });
 
     console.log('Criando ocorrência:', this.occurrenceForm.value);
 
-    // Simulando chamada à API
     setTimeout(() => {
       this.loadingService.hide();
       this.router.navigate(['/occurs'], {
@@ -327,9 +358,6 @@ export class OccurCreateComponent implements OnInit {
     this.occurrenceForm.get('complainerCep')?.setValue(value, { emitEvent: false });
   }
 
-  /**
-  * Busca endereço pelo CEP
-  */
   searchCep(): void {
     const cepControl = this.occurrenceForm.get('complainerCep');
     const cep = cepControl?.value;
@@ -338,15 +366,14 @@ export class OccurCreateComponent implements OnInit {
       return;
     }
 
-    // Remove a máscara para validar
     const cleanCep = cep.replace(/\D/g, '');
 
-    // Só busca se tiver 8 dígitos
     if (cleanCep.length !== 8) {
       return;
     }
 
-    this.loadingService.show();
+    this.isLoadingCep = true;
+    this.cdr.detectChanges();
 
     this.addressService.getAddressByCep(cep).subscribe({
       next: (address) => {
@@ -362,7 +389,7 @@ export class OccurCreateComponent implements OnInit {
           this.router.navigate([], {
             queryParams: {
               action: "ERROR",
-              message: "CEP não encontrado, preencha os dados manualmente",
+              message: "CEP não encontrado, tente novamente",
             },
           });
         } else {
@@ -375,19 +402,55 @@ export class OccurCreateComponent implements OnInit {
             complainerState: address.uf + " - " + address.estado
           });
         }
-
-        this.loadingService.hide();
-
+        this.isLoadingCep = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.loadingService.hide();
+        console.error('Erro ao buscar CEP:', err);
+        this.isLoadingCep = false;
+        this.cdr.detectChanges();
         this.router.navigate([], {
           queryParams: {
             action: "ERROR",
-            message: "Erro ao buscar CEP, contate o time de suporte ou preencha os dados manualmente",
+            message: "Erro ao buscar CEP, contate o time de suporte",
           },
         });
       }
     });
+  }
+
+  onOccurTypeSelected(occurType: OccurTypeResponse | null): void {
+    this.occurrenceForm.patchValue({
+      occurrenceType: occurType ? `${occurType.id} - ${occurType.name}` : ''
+    });
+  }
+
+  onInspectorSelected(inspector: UserResponse | null): void {
+    this.occurrenceForm.patchValue({
+      qualityInspector: inspector ? `${inspector.id} - ${inspector.username}` : ''
+    });
+  }
+
+  onInternalComplinantSelect(complainer: UserResponse | null): void {
+    if (complainer) {
+      this.occurrenceForm.patchValue({
+        internalComplainer: `${complainer.id} - ${complainer.username}`,
+        complainerId: complainer.id,
+        complainerName: complainer.username
+      });
+
+      if (complainer.email && !complainer.email.includes("*")) {
+        this.occurrenceForm.patchValue({
+          complainerEmail: complainer.email
+        });
+      }
+    } else {
+      this.occurrenceForm.patchValue({
+        internalComplainer: '',
+        complainerId: '',
+        complainerName: '',
+        complainerEmail: ''
+      });
+    }
   }
 }

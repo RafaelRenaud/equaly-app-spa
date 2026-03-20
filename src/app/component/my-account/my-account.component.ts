@@ -3,8 +3,6 @@ import { SessionService } from "../../core/service/session/session.service";
 import { UserService } from "../../core/service/user/user.service";
 import { LoadingService } from "../../core/service/loading/loading.service";
 import { UserResponse } from "../../core/model/user/user-response.model";
-import { RolesResponse } from "../../core/model/role/roles-response.model";
-import { forkJoin } from "rxjs";
 import { Router, RouterModule } from "@angular/router";
 import {
   FormBuilder,
@@ -29,7 +27,6 @@ import { UserSystemPipe } from "../../pipe/user-system-pipe";
 })
 export class MyAccountComponent implements OnInit {
   myUser: UserResponse | null = null;
-  myRoles: RolesResponse | null = null;
   rolesAsText: string | null = null;
   fileType: "png" | "jpeg" = "png";
 
@@ -73,28 +70,23 @@ export class MyAccountComponent implements OnInit {
 
     const userId = this.sessionService.getItem("userId")!;
 
-    forkJoin({
-      user: this.userService.getUser(userId),
-      roles: this.userService.getUserRoles(userId),
-    }).subscribe({
-      next: ({ user, roles }) => {
+    this.userService.getUser(userId).subscribe({
+      next: (user) => {
         this.myUser = user;
-        this.myRoles = roles;
 
-        if(this.myRoles.roles.length > 0){
-          this.rolesAsText = this.userService.parseRoles(roles.roles).toString();
-        }else{
-          this.rolesAsText = "Sem Permissões";
+        if (this.myUser.roles.length > 0) {
+          this.rolesAsText = this.userService.parseStringRoles(this.myUser.roles).toString();
         }
 
         this.mainProfileForm.patchValue({
           username: user.username,
           nickname: user.nickname,
         });
+
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao carregar dados do usuário ou roles:", err);
+        console.error("Erro ao carregar dados do usuário:", err);
         this.loadingService.hide();
       },
     });

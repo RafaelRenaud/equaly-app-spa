@@ -12,22 +12,13 @@
             </div>
 
             <!-- Tipo de Ocorrência -->
-            <div class="row mb-3">
-                <div class="form-floating col-md-12">
-                    <input type="text" class="form-control" id="floatingOccurrenceType" placeholder="Tipo de Ocorrência"
-                        formControlName="occurrenceType" />
-                    <label for="floatingOccurrenceType" class="ps-4">Tipo de Ocorrência</label>
-                </div>
-            </div>
+            <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
+                [placeholder]='"Tipo de Ocorrência"' />
 
             <!-- Responsável Inspeção de Qualidade -->
-            <div class="row mb-3">
-                <div class="form-floating col-md-12">
-                    <input type="text" class="form-control" id="floatingQualityInspector"
-                        placeholder="Responsável Inspeção de Qualidade" formControlName="qualityInspector" />
-                    <label for="floatingQualityInspector" class="ps-4">Responsável Inspeção de Qualidade</label>
-                </div>
-            </div>
+            <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                [placeholder]='"Responsável Inspeção de Qualidade"'
+                (outputUserSelected)="onInspectorSelected($event)" />
 
             <!-- Prioridade + Data do Ocorrido -->
             <div class="row mb-3">
@@ -43,17 +34,16 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-floating position-relative">
-                        <input type="text" class="form-control" id="floatingOccurrenceDate"
-                            placeholder="Data do Ocorrido" [value]="getFormattedDate()" readonly
-                            (click)="toggleDatePicker()" />
+                        <input type="text" class="form-control"
+                            [class.is-invalid]="occurrenceForm.get('occurrenceDate')?.invalid && occurrenceForm.get('occurrenceDate')?.touched"
+                            id="floatingOccurrenceDate" placeholder="Data do Ocorrido" formControlName="occurrenceDate"
+                            (click)="toggleDatePicker()" (input)="onDateInput($event)" [value]="getFormattedDate()" />
                         <label for="floatingOccurrenceDate" class="ps-4">Data do Ocorrido</label>
-                        <button class="btn btn-outline-secondary position-absolute end-0 top-0 h-100 border-start-0"
-                            type="button" (click)="toggleDatePicker()">
-                            <i class="bi bi-calendar"></i>
-                        </button>
+
                         @if (showDatePicker) {
                         <div class="position-absolute top-100 start-0 mt-1" style="z-index: 1050;">
-                            <ngb-datepicker #datePicker (dateSelect)="onDateSelect($event)"></ngb-datepicker>
+                            <ngb-datepicker #datePicker (dateSelect)="onDateSelect($event)" [maxDate]="maxDate">
+                            </ngb-datepicker>
                         </div>
                         }
                     </div>
@@ -88,6 +78,11 @@
                             </h2>
                             <div ngbAccordionCollapse>
                                 <div ngbAccordionBody>
+                                    <div class="alert alert-primary" role="alert">
+                                        <i class="bi bi-info-square-fill"></i>
+                                        É possível adicionais até 5 notas fiscais relacionadas à ocorrência. Preencha os
+                                        campos de acordo com as informações disponíveis.
+                                    </div>
                                     <ng-template>
                                         <div class="row mb-2">
                                             <div class="form-floating col-md">
@@ -139,6 +134,8 @@
                     <label for="floatingComplement" class="ps-4">Complemento</label>
                 </div>
             </div>
+
+            <br>
 
             <!-- Seção: Dados da Reclamação -->
             <div class="row mt-4 mb-3">
@@ -214,6 +211,7 @@
 
             <!-- Seção: Dados do Reclamante -->
             @if (showComplainerSection) {
+            <br>
             <div class="row mt-4 mb-3">
                 <div class="col-md-12">
                     <h5 class="border-bottom pb-2">Dados do Reclamante</h5>
@@ -222,13 +220,8 @@
             }
 
             @if (showInternalId && showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <input type="text" class="form-control" id="floatingInternalComplainer"
-                        placeholder="Buscar Reclamante Interno" formControlName="internalComplainer" />
-                    <label for="floatingInternalComplainer" class="ps-4">Buscar Reclamante Interno</label>
-                </div>
-            </div>
+            <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
+                (outputUserSelected)="onInternalComplinantSelect($event)" />
             }
 
             @if (showInternalId && showComplainerSection) {
@@ -268,10 +261,20 @@
 
             @if (showComplainerSection) {
             <div class="row mb-3">
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingComplainerCep" placeholder="CEP"
-                        formControlName="complainerCep" (input)="applyCepMask($event)" (input)="searchCep()"/>
+                <div class="form-floating col-md-6 position-relative">
+                    <input #cepInput type="text" class="form-control"
+                        [class.is-invalid]="occurrenceForm.get('complainerCep')?.invalid && occurrenceForm.get('complainerCep')?.touched"
+                        id="floatingComplainerCep" placeholder="CEP" formControlName="complainerCep"
+                        (input)="applyCepMask($event)" (blur)="searchCep()" />
                     <label for="floatingComplainerCep" class="ps-4">CEP</label>
+
+                    @if (isLoadingCep) {
+                    <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+                        <div class="spinner-border spinner-border-sm text-primary spinner-custom" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+                    }
                 </div>
                 <div class="form-floating col-md-6">
                     <input type="text" class="form-control" id="floatingComplainerStreet" placeholder="Logradouro"
@@ -305,16 +308,18 @@
             <div class="row mb-4">
                 <div class="form-floating col-md-6">
                     <input type="text" class="form-control" id="floatingComplainerCity" placeholder="Cidade"
-                        formControlName="complainerCity"  [disabled]="true" />
+                        formControlName="complainerCity" [disabled]="true" />
                     <label for="floatingComplainerCity" class="ps-4">Cidade</label>
                 </div>
                 <div class="form-floating col-md-6">
                     <input type="text" class="form-control" id="floatingComplainerState" placeholder="UF"
-                        formControlName="complainerState"  [disabled]="true" />
+                        formControlName="complainerState" [disabled]="true" />
                     <label for="floatingComplainerState" class="ps-4">UF</label>
                 </div>
             </div>
             }
+
+            <br>
 
             <!-- Seção: Anexos -->
             <div class="row mt-4 mb-3">

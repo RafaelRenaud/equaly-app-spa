@@ -124,6 +124,7 @@ export class UserHubComponent {
           this.selectedCompany ? this.selectedCompany.id : null,
           this.selectedDepartment ? this.selectedDepartment.id : null,
           this.selectedStatus,
+          null,
           this.currentPage,
           this.pageSize
         )

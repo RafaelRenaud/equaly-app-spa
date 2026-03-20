@@ -179,7 +179,7 @@ export class UserCreateComponent implements OnInit {
 
     this.loadingService.show();
     this.userService
-      .getUsers("login", loginCtrl.value, null, null, null, "NONE", 0, 1)
+      .getUsers("login", loginCtrl.value, null, null, null, "NONE", [] , 0, 1)
       .subscribe({
         next: (res) => {
           this.invalidLogin = res.users.some(
@@ -198,7 +198,7 @@ export class UserCreateComponent implements OnInit {
 
     this.loadingService.show();
     this.userService
-      .getUsers("email", emailCtrl.value, null, null, null, "NONE", 0, 1)
+      .getUsers("email", emailCtrl.value, null, null, null, "NONE", null,  0, 1)
       .subscribe({
         next: (res) => {
           this.invalidEmail = res.users.some(

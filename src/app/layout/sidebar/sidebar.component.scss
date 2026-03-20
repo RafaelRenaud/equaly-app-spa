@@ -68,6 +68,8 @@
   margin: 20px;
   z-index: 200;
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Container principal do sidebar */
@@ -75,6 +77,32 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+/* Container do collapse */
+.navbar-collapse {
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Para o collapse do ng-bootstrap - CORREÇÃO DO MOVIMENTO */
+.collapse {
+  transition: none !important; /* Remove transição que causa movimento */
+}
+
+.collapse:not(.show) {
+  display: none;
+}
+
+.collapse.show {
+  display: flex !important;
+  flex-direction: column;
+  width: 100%;
 }
 
 /* FOOTER DO SIDEBAR */
@@ -87,6 +115,8 @@
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   width: 100%;
   background-color: var(--primary-color);
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .sidebar-footer .footer-info {
@@ -118,13 +148,13 @@
 .sidebar-footer img {
   width: 64px;
   height: 64px;
-  object-fit: cover; /* mantém proporção e preenche o quadrado */
+  object-fit: cover;
   flex-shrink: 0;
 }
 
 .sidebar-footer .footer-info {
   flex: 1 1 auto;
-  min-width: 140px; /* evita que o nome ou links quebrem em telas muito estreitas */
+  min-width: 140px;
 }
 
 /* VIEWPORT NORMAL (desktop) */
@@ -181,7 +211,6 @@
     max-height: 70vh;
     overflow-y: auto;
     overflow-x: hidden;
-    transition: max-height 0.3s ease-in-out;
   }
 
   .navbar-toggler {
@@ -228,8 +257,12 @@
     z-index: 1060;
   }
 
-  /* Footer visível somente quando menu expandido */
-  .navbar-collapse.show + .sidebar-footer {
+  .navbar-collapse {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-footer {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -237,6 +270,7 @@
     padding: 1rem;
     border-radius: 0 0 8px 8px;
     background-color: var(--primary-color);
+    margin-top: 0.5rem;
   }
 
   .content {
@@ -264,6 +298,10 @@
 .navbar-nav {
   width: 100%;
   align-items: flex-start;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 .nav-item {
@@ -278,6 +316,7 @@
   font-size: 0.95rem;
   border-radius: 0.375rem;
   color: white;
+  transition: background-color 0.2s ease;
 }
 
 .nav-link.active {
@@ -295,5 +334,69 @@
 }
 
 hr {
+  color: white;
+  margin: 0.5rem 0;
+}
+
+/* ========== ESTILOS DO SUBMENU (APENAS ADIÇÕES) ========== */
+
+/* Botão de toggle do submenu */
+button.nav-link.btn-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.nav-link.btn-link i:last-child {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+/* Submenu - CORREÇÃO DO MOVIMENTO */
+.submenu {
+  width: 100%;
+  margin-left: 1.5rem !important;
+  padding-left: 0;
+  overflow: hidden;
+}
+
+/* Itens do submenu - ESTABILIDADE */
+.submenu-link {
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 0.375rem;
+  transition: background-color 0.2s ease;
+  margin: 2px 0;
+  white-space: nowrap; /* Impede quebra de linha que causa movimento */
+}
+
+.submenu-link i {
+  min-width: 28px;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+  flex-shrink: 0; /* Impede que o ícone encolha */
+}
+
+.submenu-link span {
+  white-space: nowrap; /* Impede quebra de linha */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.submenu-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.submenu-link.active {
+  background-color: var(--secondary-color);
   color: white;
 }

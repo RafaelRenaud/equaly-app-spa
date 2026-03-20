@@ -103,20 +103,22 @@
         sessionService.hasRole('COMMON_QUALITY_INSPECTOR')){
         <li class="nav-item p-1">
           <button class="nav-link btn btn-link" (click)="toggleOccurrences()">
+            <i class="bi bi-folder-fill p-2"></i>
             Ocorrências
-            <i class="bi p-2" [class]="isOccurrencesCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+            <i class="bi ms-auto" [class]="isOccurrencesCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
           </button>
-          <ul class="navbar-nav nav-pills flex-column ms-3" [ngbCollapse]="isOccurrencesCollapsed">
+          <ul class="navbar-nav nav-pills flex-column submenu" [ngbCollapse]="isOccurrencesCollapsed">
             @if(sessionService.hasRole('COMMON_EVENT_OPENER')){
             <li class="nav-item">
-              <a class="nav-link" [routerLink]="['/occurs', 'create']" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-plus-square-fill p-2"></i>
+              <a class="nav-link submenu-link" [routerLink]="['/occurs', 'create']" routerLinkActive="active"
+                (click)="closeMenu()">
+                <i class="bi bi-plus-square-fill"></i>
                 Nova Ocorrência
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-file-earmark-text-fill p-2"></i>
+              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+                <i class="bi bi-file-earmark-text-fill"></i>
                 Rascunhos
               </a>
             </li>
@@ -124,30 +126,30 @@
 
             @if(sessionService.hasRole('COMMON_EVENT_OPENER') || sessionService.hasRole('COMMON_QUALITY_INSPECTOR')){
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-file-post-fill p-2"></i>
+              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+                <i class="bi bi-file-post-fill"></i>
                 Minhas Ocorrências
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-card-checklist p-2"></i>
+              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+                <i class="bi bi-card-checklist"></i>
                 Pendências
               </a>
             </li>
             }
 
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-search p-2"></i>
+              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+                <i class="bi bi-search"></i>
                 Pesquisar
               </a>
             </li>
 
             @if(sessionService.hasRole('MASTER_EVENT_OPENER') || sessionService.hasRole('COMMON_EVENT_OPENER')){
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-chat-left-fill p-2"></i>
+              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+                <i class="bi bi-chat-left-fill"></i>
                 Feedbacks
               </a>
             </li>

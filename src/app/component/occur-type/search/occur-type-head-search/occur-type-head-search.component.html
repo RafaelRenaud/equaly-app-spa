@@ -1,0 +1,25 @@
+<div class="row mb-3">
+    <div class="form-floating col-md position-relative">
+        <input #typeaheadInput type="text" class="form-control" [class.is-invalid]="invalidInput"
+            id="floatingOccurrenceType" placeholder="Tipo de Ocorrência" [ngbTypeahead]="searchOccurTypes"
+            [inputFormatter]="inputFormatter" [resultFormatter]="resultFormatter" (selectItem)="onSelectItem($event)"
+            (blur)="onInputBlur()" (keydown.enter)="onEnterPressed()" (input)="onInputChange($event)"
+            [(ngModel)]="searchText" [ngModelOptions]="{ standalone: true }" />
+        <label for="floatingOccurrenceType" class="ps-4">{{ placeholder }}</label>
+
+        @if (isLoading) {
+        <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+            <div class="spinner-custom spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+        }
+
+        @if (invalidInput) {
+        <div class="invalid-feedback d-block">
+            <i class="bi bi-exclamation-square-fill"></i>
+            Tipo de Ocorrência inválido, selecione novamente.
+        </div>
+        }
+    </div>
+</div>

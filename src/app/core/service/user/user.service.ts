@@ -51,6 +51,7 @@ export class UserService {
     companyId: number | null,
     departmentId: number | null,
     status: string,
+    roles: string[] | null,
     page: number,
     size: number
   ): Observable<UsersResponse> {
@@ -88,6 +89,10 @@ export class UserService {
 
     if (departmentId !== null) {
       params = params.set("userDepartmentId", departmentId.toString());
+    }
+
+    if (roles !== null && roles.length > 0) {
+      params = params.set("userRole", roles.join(","));
     }
 
     return this.http.get<UsersResponse>(this.endpoint, {

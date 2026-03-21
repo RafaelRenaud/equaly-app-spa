@@ -76,6 +76,7 @@ export class UserTypeHeadSearchComponent {
     return this.userService.getUser(id.toString()).pipe(
       tap((response) => this.handleSearchByIdResponse(response)),
       catchError((error) => {
+        this.isLoading = false;
         this.handleError('Erro ao buscar usuário por ID');
         this.resetSearchState();
         return of(null);

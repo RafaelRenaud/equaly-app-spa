@@ -20,7 +20,6 @@ export class SidebarComponent {
   departmentName: string | null = null;
 
   isMenuCollapsed = true; // controla collapse mobile
-
   isOccurrencesCollapsed = true;
 
   constructor(
@@ -37,6 +36,39 @@ export class SidebarComponent {
     this.departmentName = this.sessionService.getItem("departmentName");
   }
 
+  // Métodos auxiliares para verificação de permissões
+  hasAdminAccess(): boolean {
+    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+           this.sessionService.hasRole('MASTER_ADMIN') ||
+           this.sessionService.hasRole('COMMON_ADMIN');
+  }
+
+  hasAdminOrManagerAccess(): boolean {
+    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+           this.sessionService.hasRole('MASTER_ADMIN') ||
+           this.sessionService.hasRole('COMMON_ADMIN');
+  }
+
+  hasQualityAccess(): boolean {
+    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
+           this.sessionService.hasRole('MASTER_ADMIN') ||
+           this.sessionService.hasRole('COMMON_ADMIN') ||
+           this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+  }
+
+  hasOperationalAccess(): boolean {
+    return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
+           this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
+           this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+  }
+
+  hasEventOrInspectorAccess(): boolean {
+    return this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
+           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+  }
+
   logout(event: Event): void {
     event.preventDefault();
     this.loadingService.show();
@@ -45,15 +77,17 @@ export class SidebarComponent {
     });
   }
 
-  toggleMenu() {
+  toggleMenu(): void {
     this.isMenuCollapsed = !this.isMenuCollapsed;
   }
 
-  closeMenu() {
-    this.isMenuCollapsed = true;
+  closeMenu(): void {
+    if (window.innerWidth < 992) {
+      this.isMenuCollapsed = true;
+    }
   }
 
-  toggleOccurrences() {
+  toggleOccurrences(): void {
     this.isOccurrencesCollapsed = !this.isOccurrencesCollapsed;
   }
 }

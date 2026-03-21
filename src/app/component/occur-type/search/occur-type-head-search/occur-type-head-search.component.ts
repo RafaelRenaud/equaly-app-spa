@@ -83,6 +83,7 @@ export class OccurTypeHeadSearchComponent {
     return this.occurTypeService.getOccurType(id).pipe(
       tap((response) => this.handleSearchByIdResponse(response)),
       catchError((error) => {
+        this.isLoading = false;
         this.handleError('Erro ao buscar tipo de ocorrência por ID');
         this.resetSearchState();
         return of(null);

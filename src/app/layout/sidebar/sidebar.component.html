@@ -16,141 +16,145 @@
 </div>
 
 <!-- Sidebar -->
-<nav class="navbar navbar-expand-sm navbar-dark" id="main-sidebar">
-  <!-- Toggler -->
-  <button class="navbar-toggler" type="button" (click)="toggleMenu()" [attr.aria-expanded]="!isMenuCollapsed"
-    aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
+<aside class="sidebar" id="main-sidebar">
+  <!-- Toggler button (mobile) -->
+  <button class="sidebar-toggler" type="button" (click)="toggleMenu()" [attr.aria-expanded]="!isMenuCollapsed">
+    <span class="sidebar-toggler-icon"></span>
   </button>
 
-  <!-- Collapse usando ng-bootstrap -->
-  <div [ngbCollapse]="isMenuCollapsed" class="navbar-collapse">
-    <div class="sidebar-content">
-      <!-- LOGO -->
-      <a href="/" class="mx-auto navbar-brand">
-        <img alt="Logo da Empresa" id="company-logo" [src]="companyLogo || 'logo_white.png'" />
-        <hr />
+  <!-- Sidebar content -->
+  <div class="sidebar-inner" [class.sidebar-collapsed]="isMenuCollapsed">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <a href="/" class="logo-link">
+        <img alt="Logo da Empresa" class="logo-img" [src]="companyLogo || 'logo_white.png'" />
       </a>
+    </div>
 
-      <!-- MENU -->
-      <ul class="navbar-nav nav-pills flex-column">
-        <li class="nav-item p-1">
+    <!-- Navigation -->
+    <div class="sidebar-nav">
+      <ul class="nav-menu">
+        <li class="nav-item">
           <a class="nav-link" [routerLink]="['/']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
             (click)="closeMenu()">
-            <i class="bi bi-house-fill p-2"></i>
-            Início
+            <i class="bi bi-house-fill"></i>
+            <span>Início</span>
           </a>
         </li>
 
-        <!-- ADMINISTRATIVO -->
+        <!-- ADMINISTRATIVO SECTION -->
+        @if (hasAdminAccess()) {
+        <li class="nav-divider">
+          <span>Administrativo</span>
+        </li>
+        }
+
         @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
-        <li class="nav-item p-1">
+        <li class="nav-item">
           <a class="nav-link" [routerLink]="['/companies']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-buildings-fill p-2"></i>
-            Empresas
+            <i class="bi bi-buildings-fill"></i>
+            <span>Empresas</span>
           </a>
         </li>
         }
 
-        <li class="nav-item p-1">
+        <li class="nav-item">
           <a class="nav-link" [routerLink]="['/my-company']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-building-fill p-2"></i>
-            Minha Empresa
+            <i class="bi bi-building-fill"></i>
+            <span>Minha Empresa</span>
           </a>
         </li>
 
         @if (sessionService.hasRole('EQUALY_MASTER_ADMIN')) {
-        <li class="nav-item p-1">
+        <li class="nav-item">
           <a class="nav-link" [routerLink]="['/credentials']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-award-fill p-2"></i>
-            Credenciais
-          </a>
-        </li>
-        } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-        sessionService.hasRole('MASTER_ADMIN') ||
-        sessionService.hasRole('COMMON_ADMIN') ) {
-        <li class="nav-item p-1">
-          <a class="nav-link" [routerLink]="['/departments']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-diagram-2-fill p-2"></i>
-            Departamentos
-          </a>
-        </li>
-
-        <li class="nav-item p-1">
-          <a class="nav-link" [routerLink]="['/users']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-people-fill p-2"></i>
-            Usuários
-          </a>
-        </li>
-        } @if ( sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-        sessionService.hasRole('MASTER_ADMIN') ||
-        sessionService.hasRole('COMMON_ADMIN') ||
-        sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-        sessionService.hasRole('COMMON_QUALITY_INSPECTOR') ) {
-        <li class="nav-item p-1">
-          <a class="nav-link" [routerLink]="['/occur-types']" routerLinkActive="active" (click)="closeMenu()">
-            <i class="bi bi-ui-checks p-2"></i>
-            Tipos de Ocorrências
+            <i class="bi bi-award-fill"></i>
+            <span>Credenciais</span>
           </a>
         </li>
         }
 
-        <!-- OPERACIONAL -->
-        <!-- COCKPIT OCORRÊNCIAS -->
-        @if(sessionService.hasRole('MASTER_EVENT_OPENER') ||
-        sessionService.hasRole('COMMON_EVENT_OPENER') ||
-        sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-        sessionService.hasRole('COMMON_QUALITY_INSPECTOR')){
-        <li class="nav-item p-1">
-          <button class="nav-link btn btn-link" (click)="toggleOccurrences()">
-            <i class="bi bi-folder-fill p-2"></i>
-            Ocorrências
-            <i class="bi ms-auto" [class]="isOccurrencesCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+        @if (hasAdminOrManagerAccess()) {
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/departments']" routerLinkActive="active" (click)="closeMenu()">
+            <i class="bi bi-diagram-2-fill"></i>
+            <span>Departamentos</span>
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/users']" routerLinkActive="active" (click)="closeMenu()">
+            <i class="bi bi-people-fill"></i>
+            <span>Usuários</span>
+          </a>
+        </li>
+        }
+
+        @if (hasQualityAccess()) {
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/occur-types']" routerLinkActive="active" (click)="closeMenu()">
+            <i class="bi bi-ui-checks"></i>
+            <span>Tipos de Ocorrências</span>
+          </a>
+        </li>
+        }
+
+        <!-- OPERACIONAL SECTION -->
+        @if (hasOperationalAccess()) {
+        <li class="nav-divider">
+          <span>Operacional</span>
+        </li>
+
+        <li class="nav-item nav-dropdown">
+          <button class="nav-link" (click)="toggleOccurrences()">
+            <i class="bi bi-folder-fill"></i>
+            <span>Ocorrências</span>
+            <i class="bi dropdown-icon" [class]="isOccurrencesCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
           </button>
-          <ul class="navbar-nav nav-pills flex-column submenu" [ngbCollapse]="isOccurrencesCollapsed">
-            @if(sessionService.hasRole('COMMON_EVENT_OPENER')){
-            <li class="nav-item">
-              <a class="nav-link submenu-link" [routerLink]="['/occurs', 'create']" routerLinkActive="active"
+          <ul class="submenu" [class.submenu-open]="!isOccurrencesCollapsed">
+            @if(sessionService.hasRole('COMMON_EVENT_OPENER')) {
+            <li>
+              <a class="submenu-link" [routerLink]="['/occurs', 'create']" routerLinkActive="active"
                 (click)="closeMenu()">
                 <i class="bi bi-plus-square-fill"></i>
-                Nova Ocorrência
+                <span>Nova Ocorrência</span>
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+            <li>
+              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-file-earmark-text-fill"></i>
-                Rascunhos
+                <span>Rascunhos</span>
               </a>
             </li>
             }
 
-            @if(sessionService.hasRole('COMMON_EVENT_OPENER') || sessionService.hasRole('COMMON_QUALITY_INSPECTOR')){
-            <li class="nav-item">
-              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+            @if(hasEventOrInspectorAccess()) {
+            <li>
+              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-file-post-fill"></i>
-                Minhas Ocorrências
+                <span>Minhas Ocorrências</span>
               </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+            <li>
+              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-card-checklist"></i>
-                Pendências
+                <span>Pendências</span>
               </a>
             </li>
             }
 
-            <li class="nav-item">
-              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+            <li>
+              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-search"></i>
-                Pesquisar
+                <span>Pesquisar</span>
               </a>
             </li>
 
-            @if(sessionService.hasRole('MASTER_EVENT_OPENER') || sessionService.hasRole('COMMON_EVENT_OPENER')){
-            <li class="nav-item">
-              <a class="nav-link submenu-link" routerLinkActive="active" (click)="closeMenu()">
+            @if(sessionService.hasRole('MASTER_EVENT_OPENER') || sessionService.hasRole('COMMON_EVENT_OPENER')) {
+            <li>
+              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-chat-left-fill"></i>
-                Feedbacks
+                <span>Feedbacks</span>
               </a>
             </li>
             }
@@ -158,22 +162,20 @@
         </li>
         }
       </ul>
+    </div>
 
-      <!-- FOOTER -->
-      <div class="sidebar-footer text-white">
-        <img [src]="
-            userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'
-          " alt="Avatar" class="rounded" />
-        <div class="footer-info">
-          <strong>{{ userDisplayName }}</strong>
-          <i><small>{{ companyDisplayName }}</small></i><br />
-          <small>
-            <a href="#" [routerLink]="['/my-account']" (click)="closeMenu()">Meu Perfil</a>
-            |
-            <a href="#" (click)="logout($event)">Sair</a>
-          </small>
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <img [src]="userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'" alt="Avatar" class="footer-avatar rounded" />
+      <div class="footer-info">
+        <strong>{{ userDisplayName }}</strong>
+        <small>{{ companyDisplayName }}</small>
+        <div class="footer-links">
+          <a href="#" [routerLink]="['/my-account']" (click)="closeMenu()">Meu Perfil</a>
+          <span class="separator">|</span>
+          <a href="#" (click)="logout($event)">Sair</a>
         </div>
       </div>
     </div>
   </div>
-</nav>
+</aside>

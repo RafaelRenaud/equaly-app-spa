@@ -7,25 +7,19 @@
       @if(isEqualyMasterAdmin){
       <div class="row">
         <div class="form-floating col-md">
-          <app-company-search
-            (selectedCompany)="onSelectCompany($event)"
-          ></app-company-search>
+          <app-company-search (selectedCompany)="onSelectCompany($event)"></app-company-search>
         </div>
       </div>
       }
 
       <div class="row">
         <div class="form-floating col-md">
-          <input
-            type="text"
-            maxlength="64"
-            class="form-control"
+          <input type="text" maxlength="64" class="form-control"
             [class.is-invalid]="departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)"
-            formControlName="departmentName"
-            placeholder="Nome do Departamento"
-          />
+            formControlName="departmentName" placeholder="Nome do Departamento" />
           <label class="ps-4">Nome do Departamento</label>
-          @if(departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched || departmentForm.get('departmentName')?.dirty)){
+          @if(departmentForm.get('departmentName')?.invalid && (departmentForm.get('departmentName')?.touched ||
+          departmentForm.get('departmentName')?.dirty)){
           <div class="invalid-feedback pb-2">
             Nome do Departamento não preenchido ou inválido.
           </div>
@@ -34,16 +28,12 @@
       </div>
 
       <div class="form-floating">
-        <textarea
-          class="form-control"
-          id="departmentDescriptionLabel"
+        <textarea class="form-control" id="departmentDescriptionLabel"
           [class.is-invalid]="departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)"
-          formControlName="departmentDescription"
-          maxlength="256"
-          placeholder="Descrição"
-        ></textarea>
+          formControlName="departmentDescription" maxlength="256" placeholder="Descrição"></textarea>
         <label for="departmentDescriptionLabel">Descrição</label>
-        @if(departmentForm.get('departmentDescription')?.invalid && (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)){
+        @if(departmentForm.get('departmentDescription')?.invalid &&
+        (departmentForm.get('departmentDescription')?.touched || departmentForm.get('departmentDescription')?.dirty)){
         <div class="invalid-feedback pb-2">
           Descrição não preenchida ou inválida.
         </div>

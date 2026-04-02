@@ -52,7 +52,7 @@ body {
   background-color: --background-color;
 }
 
-input.form-control {
+input.form-control, select.form-select {
   border: 1px solid var(--border-color);
   margin-bottom: 1rem;
   font-size: var(--font-size-base);
@@ -185,6 +185,12 @@ a {
 
 textarea {
   min-height: 100px !important;
+
+  &:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 5px rgba(var(--primary-color), 0.5) !important;
+    outline: none !important;
+  }
 }
 
 .form-check-input:checked {
@@ -253,28 +259,21 @@ ngb-typeahead-window {
   }
 }
 
-// Customização do ngb-datepicker
-ngb-datepicker {
-  background-color: white !important;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(black, 0.1);
-  border: 1px solid lightgray;
+//Navs e Tabs
+.nav-tabs {
+  .nav-item {
+    .nav-link {
+      color: #6c757d;
+      transition: all 0.2s ease-in-out;
 
-  .ngb-dp-weekday {
-    color: var(--primary-color) !important;
-    font-weight: 600;
-    font-size: 0.85rem;
-    background-color: transparent !important;
-    text-transform: uppercase;
-  }
-
-  // Navegação
-  .ngb-dp-navigation {
-    button {
-      color: var(--primary-color);
+      &.active {
+        color: var(--primary-color);
+        border-top: 5px solid var(--primary-color);
+      }
 
       &:hover {
-        background-color: #e7f1ff;
+        color: var(--primary-color);
+        padding-bottom: 12px;
       }
     }
   }

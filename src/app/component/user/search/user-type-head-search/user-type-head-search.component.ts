@@ -23,16 +23,16 @@ export class UserTypeHeadSearchComponent {
 
   selectedUser: UserResponse | null = null;
   private _searchText: string = '';
-  
+
   // Getter e Setter para garantir que searchText seja sempre string
   get searchText(): string {
     return this._searchText;
   }
-  
+
   set searchText(value: string | null | undefined) {
     this._searchText = value ?? '';
   }
-  
+
   invalidInput: boolean = false;
   isLoading: boolean = false;
 
@@ -86,6 +86,17 @@ export class UserTypeHeadSearchComponent {
 
   private handleSearchByIdResponse(response: UserResponse | null): void {
     if (response?.id) {
+      // Valida se o usuário tem pelo menos uma das roles necessárias
+      const hasRequiredRole = this.userRole.length === 0 ||
+        (response.roles?.some(role => this.userRole.includes(role)) ?? false);
+
+      if (!hasRequiredRole) {
+        // Usuário não tem a role necessária
+        this.resetSearchState(true);
+        this.isLoading = false;
+        return;
+      }
+
       this.selectedUser = response;
       this.searchText = this.formatUser(response);
       this.invalidInput = false;
@@ -163,7 +174,7 @@ export class UserTypeHeadSearchComponent {
 
   onInputBlur(): void {
     const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
-    
+
     if (!this.selectedUser && term) {
       if (this.isNumeric(term)) {
         this.searchByIdSubject.next(term);
@@ -179,7 +190,7 @@ export class UserTypeHeadSearchComponent {
 
   onEnterPressed(): void {
     const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
-    
+
     if (!term) return;
 
     if (this.isNumeric(term)) {

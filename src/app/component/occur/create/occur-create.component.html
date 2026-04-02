@@ -4,374 +4,552 @@
     </div>
     <div class="surface-container-body">
         <form [formGroup]="occurrenceForm">
-            <!-- Seção: Dados da Ocorrência -->
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <h5 class="border-bottom pb-2">Dados da Ocorrência</h5>
-                </div>
-            </div>
+            <!-- Tabs de navegação -->
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-4" (navChange)="onTabChange($event)"
+                [destroyOnHide]="false">
+                <li ngbNavItem="occurrence">
+                    <button ngbNavLink>Dados da Ocorrência</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <!-- Tipo de Ocorrência -->
+                            <div [class.is-invalid]="isFieldInvalid('occurrenceType')">
+                                <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
+                                    [placeholder]='"Tipo de Ocorrência"' />
+                            </div>
 
-            <!-- Tipo de Ocorrência -->
-            <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
-                [placeholder]='"Tipo de Ocorrência"' />
+                            <!-- Prioridade + Data do Ocorrido -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" id="floatingPriority" title="Selecione a prioridade"
+                                            [class.is-invalid]="isFieldInvalid('priority')" formControlName="priority">
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="LOW">Baixa</option>
+                                            <option value="MEDIUM">Média</option>
+                                            <option value="HIGH">Alta</option>
+                                        </select>
+                                        <label for="floatingPriority" class="ps-4">Prioridade</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating position-relative">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('occurrenceDate')"
+                                            id="floatingOccurrenceDate" placeholder="Data do Ocorrido"
+                                            formControlName="occurrenceDate" />
+                                        <label for="floatingOccurrenceDate" class="ps-4">Data do Ocorrido</label>
+                                    </div>
+                                </div>
+                            </div>
 
-            <!-- Responsável Inspeção de Qualidade -->
-            <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
-                [placeholder]='"Responsável Inspeção de Qualidade"'
-                (outputUserSelected)="onInspectorSelected($event)" />
+                            <!-- Responsável Inspeção de Qualidade -->
+                            <div [class.is-invalid]="isFieldInvalid('qualityInspector')">
+                                <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                                    [placeholder]='"Responsável Inspeção de Qualidade"'
+                                    (outputUserSelected)="onInspectorSelected($event)" />
+                            </div>
 
-            <!-- Prioridade + Data do Ocorrido -->
-            <div class="row mb-3">
-                <div class="form-floating col-md-6">
-                    <select class="form-select" id="floatingPriority" title="Selecione a prioridade"
-                        formControlName="priority">
-                        <option value="" selected disabled>Selecione</option>
-                        <option value="LOW">Baixa</option>
-                        <option value="MEDIUM">Média</option>
-                        <option value="HIGH">Alta</option>
-                    </select>
-                    <label for="floatingPriority" class="ps-4">Prioridade</label>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-floating position-relative">
-                        <input type="text" class="form-control"
-                            [class.is-invalid]="occurrenceForm.get('occurrenceDate')?.invalid && occurrenceForm.get('occurrenceDate')?.touched"
-                            id="floatingOccurrenceDate" placeholder="Data do Ocorrido" formControlName="occurrenceDate"
-                            (click)="toggleDatePicker()" (input)="onDateInput($event)" [value]="getFormattedDate()" />
-                        <label for="floatingOccurrenceDate" class="ps-4">Data do Ocorrido</label>
+                            <!-- Título -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingTitle" placeholder="Título"
+                                            [class.is-invalid]="isFieldInvalid('title')" formControlName="title" />
+                                        <label for="floatingTitle" class="ps-4">Título</label>
+                                    </div>
+                                    @if (shouldShowCounter('title')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('title') }} ({{
+                                        getFieldLength('title') }}/{{ getFieldConfig('title')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
 
-                        @if (showDatePicker) {
-                        <div class="position-absolute top-100 start-0 mt-1" style="z-index: 1500;">
-                            <ngb-datepicker #datePicker (dateSelect)="onDateSelect($event)" [maxDate]="maxDate">
-                            </ngb-datepicker>
+                            <!-- Descrição -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="floatingDescription" placeholder="Descrição"
+                                            rows="3" [class.is-invalid]="isFieldInvalid('description')"
+                                            formControlName="description"></textarea>
+                                        <label for="floatingDescription" class="ps-4">Descrição</label>
+                                    </div>
+                                    @if (shouldShowCounter('description')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('description') }}
+                                        ({{ getFieldLength('description') }}/{{ getFieldConfig('description')?.max
+                                        }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Complemento -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="floatingComplement" placeholder="Complemento"
+                                            rows="2" [class.is-invalid]="isFieldInvalid('complement')"
+                                            formControlName="complement"></textarea>
+                                        <label for="floatingComplement" class="ps-4">Complemento</label>
+                                    </div>
+                                    @if (shouldShowCounter('complement')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complement') }} ({{
+                                        getFieldLength('complement') }}/{{ getFieldConfig('complement')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Accordion para Notas Fiscais -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div ngbAccordion>
+                                        <div ngbAccordionItem [collapsed]="true">
+                                            <h2 ngbAccordionHeader>
+                                                <button ngbAccordionButton class="accordion-button">
+                                                    Notas Fiscais (NFs)
+                                                </button>
+                                            </h2>
+                                            <div ngbAccordionCollapse>
+                                                <div ngbAccordionBody>
+                                                    <div class="alert alert-primary" role="alert">
+                                                        <i class="bi bi-info-square-fill"></i>
+                                                        É possível adicionais até 5 notas fiscais relacionadas à
+                                                        ocorrência. Preencha os
+                                                        campos de acordo com as informações disponíveis.
+                                                    </div>
+                                                    <ng-template>
+                                                        <!-- NF1 -->
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        id="floatingNf1" placeholder="NF1"
+                                                                        [class.is-invalid]="isFieldInvalid('nf1')"
+                                                                        formControlName="nf1" />
+                                                                    <label for="floatingNf1" class="ps-4">NF1</label>
+                                                                </div>
+                                                                @if (shouldShowCounter('nf1')) {
+                                                                <small class="text-muted d-block mt-1 ms-1">{{
+                                                                    getFieldHelpText('nf1') }} ({{ getFieldLength('nf1')
+                                                                    }}/{{ getFieldConfig('nf1')?.max }})</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <!-- NF2 -->
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        id="floatingNf2" placeholder="NF2"
+                                                                        [class.is-invalid]="isFieldInvalid('nf2')"
+                                                                        formControlName="nf2" />
+                                                                    <label for="floatingNf2" class="ps-4">NF2</label>
+                                                                </div>
+                                                                @if (shouldShowCounter('nf2')) {
+                                                                <small class="text-muted d-block mt-1 ms-1">{{
+                                                                    getFieldHelpText('nf2') }} ({{ getFieldLength('nf2')
+                                                                    }}/{{ getFieldConfig('nf2')?.max }})</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <!-- NF3 -->
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        id="floatingNf3" placeholder="NF3"
+                                                                        [class.is-invalid]="isFieldInvalid('nf3')"
+                                                                        formControlName="nf3" />
+                                                                    <label for="floatingNf3" class="ps-4">NF3</label>
+                                                                </div>
+                                                                @if (shouldShowCounter('nf3')) {
+                                                                <small class="text-muted d-block mt-1 ms-1">{{
+                                                                    getFieldHelpText('nf3') }} ({{ getFieldLength('nf3')
+                                                                    }}/{{ getFieldConfig('nf3')?.max }})</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <!-- NF4 -->
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        id="floatingNf4" placeholder="NF4"
+                                                                        [class.is-invalid]="isFieldInvalid('nf4')"
+                                                                        formControlName="nf4" />
+                                                                    <label for="floatingNf4" class="ps-4">NF4</label>
+                                                                </div>
+                                                                @if (shouldShowCounter('nf4')) {
+                                                                <small class="text-muted d-block mt-1 ms-1">{{
+                                                                    getFieldHelpText('nf4') }} ({{ getFieldLength('nf4')
+                                                                    }}/{{ getFieldConfig('nf4')?.max }})</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <!-- NF5 -->
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        id="floatingNf5" placeholder="NF5"
+                                                                        [class.is-invalid]="isFieldInvalid('nf5')"
+                                                                        formControlName="nf5" />
+                                                                    <label for="floatingNf5" class="ps-4">NF5</label>
+                                                                </div>
+                                                                @if (shouldShowCounter('nf5')) {
+                                                                <small class="text-muted d-block mt-1 ms-1">{{
+                                                                    getFieldHelpText('nf5') }} ({{ getFieldLength('nf5')
+                                                                    }}/{{ getFieldConfig('nf5')?.max }})</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </ng-template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        }
-                    </div>
-                </div>
-            </div>
+                    </ng-template>
+                </li>
 
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <input type="text" class="form-control" id="floatingTitle" placeholder="Título"
-                        formControlName="title" />
-                    <label for="floatingTitle" class="ps-4">Título</label>
-                </div>
-            </div>
+                <li ngbNavItem="complaint">
+                    <button ngbNavLink>Dados da Reclamação</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingOrderNumber"
+                                            placeholder="Número do Pedido"
+                                            [class.is-invalid]="isFieldInvalid('orderNumber')"
+                                            formControlName="orderNumber" />
+                                        <label for="floatingOrderNumber" class="ps-4">Número do Pedido</label>
+                                    </div>
+                                    @if (shouldShowCounter('orderNumber')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('orderNumber') }}
+                                        ({{ getFieldLength('orderNumber') }}/{{ getFieldConfig('orderNumber')?.max
+                                        }})</small>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100"
+                                        [class.is-invalid]="isFieldInvalid('complaintType')">
+                                        <div class="form-label mb-2 d-flex align-items-center">
+                                            Tipo de Reclamação
+                                            <i class="bi bi-info-square-fill ms-2"
+                                                ngbTooltip="Interna: Reclamante interno da organização deve se identificar. Externa: Reclamante externo pode optar por não se identificar conforme LGPD."
+                                                placement="top"></i>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" id="complaintTypeInternal"
+                                                value="INTERNAL" formControlName="complaintType">
+                                            <label class="form-check-label" for="complaintTypeInternal">Interna</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" id="complaintTypeExternal"
+                                                value="EXTERNAL" formControlName="complaintType">
+                                            <label class="form-check-label" for="complaintTypeExternal">Externa</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <textarea class="form-control" id="floatingDescription" placeholder="Descrição" rows="3"
-                        formControlName="description"></textarea>
-                    <label for="floatingDescription" class="ps-4">Descrição</label>
-                </div>
-            </div>
+                            <!-- Descrição da Reclamação -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="floatingComplaintDescription"
+                                            placeholder="Descrição da Reclamação" rows="3"
+                                            [class.is-invalid]="isFieldInvalid('complaintDescription')"
+                                            formControlName="complaintDescription"></textarea>
+                                        <label for="floatingComplaintDescription" class="ps-4">Descrição da
+                                            Reclamação</label>
+                                    </div>
+                                    @if (shouldShowCounter('complaintDescription')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{
+                                        getFieldHelpText('complaintDescription') }} ({{
+                                        getFieldLength('complaintDescription') }}/{{
+                                        getFieldConfig('complaintDescription')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
 
-            <!-- Accordion para Notas Fiscais -->
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <div ngbAccordion>
-                        <div ngbAccordionItem [collapsed]="true">
-                            <h2 ngbAccordionHeader>
-                                <button ngbAccordionButton class="accordion-button">
-                                    Notas Fiscais (NFs)
-                                </button>
-                            </h2>
-                            <div ngbAccordionCollapse>
-                                <div ngbAccordionBody>
+                            <!-- Complemento da Reclamação -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="floatingComplaintComplement"
+                                            placeholder="Informações Complementares da Reclamação" rows="2"
+                                            [class.is-invalid]="isFieldInvalid('complaintComplement')"
+                                            formControlName="complaintComplement"></textarea>
+                                        <label for="floatingComplaintComplement" class="ps-4">Informações Complementares
+                                            da
+                                            Reclamação</label>
+                                    </div>
+                                    @if (shouldShowCounter('complaintComplement')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{
+                                        getFieldHelpText('complaintComplement') }} ({{
+                                        getFieldLength('complaintComplement') }}/{{
+                                        getFieldConfig('complaintComplement')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Checkbox para não identificação -->
+                            @if (showAnonymousOption) {
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="anonymousComplainer"
+                                            formControlName="anonymousComplainer" />
+                                        <label class="form-check-label" for="anonymousComplainer">
+                                            Reclamante Deseja Não se Identificar
+                                            <i class="bi bi-info-square-fill ms-1"
+                                                ngbTooltip="O reclamante não será identificado e não receberá atualizações sobre a ocorrência."
+                                                placement="top"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </ng-template>
+                </li>
+
+                @if (shouldShowComplainantTab()) {
+                <li ngbNavItem="complainant">
+                    <button ngbNavLink>Dados do Reclamante</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            @if (showInternalId) {
+                            <div [class.is-invalid]="isFieldInvalid('internalComplainer')">
+                                <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
+                                    (outputUserSelected)="onInternalComplinantSelect($event)" />
+                            </div>
+                            }
+
+                            @if (showInternalId) {
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerId"
+                                            placeholder="ID" formControlName="complainerId" [disabled]="true" />
+                                        <label for="floatingComplainerId" class="ps-4">ID</label>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <!-- Nome do Reclamante -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerName"
+                                            placeholder="Nome" [class.is-invalid]="isFieldInvalid('complainerName')"
+                                            formControlName="complainerName" [disabled]="isInternalComplaint()" />
+                                        <label for="floatingComplainerName" class="ps-4">Nome</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerName')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerName') }}
+                                        ({{ getFieldLength('complainerName') }}/{{ getFieldConfig('complainerName')?.max
+                                        }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Email e Telefone -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" id="floatingComplainerEmail"
+                                            placeholder="Email" [class.is-invalid]="isFieldInvalid('complainerEmail')"
+                                            formControlName="complainerEmail" />
+                                        <label for="floatingComplainerEmail" class="ps-4">Email</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerEmail')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerEmail')
+                                        }} ({{ getFieldLength('complainerEmail') }}/{{
+                                        getFieldConfig('complainerEmail')?.max }})</small>
+                                    }
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerPhone"
+                                            placeholder="Telefone"
+                                            [class.is-invalid]="isFieldInvalid('complainerPhone')"
+                                            formControlName="complainerPhone" />
+                                        <label for="floatingComplainerPhone" class="ps-4">Telefone</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerPhone')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerPhone')
+                                        }} ({{ getFieldLength('complainerPhone') }}/{{
+                                        getFieldConfig('complainerPhone')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- CEP e Logradouro -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating position-relative">
+                                        <input #cepInput type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerCep')"
+                                            id="floatingComplainerCep" placeholder="CEP" formControlName="complainerCep"
+                                            (input)="applyCepMask($event)" (blur)="searchCep()" />
+                                        <label for="floatingComplainerCep" class="ps-4">CEP</label>
+                                        @if (isLoadingCep) {
+                                        <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+                                            <div class="spinner-border spinner-border-sm text-primary spinner-custom"
+                                                role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerStreet"
+                                            placeholder="Logradouro"
+                                            [class.is-invalid]="isFieldInvalid('complainerStreet')"
+                                            formControlName="complainerStreet" />
+                                        <label for="floatingComplainerStreet" class="ps-4">Logradouro</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerStreet')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerStreet')
+                                        }} ({{ getFieldLength('complainerStreet') }}/{{
+                                        getFieldConfig('complainerStreet')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Número, Bairro e Complemento -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerNumber"
+                                            placeholder="Número" [class.is-invalid]="isFieldInvalid('complainerNumber')"
+                                            formControlName="complainerNumber" />
+                                        <label for="floatingComplainerNumber" class="ps-4">Número</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerNumber')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerNumber')
+                                        }} ({{ getFieldLength('complainerNumber') }}/{{
+                                        getFieldConfig('complainerNumber')?.max }})</small>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerDistrict"
+                                            placeholder="Bairro/Distrito"
+                                            [class.is-invalid]="isFieldInvalid('complainerDistrict')"
+                                            formControlName="complainerDistrict" />
+                                        <label for="floatingComplainerDistrict" class="ps-4">Bairro/Distrito</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerDistrict')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{
+                                        getFieldHelpText('complainerDistrict') }} ({{
+                                        getFieldLength('complainerDistrict') }}/{{
+                                        getFieldConfig('complainerDistrict')?.max }})</small>
+                                    }
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerAddressComplement"
+                                            placeholder="Complemento"
+                                            [class.is-invalid]="isFieldInvalid('complainerAddressComplement')"
+                                            formControlName="complainerAddressComplement" />
+                                        <label for="floatingComplainerAddressComplement"
+                                            class="ps-4">Complemento</label>
+                                    </div>
+                                    @if (shouldShowCounter('complainerAddressComplement')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{
+                                        getFieldHelpText('complainerAddressComplement') }} ({{
+                                        getFieldLength('complainerAddressComplement') }}/{{
+                                        getFieldConfig('complainerAddressComplement')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Cidade e Estado -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerCity"
+                                            placeholder="Cidade" formControlName="complainerCity" [disabled]="true" />
+                                        <label for="floatingComplainerCity" class="ps-4">Cidade</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="floatingComplainerState"
+                                            placeholder="UF" formControlName="complainerState" [disabled]="true" />
+                                        <label for="floatingComplainerState" class="ps-4">UF</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+                }
+
+                <li ngbNavItem="attachments">
+                    <button ngbNavLink>Anexos</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
                                     <div class="alert alert-primary" role="alert">
                                         <i class="bi bi-info-square-fill"></i>
-                                        É possível adicionais até 5 notas fiscais relacionadas à ocorrência. Preencha os
-                                        campos de acordo com as informações disponíveis.
+                                        É possível anexar até 10 arquivos. Formatos suportados: PDF, JPG, PNG, HEIC,
+                                        XML.
                                     </div>
-                                    <ng-template>
-                                        <div class="row mb-2">
-                                            <div class="form-floating col-md">
-                                                <input type="text" class="form-control" id="floatingNf1"
-                                                    placeholder="NF1" formControlName="nf1" />
-                                                <label for="floatingNf1" class="ps-4">NF1</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="form-floating col-md">
-                                                <input type="text" class="form-control" id="floatingNf2"
-                                                    placeholder="NF2" formControlName="nf2" />
-                                                <label for="floatingNf2" class="ps-4">NF2</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="form-floating col-md">
-                                                <input type="text" class="form-control" id="floatingNf3"
-                                                    placeholder="NF3" formControlName="nf3" />
-                                                <label for="floatingNf3" class="ps-4">NF3</label>
-                                            </div>
-                                        </div>
-                                        <div class="row mb-2">
-                                            <div class="form-floating col-md">
-                                                <input type="text" class="form-control" id="floatingNf4"
-                                                    placeholder="NF4" formControlName="nf4" />
-                                                <label for="floatingNf4" class="ps-4">NF4</label>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="form-floating col-md">
-                                                <input type="text" class="form-control" id="floatingNf5"
-                                                    placeholder="NF5" formControlName="nf5" />
-                                                <label for="floatingNf5" class="ps-4">NF5</label>
-                                            </div>
-                                        </div>
-                                    </ng-template>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="row mb-4">
-                <div class="form-floating col-md">
-                    <textarea class="form-control" id="floatingComplement" placeholder="Complemento" rows="2"
-                        formControlName="complement"></textarea>
-                    <label for="floatingComplement" class="ps-4">Complemento</label>
-                </div>
-            </div>
-
-            <br>
-
-            <!-- Seção: Dados da Reclamação -->
-            <div class="row mt-4 mb-3">
-                <div class="col-md-12">
-                    <h5 class="border-bottom pb-2">Dados da Reclamação</h5>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingOrderNumber" placeholder="Número do Pedido"
-                        formControlName="orderNumber" />
-                    <label for="floatingOrderNumber" class="ps-4">Número do Pedido</label>
-                </div>
-                <div class="col-md-6">
-                    <div class="border rounded p-3 h-100">
-                        <div class="form-label mb-2 d-flex align-items-center">
-                            Tipo de Reclamação
-                            <i class="bi bi-info-square-fill ms-2"
-                                ngbTooltip="Interna: Reclamante interno da organização deve se identificar. Externa: Reclamante externo pode optar por não se identificar conforme LGPD."
-                                placement="top"></i>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="complaintTypeInternal" value="INTERNAL"
-                                formControlName="complaintType">
-                            <label class="form-check-label" for="complaintTypeInternal">Interna</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="complaintTypeExternal" value="EXTERNAL"
-                                formControlName="complaintType">
-                            <label class="form-check-label" for="complaintTypeExternal">Externa</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <textarea class="form-control" id="floatingComplaintDescription"
-                        placeholder="Descrição da Reclamação" rows="3"
-                        formControlName="complaintDescription"></textarea>
-                    <label for="floatingComplaintDescription" class="ps-4">Descrição da Reclamação</label>
-                </div>
-            </div>
-
-            <div class="row mb-4">
-                <div class="form-floating col-md">
-                    <textarea class="form-control" id="floatingComplaintComplement"
-                        placeholder="Informações Complementares da Reclamação" rows="2"
-                        formControlName="complaintComplement"></textarea>
-                    <label for="floatingComplaintComplement" class="ps-4">Informações Complementares da
-                        Reclamação</label>
-                </div>
-            </div>
-
-            <!-- Checkbox para não identificação -->
-            @if (showAnonymousOption) {
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="anonymousComplainer"
-                            formControlName="anonymousComplainer" />
-                        <label class="form-check-label" for="anonymousComplainer">
-                            Reclamante Deseja Não se Identificar
-                            <i class="bi bi-info-square-fill ms-1"
-                                ngbTooltip="O reclamante não será identificado e não receberá atualizações sobre a ocorrência."
-                                placement="top"></i>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            }
-
-            <!-- Seção: Dados do Reclamante -->
-            @if (showComplainerSection) {
-            <br>
-            <div class="row mt-4 mb-3">
-                <div class="col-md-12">
-                    <h5 class="border-bottom pb-2">Dados do Reclamante</h5>
-                </div>
-            </div>
-            }
-
-            @if (showInternalId && showComplainerSection) {
-            <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
-                (outputUserSelected)="onInternalComplinantSelect($event)" />
-            }
-
-            @if (showInternalId && showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <input type="text" class="form-control" id="floatingComplainerId" placeholder="ID"
-                        formControlName="complainerId" [disabled]="true" />
-                    <label for="floatingComplainerId" class="ps-4">ID</label>
-                </div>
-            </div>
-            }
-
-            @if (showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md">
-                    <input type="text" class="form-control" id="floatingComplainerName" placeholder="Nome"
-                        formControlName="complainerName" [disabled]="isInternalComplaint()" />
-                    <label for="floatingComplainerName" class="ps-4">Nome</label>
-                </div>
-            </div>
-            }
-
-            @if (showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingComplainerPhone" placeholder="Telefone"
-                        formControlName="complainerPhone" />
-                    <label for="floatingComplainerPhone" class="ps-4">Telefone</label>
-                </div>
-                <div class="form-floating col-md-6">
-                    <input type="email" class="form-control" id="floatingComplainerEmail" placeholder="Email"
-                        formControlName="complainerEmail" />
-                    <label for="floatingComplainerEmail" class="ps-4">Email</label>
-                </div>
-            </div>
-            }
-
-            @if (showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md-6 position-relative">
-                    <input #cepInput type="text" class="form-control"
-                        [class.is-invalid]="occurrenceForm.get('complainerCep')?.invalid && occurrenceForm.get('complainerCep')?.touched"
-                        id="floatingComplainerCep" placeholder="CEP" formControlName="complainerCep"
-                        (input)="applyCepMask($event)" (blur)="searchCep()" />
-                    <label for="floatingComplainerCep" class="ps-4">CEP</label>
-
-                    @if (isLoadingCep) {
-                    <div class="position-absolute end-0 top-50 translate-middle-y me-4">
-                        <div class="spinner-border spinner-border-sm text-primary spinner-custom" role="status">
-                            <span class="visually-hidden">Carregando...</span>
-                        </div>
-                    </div>
-                    }
-                </div>
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingComplainerStreet" placeholder="Logradouro"
-                        formControlName="complainerStreet" />
-                    <label for="floatingComplainerStreet" class="ps-4">Logradouro</label>
-                </div>
-            </div>
-            }
-
-            @if (showComplainerSection) {
-            <div class="row mb-3">
-                <div class="form-floating col-md-4">
-                    <input type="text" class="form-control" id="floatingComplainerNumber" placeholder="Número"
-                        formControlName="complainerNumber" />
-                    <label for="floatingComplainerNumber" class="ps-4">Número</label>
-                </div>
-                <div class="form-floating col-md-4">
-                    <input type="text" class="form-control" id="floatingComplainerDistrict"
-                        placeholder="Bairro/Distrito" formControlName="complainerDistrict" />
-                    <label for="floatingComplainerDistrict" class="ps-4">Bairro/Distrito</label>
-                </div>
-                <div class="form-floating col-md-4">
-                    <input type="text" class="form-control" id="floatingComplainerAddressComplement"
-                        placeholder="Complemento" formControlName="complainerAddressComplement" />
-                    <label for="floatingComplainerAddressComplement" class="ps-4">Complemento</label>
-                </div>
-            </div>
-            }
-
-            @if (showComplainerSection) {
-            <div class="row mb-4">
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingComplainerCity" placeholder="Cidade"
-                        formControlName="complainerCity" [disabled]="true" />
-                    <label for="floatingComplainerCity" class="ps-4">Cidade</label>
-                </div>
-                <div class="form-floating col-md-6">
-                    <input type="text" class="form-control" id="floatingComplainerState" placeholder="UF"
-                        formControlName="complainerState" [disabled]="true" />
-                    <label for="floatingComplainerState" class="ps-4">UF</label>
-                </div>
-            </div>
-            }
-
-            <br>
-
-            <!-- Seção: Anexos -->
-            <div class="row mt-4 mb-3">
-                <div class="col-md-12">
-                    <h5 class="border-bottom pb-2">Anexos</h5>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <div class="alert alert-primary" role="alert">
-                        <i class="bi bi-info-square-fill"></i>
-                        É possível anexar até 10 arquivos. Formatos suportados: PDF, JPG, PNG, HEIC, XML.
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <button class="btn btn-primary" (click)="fileInput.click()">
-                        <i class="bi bi-upload"></i>
-                        Adicionar Arquivo
-                    </button>
-                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
-                        (change)="onFileSelected($event)" />
-                </div>
-            </div>
-
-            <!-- Lista de arquivos anexados -->
-            @if (attachedFiles.length > 0) {
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="border rounded p-3">
-                        <h6 class="mb-3">Arquivos Anexados ({{ attachedFiles.length }}/10)</h6>
-                        @for (file of attachedFiles; track $index) {
-                        <div class="mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
-                                <div>
-                                    <div class="fw-bold">{{ file.name }}</div>
-                                    <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <button class="btn btn-primary" (click)="fileInput.click()">
+                                        <i class="bi bi-upload"></i>
+                                        Adicionar Arquivo
+                                    </button>
+                                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple
+                                        hidden (change)="onFileSelected($event)" />
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-sm" title="Remover" (click)="removeFile($index)">
-                                <i class="bi bi-trash-fill"></i>
-                            </button>
+
+                            <!-- Lista de arquivos anexados -->
+                            @if (attachedFiles.length > 0) {
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="border rounded p-3">
+                                        <h6 class="mb-3">Arquivos Anexados ({{ attachedFiles.length }}/10)</h6>
+                                        @for (file of attachedFiles; track $index) {
+                                        <div
+                                            class="mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                                                <div>
+                                                    <div class="fw-bold">{{ file.name }}</div>
+                                                    <small class="text-muted">{{ formatFileSize(file.size) }}</small>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-danger btn-sm" title="Remover"
+                                                (click)="removeFile($index)">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            }
                         </div>
-                        }
-                    </div>
-                </div>
-            </div>
-            }
+                    </ng-template>
+                </li>
+            </ul>
+
+            <div [ngbNavOutlet]="nav" class="mt-3"></div>
 
             <!-- Botões de Ação -->
             <div class="row mt-5">
@@ -380,16 +558,38 @@
                         <i class="bi bi-arrow-left-square-fill"></i>
                         Voltar
                     </button>
-                    <button class="btn btn-warning me-2" type="button" (click)="saveDraft()">
+                    <button class="btn btn-outline-primary me-2" type="button"
+                        (click)="openSaveDraftModal(saveDraftModal)">
                         <i class="bi bi-file-earmark-text"></i>
                         Cadastrar Rascunho
-                    </button>
-                    <button class="btn btn-success" type="button" (click)="createOccurrence()">
-                        <i class="bi bi-plus-square-fill"></i>
-                        Cadastrar Ocorrência
                     </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Modal de Salvar Rascunho -->
+<ng-template #saveDraftModal>
+    <div class="modal-header">
+        <h5 class="modal-title">Deseja prosseguir com o salvamento do rascunho?</h5>
+        <button type="button" class="btn-close" aria-label="Fechar" (click)="modalService.dismissAll()"></button>
+    </div>
+    <div class="modal-body">
+        <p>
+            Anexos não serão salvos no rascunho, mas as informações preenchidas serão mantidas para futuras edições.
+            Deseja continuar?
+        </p>
+        <div class="text-center">
+            <img src="assets/document_warning.svg" alt="Aviso de Salvar Rascunho" class="w-25" />
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" (click)="modalService.dismissAll()">
+            <i class="bi bi-x-square-fill"></i> Fechar
+        </button>
+        <button type="button" class="btn btn-outline-primary" (click)="confirmSaveDraft(); modalService.dismissAll()">
+            <i class="bi bi-send-fill"></i> Salvar Rascunho
+        </button>
+    </div>
+</ng-template>

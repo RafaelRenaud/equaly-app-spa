@@ -53,11 +53,20 @@ export const authInterceptor: HttpInterceptorFn = (
             return next(retryReq);
           }),
           catchError((refreshError) => {
-            loginService.logout();
+            // Lógica direta de limpeza e redirecionamento
+            sessionStorage.clear();
+            router.navigateByUrl("/login", { replaceUrl: true });
             return throwError(() => refreshError);
           })
         );
       }
+      
+      // Trata outros 401
+      if (error.status === 401) {
+        sessionStorage.clear();
+        router.navigateByUrl("/login", { replaceUrl: true });
+      }
+      
       return throwError(() => error);
     })
   );

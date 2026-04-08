@@ -69,9 +69,6 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "proxy.conf.json"
-          },
           "configurations": {
             "production": {
               "buildTarget": "equaly-app-spa:build:production"

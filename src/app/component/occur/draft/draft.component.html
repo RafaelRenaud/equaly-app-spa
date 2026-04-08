@@ -1,0 +1,174 @@
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Meus Rascunhos</h3>
+    </div>
+    <div class="surface-container-body">
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="selectedFilter" title="Selecione o filtro">
+                        <option value="NONE" selected>Selecione</option>
+                        <option value="ID">ID</option>
+                        <option value="CODE">Código</option>
+                        <option value="CONTENT">Título/Descrição</option>
+                    </select>
+                    <label>Filtrar por</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="filterValue" placeholder="Digite sua busca" />
+                    <label>Buscar</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="selectedPriority" title="Filtrar por prioridade">
+                        <option value="">Todas</option>
+                        <option value="LOW">Baixa</option>
+                        <option value="MEDIUM">Média</option>
+                        <option value="HIGH">Alta</option>
+                    </select>
+                    <label>Prioridade</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtro de Data -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="startDate" placeholder="Data Inicial" />
+                    <label for="startDate">Data Inicial</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="endDate" placeholder="Data Final" />
+                    <label for="endDate">Data Final</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <button class="btn btn-primary me-2" (click)="search()">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button class="btn btn-outline-secondary" (click)="clearFilters()">
+                    <i class="bi bi-eraser-fill"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabela de Rascunhos -->
+        @if (occurs.length > 0) {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr class="text-center">
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Data do Ocorrido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (occur of occurs; track occur.id) {
+                    <tr>
+                        <td class="text-center">{{ occur.id }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">{{ occur.code }}</span>
+                        </td>
+                        <td class="text-center">
+                            @if (occur.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (occur.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>
+                            {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' : occur.title) : 'Sem título' }}
+                        </td>
+                        <td>{{ occur.occurType?.name }}</td>
+                        <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-nowrap text-center">
+                            <button class="btn btn-primary me-1" title="Continuar Editando"
+                                [routerLink]="['/occurs/edit/', occur.id]">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-outline-danger ms-1" title="Excluir Rascunho"
+                                (click)="openDeleteModal(deleteModal, occur)">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button class="page-link" (click)="goToPage(currentPage - 1)">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
+                </li>
+
+                @for (page of [].constructor(totalPages); track $index) {
+                <li class="page-item" [class.active]="$index === currentPage">
+                    <button class="page-link" (click)="goToPage($index)">
+                        {{ $index + 1 }}
+                    </button>
+                </li>
+                }
+
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                    <button class="page-link" (click)="goToPage(currentPage + 1)">
+                        Próximo <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        } @else {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/relax.svg" alt="Sem rascunhos" class="img-fluid" style="max-width: 200px;" />
+            <br /><br />
+            <h4>Nenhum rascunho encontrado</h4>
+            <p class="text-muted">Não há rascunhos disponíveis para exibição.</p>
+        </div>
+        }
+    </div>
+</div>
+
+<!-- Modal de Remover Rascunho -->
+<ng-template #deleteModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.close()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p class="mt-3">
+            Tem certeza que deseja excluir o rascunho <strong>{{ occurToDelete?.code }}</strong>?
+        </p>
+        <p class="text-muted small">Esta ação não poderá ser desfeita e todas as informações associadas serão perdidas.</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.close()">
+            <i class="bi bi-x-square"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete(modal)">
+            <i class="bi bi-trash"></i> Excluir
+        </button>
+    </div>
+</ng-template>

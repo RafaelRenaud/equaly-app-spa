@@ -1,17 +1,25 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, AfterViewInit, ChangeDetectionStrategy } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { NgbAccordionModule, NgbTooltipModule, NgbNav, NgbNavModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { LoadingService } from '../../../core/service/loading/loading.service';
-import { SessionService } from '../../../core/service/session/session.service';
+// occur-create.component.ts (atualizado)
+
 import { CommonModule } from '@angular/common';
-import { AddressService } from '../../../core/service/address/address.service';
-import { OccurTypeHeadSearchComponent } from "../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
-import { UserTypeHeadSearchComponent } from "../../user/search/user-type-head-search/user-type-head-search.component";
-import { UserResponse } from '../../../core/model/user/user-response.model';
-import { OccurTypeResponse } from '../../../core/model/occurType/occur-type-response.model';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { NgbAccordionModule, NgbModal, NgbNav, NgbNavModule, NgbProgressbarModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import flatpickr from 'flatpickr';
 import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
+import { CreateUpdateComplaint, CreateUpdateOccur } from '../../../core/model/occur/occur-create-update.model';
+import { Address, Complainant, ComplaintRequest } from '../../../core/model/occur/occur.model';
+import { OccurTypeResponse } from '../../../core/model/occurType/occur-type-response.model';
+import { UserResponse } from '../../../core/model/user/user-response.model';
+import { AddressService } from '../../../core/service/address/address.service';
+import { FileService } from '../../../core/service/file/file.service';
+import { LoadingService } from '../../../core/service/loading/loading.service';
+import { OccurService } from '../../../core/service/occur/occur.service';
+import { SessionService } from '../../../core/service/session/session.service';
+import { OccurTypeHeadSearchComponent } from "../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
+import { UserTypeHeadSearchComponent } from "../../user/search/user-type-head-search/user-type-head-search.component";
 
 interface FieldConfig {
   min?: number;
@@ -19,6 +27,13 @@ interface FieldConfig {
   required?: boolean;
   pattern?: RegExp;
   email?: boolean;
+}
+
+interface UploadProgress {
+  current: number;
+  total: number;
+  status: 'uploading' | 'success' | 'error';
+  message: string;
 }
 
 @Component({
@@ -31,6 +46,7 @@ interface FieldConfig {
     NgbAccordionModule,
     NgbTooltipModule,
     NgbNavModule,
+    NgbProgressbarModule,
     OccurTypeHeadSearchComponent,
     UserTypeHeadSearchComponent
   ],
@@ -41,6 +57,7 @@ interface FieldConfig {
 export class OccurCreateComponent implements OnInit, AfterViewInit {
   @ViewChild('cepInput') cepInput!: ElementRef;
   @ViewChild('nav') nav!: NgbNav;
+  @ViewChild('uploadProgressModal') uploadProgressModal: any;
 
   occurrenceForm!: FormGroup;
   complaintType: 'INTERNAL' | 'EXTERNAL' | null = null;
@@ -52,12 +69,21 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   isLoadingCep: boolean = false;
   activeTab: string = 'occurrence';
   private flatpickrInstance: any;
-  private isSubmitting: boolean = false;
+  public isSubmitting: boolean = false;
+
+  // Upload progress
+  showUploadProgress: boolean = false;
+  uploadProgress: UploadProgress = {
+    current: 0,
+    total: 0,
+    status: 'uploading',
+    message: 'Enviando arquivos...'
+  };
 
   // Configurações dos campos para exibição dos contadores
   readonly fieldConfigs: Record<string, FieldConfig> = {
-    title: { min: 8, max: 64, required: true },
-    description: { min: 256, max: 1024, required: true },
+    title: { min: 8, max: 128, required: true },
+    description: { min: 128, max: 1024, required: true },
     complement: { max: 512 },
     complaintDescription: { min: 32, max: 256, required: true },
     complaintComplement: { max: 128 },
@@ -84,7 +110,9 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     public sessionService: SessionService,
     public addressService: AddressService,
     private cdr: ChangeDetectorRef,
-    public modalService: NgbModal
+    public modalService: NgbModal,
+    private occurService: OccurService,
+    private fileService: FileService
   ) { }
 
   ngOnInit(): void {
@@ -140,18 +168,16 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   // ==================================================
 
   openSaveDraftModal(content: any): void {
-    // Primeiro valida os campos obrigatórios do rascunho
     this.isSubmitting = true;
     this.updateComplainantValidators();
 
     if (!this.isDraftValid()) {
       this.markDraftInvalidFields();
-      this.router.navigate([], { queryParams: { action: 'WARNING', message: 'Preencha corretamente os campos obrigatórios' } });
+      this.showAlert('WARNING', 'Preencha corretamente os campos obrigatórios');
       this.isSubmitting = false;
       return;
     }
 
-    // Se a validação passar, abre o modal
     this.isSubmitting = false;
     this.modalService.open(content, {
       centered: true,
@@ -162,13 +188,247 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   confirmSaveDraft(): void {
     this.isSubmitting = true;
     this.updateComplainantValidators();
-
     this.loadingService.show();
-    setTimeout(() => {
-      this.loadingService.hide();
-      this.router.navigate(['/occurs'], { queryParams: { action: 'SUCCESS', message: 'Rascunho salvo com sucesso' } });
+
+    const occurData = this.buildOccurData('DRAFT_OPENED');
+
+    this.occurService.createOccur(occurData).subscribe({
+      next: (response) => {
+        this.loadingService.hide();
+        this.router.navigate(['/'], {
+          queryParams: {
+            action: "SUCCESS",
+            message: `Rascunho salvo com sucesso! Código: ${response.code}`
+          }
+        });
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        this.loadingService.hide();
+        this.router.navigate(['/'], {
+          queryParams: {
+            action: "ERROR",
+            message: "Erro ao salvar rascunho. Tente novamente."
+          }
+        });
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  // ==================================================
+  // CADASTRO COMPLETO COM ANEXOS
+  // ==================================================
+
+  confirmCreateOccurrence(): void {
+    this.isSubmitting = true;
+    this.updateComplainantValidators();
+
+    if (!this.isSubmissionValid()) {
+      this.markAllRequiredAsTouched();
+      this.router.navigate([], {
+        queryParams: {
+          action: "WARNING",
+          message: "Preencha todos os campos obrigatórios corretamente."
+        }
+      });
       this.isSubmitting = false;
-    }, 1000);
+      return;
+    }
+
+    this.modalService.open(this.uploadProgressModal, {
+      centered: true,
+      backdrop: 'static',
+      keyboard: false,
+      size: 'md'
+    });
+
+    this.uploadProgress = {
+      current: 0,
+      total: 100,
+      status: 'uploading',
+      message: 'Criando ocorrência (20%)...'
+    };
+    this.cdr.detectChanges();
+
+    const occurData = this.buildOccurData('AWAITING_REPORT');
+
+    this.occurService.createOccur(occurData).pipe(
+      switchMap((response) => {
+        this.uploadProgress.current = 20;
+        this.uploadProgress.message = 'Ocorrência criada! Enviando arquivos...';
+        this.cdr.detectChanges();
+
+        if (this.attachedFiles.length === 0) {
+          this.uploadProgress.current = 100;
+          this.uploadProgress.message = 'Concluído!';
+          this.cdr.detectChanges();
+          setTimeout(() => this.modalService.dismissAll(), 500);
+          return of({ response, uploadSuccess: true, failedCount: 0 });
+        }
+
+        const percentPerFile = 80 / this.attachedFiles.length;
+        let currentFileProgress = 20;
+
+        const uploads = this.attachedFiles.map((file, index) =>
+          this.fileService.createFile(
+            response.id!.toString(),
+            'OCCUR',
+            file,
+            file.name
+          ).pipe(
+            map((result) => {
+              currentFileProgress += percentPerFile;
+              this.uploadProgress.current = Math.min(currentFileProgress, 100);
+              this.uploadProgress.message = `Enviando arquivo ${index + 1}/${this.attachedFiles.length} (${Math.round(this.uploadProgress.current)}%)...`;
+              this.cdr.detectChanges();
+              return result;
+            }),
+            catchError((error) => {
+              console.error(`Erro ao enviar arquivo ${file.name}:`, error);
+              currentFileProgress += percentPerFile;
+              this.uploadProgress.current = Math.min(currentFileProgress, 100);
+              this.uploadProgress.message = `Erro no arquivo ${index + 1}/${this.attachedFiles.length}`;
+              this.cdr.detectChanges();
+              return of(null);
+            })
+          )
+        );
+
+        return forkJoin(uploads).pipe(
+          map((results) => {
+            const failedUploads = results.filter(r => r === null).length;
+            this.uploadProgress.current = 100;
+            this.uploadProgress.message = 'Finalizando...';
+            this.cdr.detectChanges();
+            setTimeout(() => this.modalService.dismissAll(), 500);
+            return {
+              response,
+              uploadSuccess: failedUploads === 0,
+              failedCount: failedUploads
+            };
+          })
+        );
+      })
+    ).subscribe({
+      next: (result) => {
+        this.isSubmitting = false;
+        if (result.uploadSuccess) {
+          this.router.navigate(['/'], {
+            queryParams: {
+              action: "SUCCESS",
+              message: `Ocorrência cadastrada com sucesso! Código: ${result.response.code}`
+            }
+          });
+        } else {
+          this.router.navigate(['/'], {
+            queryParams: {
+              action: "WARNING",
+              message: `Ocorrência ${result.response.code} cadastrada, mas ${result.failedCount} arquivo(s) não anexados.`
+            }
+          });
+        }
+      },
+      error: (error) => {
+        this.modalService.dismissAll();
+        this.isSubmitting = false;
+        this.router.navigate(['/'], {
+          queryParams: {
+            action: "ERROR",
+            message: "Erro ao cadastrar ocorrência. Tente novamente."
+          }
+        });
+      }
+    });
+  }
+
+  // ==================================================
+  // CONSTRUÇÃO DOS DADOS
+  // ==================================================
+
+  private buildOccurData(status: 'DRAFT_OPENED' | 'AWAITING_REPORT'): CreateUpdateOccur {
+    const raw = this.occurrenceForm.getRawValue();
+
+    // Parse do occurType
+    const occurTypeId = parseInt(raw.occurrenceType?.split(' - ')[0]) || 0;
+
+    // Parse do inspector
+    const inspectorId = raw.qualityInspector ? parseInt(raw.qualityInspector.split(' - ')[0]) : undefined;
+
+    // Coletar notas fiscais não vazias
+    const invoiceNotes = [raw.nf1, raw.nf2, raw.nf3, raw.nf4, raw.nf5].filter((n: string) => n && n.trim() !== '');
+
+    // Formatar data
+    let occurredDate = null;
+    if (raw.occurrenceDate) {
+      if (typeof raw.occurrenceDate === 'object' && raw.occurrenceDate.year) {
+        occurredDate = `${raw.occurrenceDate.year}-${String(raw.occurrenceDate.month).padStart(2, '0')}-${String(raw.occurrenceDate.day).padStart(2, '0')}`;
+      } else if (typeof raw.occurrenceDate === 'string' && raw.occurrenceDate.includes('/')) {
+        const [d, m, y] = raw.occurrenceDate.split('/');
+        occurredDate = `${y}-${m}-${d}`;
+      } else {
+        occurredDate = raw.occurrenceDate;
+      }
+    }
+
+    // Construir complaint
+    let complaint: CreateUpdateComplaint | undefined = undefined;
+    if (raw.complaintType) {
+      const shouldIncludeComplaint = raw.complaintDescription && raw.complaintDescription.trim() !== '';
+
+      if (shouldIncludeComplaint) {
+        const isAnonymous = raw.anonymousComplainer === true;
+
+        // Construir complainant se necessário
+        let complainant: Complainant | undefined = undefined;
+        if (!isAnonymous && this.shouldValidateComplainant()) {
+          const address: Address = {};
+          if (raw.complainerStreet) address.street = raw.complainerStreet;
+          if (raw.complainerNumber) address.number = raw.complainerNumber;
+          if (raw.complainerDistrict) address.district = raw.complainerDistrict;
+          if (raw.complainerAddressComplement) address.complement = raw.complainerAddressComplement;
+          if (raw.complainerCity) address.city = raw.complainerCity;
+          if (raw.complainerState) {
+            const ufMatch = raw.complainerState.match(/^([A-Z]{2})/);
+            address.uf = ufMatch ? ufMatch[1] : '';
+          }
+          if (raw.complainerCep) address.zipCode = raw.complainerCep.replace(/\D/g, '');
+
+          complainant = {
+            id: raw.complainerId || undefined,
+            name: raw.complainerName || undefined,
+            phone: raw.complainerPhone || undefined,
+            email: raw.complainerEmail || undefined,
+            address: Object.keys(address).length > 0 ? address : undefined
+          };
+        }
+
+        const complaintRequest: ComplaintRequest = {};
+        if (raw.complaintDescription) complaintRequest.description = raw.complaintDescription;
+        if (raw.complaintComplement) complaintRequest.complement = raw.complaintComplement;
+
+        complaint = {
+          orderId: raw.orderNumber || undefined,
+          type: raw.complaintType,
+          isAnonymous: isAnonymous,
+          complainant: complainant,
+          request: complaintRequest
+        };
+      }
+    }
+
+    return {
+      occurType: { id: occurTypeId },
+      priority: raw.priority,
+      status: status,
+      inspector: inspectorId ? { id: inspectorId } : undefined,
+      occurredDate: occurredDate || undefined,
+      invoiceNotes: invoiceNotes.length > 0 ? invoiceNotes : undefined,
+      title: raw.title || undefined,
+      description: raw.description || undefined,
+      complement: raw.complement || undefined,
+      complaint: complaint
+    };
   }
 
   // ==================================================
@@ -229,7 +489,7 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
       // Dados da Ocorrência
       occurrenceType: ['', Validators.required],
       priority: ['', Validators.required],
-      qualityInspector: ['', Validators.required],
+      qualityInspector: [''],
       occurrenceDate: [null, [Validators.required, this.futureDateValidator()]],
       nf1: ['', this.getValidators(this.fieldConfigs['nf1'])],
       nf2: ['', this.getValidators(this.fieldConfigs['nf2'])],
@@ -369,7 +629,7 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   private markAllRequiredAsTouched(): void {
     this.updateComplainantValidators();
     const fields = [
-      'occurrenceType', 'priority', 'qualityInspector', 'occurrenceDate',
+      'occurrenceType', 'priority', 'occurrenceDate',
       'title', 'description', 'complaintType', 'complaintDescription'
     ];
     if (this.shouldValidateComplainant() && this.complaintType !== 'INTERNAL') {
@@ -388,45 +648,17 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     return this.occurrenceForm.valid;
   }
 
-  createOccurrence(): void {
-    this.isSubmitting = true;
-    this.updateComplainantValidators();
+  // ==================================================
+  // ALERTAS
+  // ==================================================
 
-    if (!this.isSubmissionValid()) {
-      this.markAllRequiredAsTouched();
-      this.router.navigate([], { queryParams: { action: 'WARNING', message: 'Preencha todos os campos obrigatórios corretamente.' } });
-      this.isSubmitting = false;
-      return;
-    }
-    this.loadingService.show();
-    const formData = new FormData();
-    formData.append('occurrenceData', JSON.stringify(this.prepareSubmissionData()));
-    this.attachedFiles.forEach((f, i) => formData.append(`file${i}`, f, f.name));
-    setTimeout(() => {
-      this.loadingService.hide();
-      this.router.navigate(['/occurs'], { queryParams: { action: 'SUCCESS', message: 'Ocorrência cadastrada com sucesso' } });
-      this.isSubmitting = false;
-    }, 1500);
-  }
-
-  private prepareSubmissionData(): any {
-    const raw = this.occurrenceForm.getRawValue();
-    const sub: any = { ...raw };
-
-    if (sub.complainerState) {
-      const match = sub.complainerState.match(/^([A-Z]{2})/);
-      sub.complainerState = match ? match[1] : '';
-    }
-    if (sub.complainerCity) sub.complainerCity = sub.complainerCity.substring(0, 128);
-
-    const date = sub.occurrenceDate;
-    if (date && typeof date === 'object' && date.year) {
-      sub.occurrenceDate = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
-    } else if (typeof date === 'string' && date.includes('/')) {
-      const [d, m, y] = date.split('/');
-      sub.occurrenceDate = `${y}-${m}-${d}`;
-    }
-    return sub;
+  private showAlert(type: 'SUCCESS' | 'WARNING' | 'ERROR', message: string): void {
+    this.router.navigate([], {
+      queryParams: {
+        action: type,
+        message: message
+      }
+    });
   }
 
   // ==================================================
@@ -526,16 +758,29 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     const files: FileList = event.target.files;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      if (this.attachedFiles.length >= this.maxFiles) { alert(`Limite de ${this.maxFiles} arquivos atingido`); break; }
+      if (this.attachedFiles.length >= this.maxFiles) {
+        this.showAlert('WARNING', `Limite de ${this.maxFiles} arquivos atingido`);
+        break;
+      }
       const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'application/xml', 'text/xml'];
-      if (!allowed.includes(file.type)) { alert(`Tipo de arquivo não permitido: ${file.name}`); continue; }
-      if (file.size > 10 * 1024 * 1024) { alert(`Arquivo muito grande: ${file.name} (máximo 10MB)`); continue; }
+      if (!allowed.includes(file.type)) {
+        this.showAlert('WARNING', `Tipo de arquivo não permitido: ${file.name}`);
+        continue;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        this.showAlert('WARNING', `Arquivo muito grande: ${file.name} (máximo 10MB)`);
+        continue;
+      }
       this.attachedFiles.push(file);
     }
     event.target.value = '';
+    this.cdr.detectChanges();
   }
 
-  removeFile(index: number): void { this.attachedFiles.splice(index, 1); }
+  removeFile(index: number): void {
+    this.attachedFiles.splice(index, 1);
+    this.cdr.detectChanges();
+  }
 
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
@@ -544,7 +789,7 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  goBack(): void { this.router.navigate(['/occurs']); }
+  goBack(): void { this.router.navigate(['/']); }
 
   applyCepMask(event: any): void {
     let val = event.target.value.replace(/\D/g, '');

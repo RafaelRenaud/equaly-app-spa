@@ -23,6 +23,7 @@ import { UserHubComponent } from "./component/user/hub/user-hub.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
 import { OccurCreateComponent } from "./component/occur/create/occur-create.component";
+import { OccurDraftComponent } from "./component/occur/draft/draft.component";
 
 export const routes: Routes = [
   {
@@ -180,6 +181,15 @@ export const routes: Routes = [
               ],
             },
             component: OccurCreateComponent,
+          },
+          {
+            path: "drafts",
+            data: {
+              roles: [
+                "COMMON_EVENT_OPENER"
+              ],
+            },
+            component: OccurDraftComponent,
           }
         ],
       }

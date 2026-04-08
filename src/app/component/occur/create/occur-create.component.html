@@ -563,6 +563,11 @@
                         <i class="bi bi-file-earmark-text"></i>
                         Cadastrar Rascunho
                     </button>
+                    <button class="btn btn-success" type="button" (click)="confirmCreateOccurrence()"
+                        [disabled]="isSubmitting">
+                        <i class="bi bi-save-fill"></i>
+                        Cadastrar
+                    </button>
                 </div>
             </div>
         </form>
@@ -591,5 +596,26 @@
         <button type="button" class="btn btn-outline-primary" (click)="confirmSaveDraft(); modalService.dismissAll()">
             <i class="bi bi-send-fill"></i> Salvar Rascunho
         </button>
+    </div>
+</ng-template>
+
+<!-- Modal de Progresso de Upload -->
+<ng-template #uploadProgressModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Enviando Ocorrência</h5>
+        <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismissAll()" [disabled]="true"></button>
+    </div>
+    <div class="modal-body">
+        <p class="text-center mb-3">{{ uploadProgress.message }}</p>
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                 role="progressbar" 
+                 [style.width.%]="uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 100">
+                {{ uploadProgress.total > 0 ? uploadProgress.current + '/' + uploadProgress.total : 'Aguarde...' }}
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <small class="text-muted">Aguarde, não feche esta página...</small>
+        </div>
     </div>
 </ng-template>

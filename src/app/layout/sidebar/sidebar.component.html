@@ -121,7 +121,7 @@
               </a>
             </li>
             <li>
-              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs', 'drafts']" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-file-earmark-text-fill"></i>
                 <span>Rascunhos</span>
               </a>

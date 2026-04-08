@@ -44,6 +44,14 @@ body {
   overflow: hidden;
 }
 
+.bg-primary{
+  background-color: var(--primary-color) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color) !important;
+}
+
 :host {
   display: flex;
   justify-content: center;
@@ -277,4 +285,15 @@ ngb-typeahead-window {
       }
     }
   }
+}
+
+//Progressbar
+.progress-bar {
+  background-color: var(--primary-color) !important;
+}
+
+.progress-bar.bg-success,
+.progress-bar.bg-primary,
+.progress-bar{
+  background-color: var(--primary-color) !important;
 }

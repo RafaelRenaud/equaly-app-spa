@@ -8,7 +8,6 @@ import { MainProfile } from "../../model/user/main-profile.model";
 import { UsersResponse } from "../../model/user/users-response.model";
 import { UserCreateRequest } from "../../model/user/user-create-request.model";
 import { UserEditRequest } from "../../model/user/user-edit-request.model";
-import { FormArray } from "@angular/forms";
 import { RoleResponse } from "../../model/role/role-response.model";
 import { environment } from "../../../../environments/environment";
 

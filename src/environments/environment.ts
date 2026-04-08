@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
   api: {
-    authentication: '/authentication',
-    administration: '/administration', 
-    core: '/operations'                
+    authentication: "https://equalyiam.reddune-fdeeb971.westus2.azurecontainerapps.io/authentication/v2",
+    administration: "https://equalyadmin.reddune-fdeeb971.westus2.azurecontainerapps.io/administration/v1",
+    core: "https://equalycore.reddune-fdeeb971.westus2.azurecontainerapps.io/operations/v1"
   },
 };

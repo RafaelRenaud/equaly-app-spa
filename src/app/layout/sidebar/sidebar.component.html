@@ -136,7 +136,7 @@
               </a>
             </li>
             <li>
-              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs', 'pendings']" routerLinkActive="active" (click)="closeMenu()">
                 <i class="bi bi-card-checklist"></i>
                 <span>Pendências</span>
               </a>

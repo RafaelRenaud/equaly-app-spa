@@ -87,9 +87,7 @@ export class OccurDraftComponent implements AfterViewInit {
     
     let filters: OccurFilters = {
       status: 'DRAFT_OPENED',
-      openerId: Number(this.sessionService.getItem('userId')),
-      page: this.currentPage,
-      size: this.pageSize
+      openerId: Number(this.sessionService.getItem('userId'))
     };
     
     // Aplica filtro de prioridade (se selecionado)
@@ -150,7 +148,7 @@ export class OccurDraftComponent implements AfterViewInit {
       }
     }
     
-    this.occurService.getOccurs(filters).pipe(
+    this.occurService.getOccurs(filters, this.currentPage, this.pageSize).pipe(
       finalize(() => this.loadingService.hide())
     ).subscribe({
       next: (response) => {

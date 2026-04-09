@@ -24,6 +24,7 @@ import { UserCreateComponent } from "./component/user/create/user-create.compone
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
 import { OccurCreateComponent } from "./component/occur/create/occur-create.component";
 import { OccurDraftComponent } from "./component/occur/draft/draft.component";
+import { OccurPendingComponent } from "./component/occur/pending/pending.component";
 
 export const routes: Routes = [
   {
@@ -190,6 +191,16 @@ export const routes: Routes = [
               ],
             },
             component: OccurDraftComponent,
+          },
+          {
+            path: "pendings",
+            data: {
+              roles: [
+                "COMMON_EVENT_OPENER",
+                "COMMON_QUALITY_INSPECTOR"
+              ],
+            },
+            component: OccurPendingComponent
           }
         ],
       }

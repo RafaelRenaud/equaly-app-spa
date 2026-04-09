@@ -39,6 +39,4 @@ export interface OccurFilters {
   closeStartDate?: string; // YYYY-MM-DD
   closeEndDate?: string;   // YYYY-MM-DD
   closedBy?: string;
-  page?: number;
-  size?: number;
 }

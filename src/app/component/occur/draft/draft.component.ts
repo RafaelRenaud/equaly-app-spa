@@ -27,14 +27,14 @@ export class OccurDraftComponent implements AfterViewInit {
   currentPage: number = 0;
   totalPages: number = 1;
   pageSize: number = 10;
-  
+
   // Filtros
   selectedFilter: string = 'NONE';
   filterValue: string = '';
   selectedPriority: string = '';
   startDate: string = '';
   endDate: string = '';
-  
+
   occurToDelete: Occur | null = null;
 
   constructor(
@@ -56,7 +56,7 @@ export class OccurDraftComponent implements AfterViewInit {
   initFlatpickr(): void {
     const startDateInput = document.getElementById('startDate') as HTMLInputElement;
     const endDateInput = document.getElementById('endDate') as HTMLInputElement;
-    
+
     if (startDateInput) {
       flatpickr(startDateInput, {
         locale: Portuguese,
@@ -68,7 +68,7 @@ export class OccurDraftComponent implements AfterViewInit {
         }
       });
     }
-    
+
     if (endDateInput) {
       flatpickr(endDateInput, {
         locale: Portuguese,
@@ -84,29 +84,29 @@ export class OccurDraftComponent implements AfterViewInit {
 
   loadOccurs(): void {
     this.loadingService.show();
-    
+
     let filters: OccurFilters = {
-      status: 'DRAFT_OPENED',
+      status: ['DRAFT_OPENED'],
       openerId: Number(this.sessionService.getItem('userId'))
     };
-    
+
     // Aplica filtro de prioridade (se selecionado)
     if (this.selectedPriority && this.selectedPriority !== '') {
       filters.priority = this.selectedPriority as 'LOW' | 'MEDIUM' | 'HIGH';
     }
-    
+
     // Aplica filtro de data inicial
     if (this.startDate) {
       const [d, m, y] = this.startDate.split('/');
       filters.startOccurredDate = `${y}-${m}-${d}`;
     }
-    
+
     // Aplica filtro de data final
     if (this.endDate) {
       const [d, m, y] = this.endDate.split('/');
       filters.endOccurredDate = `${y}-${m}-${d}`;
     }
-    
+
     // Aplica filtro de busca (ID, CODE ou CONTENT)
     if (this.selectedFilter !== 'NONE' && this.filterValue) {
       if (this.selectedFilter === 'ID') {
@@ -147,7 +147,7 @@ export class OccurDraftComponent implements AfterViewInit {
         filters.content = this.filterValue;
       }
     }
-    
+
     this.occurService.getOccurs(filters, this.currentPage, this.pageSize).pipe(
       finalize(() => this.loadingService.hide())
     ).subscribe({

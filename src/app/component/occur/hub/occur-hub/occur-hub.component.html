@@ -1,0 +1,398 @@
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Pesquisa de Ocorrências</h3>
+    </div>
+    <div class="surface-container-body">
+        <!-- Filtros - Linha 1 -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.priority" title="Filtrar por prioridade">
+                        <option value="">Todas</option>
+                        <option value="LOW">Baixa</option>
+                        <option value="MEDIUM">Média</option>
+                        <option value="HIGH">Alta</option>
+                    </select>
+                    <label>Prioridade</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.hasInspectorAssigned"
+                        title="Responsável de Qualidade Atribuído">
+                        <option value="">Todos</option>
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                    <label>Responsável de Qualidade Atribuído</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.hasRNCOpened"
+                        title="Possui Não-Conformidade Atribuída">
+                        <option value="">Todos</option>
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                    <label>Possui Não-Conformidade</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.hasComplainantAssigned"
+                        title="Reclamante Atribuído">
+                        <option value="">Todos</option>
+                        <option value="true">Sim</option>
+                        <option value="false">Não</option>
+                    </select>
+                    <label>Reclamante Atribuído</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros - Linha 2 -->
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.complaintType" title="Tipo de Reclamação">
+                        <option value="">Todos</option>
+                        <option value="INTERNAL">Interna</option>
+                        <option value="EXTERNAL">Externa</option>
+                    </select>
+                    <label>Tipo de Reclamação</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.complaintChannel" title="Canal de Origem">
+                        <option value="">Todos</option>
+                        <option value="EQUALY">eQualy</option>
+                        <option value="DALTON">Dalton</option>
+                        <option value="WHATSAPP">WhatsApp</option>
+                    </select>
+                    <label>Canal de Origem</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <select class="form-select" [(ngModel)]="formFilters.closeStatus" title="Tipo de Fechamento">
+                        <option value="">Todos</option>
+                        <option value="CLOSED_WITH_RATING">Com Avaliação</option>
+                        <option value="CLOSED_WITHOUT_RATING">Sem Avaliação</option>
+                    </select>
+                    <label>Tipo de Fechamento</label>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="formFilters.complaintOrderId"
+                        placeholder="ID do Pedido" id="complaintOrderId" />
+                    <label for="complaintOrderId">ID do Pedido</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros - Linha 3: Informações do Reclamante -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="formFilters.complainantInformation"
+                        id="complainantInformation" placeholder="Nome, Email ou Telefone" />
+                    <label for="complainantInformation">Informações do Reclamante</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="formFilters.content" id="content"
+                        placeholder="Título/Descrição/Complemento" />
+                    <label for="content">Título/Descrição/Complemento</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordion de Filtros de Data -->
+        <div ngbAccordion>
+            <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton class="accordion-button">
+                        Filtros por Data
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                        <ng-template>
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="startOccurredDate"
+                                            placeholder="Data Início Ocorrido" />
+                                        <label for="startOccurredDate">Data Início Ocorrido</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="endOccurredDate"
+                                            placeholder="Data Fim Ocorrido" />
+                                        <label for="endOccurredDate">Data Fim Ocorrido</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="rateStartDate"
+                                            placeholder="Data Início Feedback" />
+                                        <label for="rateStartDate">Data Início Feedback</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="rateEndDate"
+                                            placeholder="Data Fim Feedback" />
+                                        <label for="rateEndDate">Data Fim Feedback</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="creationStartDate"
+                                            placeholder="Data Início Criação" />
+                                        <label for="creationStartDate">Data Início Criação</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="creationEndDate"
+                                            placeholder="Data Fim Criação" />
+                                        <label for="creationEndDate">Data Fim Criação</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="officializeStartDate"
+                                            placeholder="Data Início Envio Análise" />
+                                        <label for="officializeStartDate">Data Início Envio Análise</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="officializeEndDate"
+                                            placeholder="Data Fim Envio Análise" />
+                                        <label for="officializeEndDate">Data Fim Envio Análise</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="closeStartDate"
+                                            placeholder="Data Início Encerramento" />
+                                        <label for="closeStartDate">Data Início Encerramento</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="closeEndDate"
+                                            placeholder="Data Fim Encerramento" />
+                                        <label for="closeEndDate">Data Fim Encerramento</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordion de Status -->
+        <div ngbAccordion class="mt-3">
+            <div ngbAccordionItem [collapsed]="true">
+                <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton class="accordion-button">
+                        Filtros por Status
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                        <ng-template>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['DRAFT_OPENED']"
+                                                    id="statusDRAFT_OPENED">
+                                                <label class="form-check-label" for="statusDRAFT_OPENED">
+                                                    Em Rascunho
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['PENDING_EDIT_APPROVAL']"
+                                                    id="statusPENDING_EDIT_APPROVAL">
+                                                <label class="form-check-label" for="statusPENDING_EDIT_APPROVAL">
+                                                    Aguardando Aprovação de Edição
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['AWAITING_EDIT']"
+                                                    id="statusAWAITING_EDIT">
+                                                <label class="form-check-label" for="statusAWAITING_EDIT">
+                                                    Aguardando Edição
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['AWAITING_REPORT']"
+                                                    id="statusAWAITING_REPORT">
+                                                <label class="form-check-label" for="statusAWAITING_REPORT">
+                                                    Aguardando Inspeção de Qualidade
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['AWAITING_CLOSE']"
+                                                    id="statusAWAITING_CLOSE">
+                                                <label class="form-check-label" for="statusAWAITING_CLOSE">
+                                                    Aguardando Encerramento
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['AWAITING_RATING']"
+                                                    id="statusAWAITING_RATING">
+                                                <label class="form-check-label" for="statusAWAITING_RATING">
+                                                    Aguardando Feedback do Reclamante
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox"
+                                                    [(ngModel)]="selectedStatusMap['CLOSED']" id="statusCLOSED">
+                                                <label class="form-check-label" for="statusCLOSED">
+                                                    Encerrado
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <button class="btn btn-primary me-2" (click)="search()">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button class="btn btn-outline-secondary" (click)="clearFilters()">
+                    <i class="bi bi-eraser-fill"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabela de Ocorrências -->
+        @if (occurs.length > 0) {
+        <div class="table-responsive mt-4">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr class="text-center">
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Status</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Data do Ocorrido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (occur of occurs; track occur.id) {
+                    <tr>
+                        <td class="text-center">{{ occur.id }}</td>
+                        <td class="text-center">
+                            <span class="badge bg-primary">{{ occur.code }}</span>
+                        </td>
+                        <td class="text-center">
+                            @if (occur.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (occur.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td class="text-center">{{ occur.status | occurStatus }}</td>
+                        <td>
+                            {{ occur.title ? (occur.title.length > 60 ? (occur.title | slice:0:60) + '...' :
+                            occur.title) : 'Sem título' }}
+                        </td>
+                        <td>{{ occur.occurType?.name }}</td>
+                        <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-nowrap text-center">
+                            <button class="btn btn-primary" title="Abrir Ocorrência"
+                                [routerLink]="['/occurs', occur.id]">
+                                <i class="bi bi-eye"></i> Abrir
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginação -->
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                    <button class="page-link" (click)="goToPage(currentPage - 1)">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
+                </li>
+
+                @for (page of [].constructor(totalPages); track $index) {
+                <li class="page-item" [class.active]="$index === currentPage">
+                    <button class="page-link" (click)="goToPage($index)">
+                        {{ $index + 1 }}
+                    </button>
+                </li>
+                }
+
+                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+                    <button class="page-link" (click)="goToPage(currentPage + 1)">
+                        Próximo <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        }
+
+        <!-- Sem Resultados -->
+        @if (occurs.length === 0) {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/no_data.svg" alt="Sem ocorrências" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Nenhuma ocorrência encontrada</h4>
+            <p class="text-muted">Não há ocorrências disponíveis para exibição com os filtros selecionados.</p>
+        </div>
+        }
+    </div>
+</div>

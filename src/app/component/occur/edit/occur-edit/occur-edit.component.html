@@ -1,0 +1,549 @@
+<div class="surface-container">
+    @if (!isLoading) {
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Editar Ocorrência</h3>
+    </div>
+    <div class="surface-container-body">
+        <!-- Informações somente leitura -->
+        <div class="row mb-4">
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [value]="occurData.id" disabled />
+                    <label>ID</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [value]="occurData.code" disabled />
+                    <label>Código</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [value]="occurData.status | occurStatus" disabled />
+                    <label>Status</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control"
+                        [value]="occurData.company?.id!.toString().concat(' - ').concat(occurData.company?.name!)"
+                        disabled />
+                    <label>Empresa</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control"
+                        [value]="occurData.opener?.id!.toString().concat(' - ').concat(occurData.opener?.username!)"
+                        disabled />
+                    <label>Registrado por</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [value]="occurData.opener?.email" disabled />
+                    <label>E-Mail</label>
+                </div>
+            </div>
+        </div>
+
+        <form [formGroup]="occurrenceForm">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-4" (navChange)="onTabChange($event)"
+                [destroyOnHide]="false">
+                <!-- Tab Dados da Ocorrência -->
+                <li ngbNavItem="occurrence">
+                    <button ngbNavLink>Dados da Ocorrência</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <div [class.is-invalid]="isFieldInvalid('occurrenceType')">
+                                <app-occur-type-head-search [initialId]="initialOccurTypeId"
+                                    (occurTypeSelected)="onOccurTypeSelected($event)" placeholder="Tipo de Ocorrência"
+                                    [formTouched]="occurrenceForm.get('occurrenceType')?.touched || false" />
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <select class="form-select" [class.is-invalid]="isFieldInvalid('priority')"
+                                            formControlName="priority">
+                                            <option value="" selected disabled>Selecione</option>
+                                            <option value="LOW">Baixa</option>
+                                            <option value="MEDIUM">Média</option>
+                                            <option value="HIGH">Alta</option>
+                                        </select>
+                                        <label>Prioridade</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('occurrenceDate')"
+                                            formControlName="occurrenceDate" (input)="onDateInput($event)" />
+                                        <label>Data do Ocorrido</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div [class.is-invalid]="isFieldInvalid('qualityInspector')">
+                                <app-user-type-head-search [initialId]="initialInspectorId"
+                                    [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                                    placeholder="Responsável Inspeção de Qualidade" modalId="inspectorSearchModal"
+                                    (outputUserSelected)="onInspectorSelected($event)" />
+                            </div>
+
+                            <!-- Título -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('title')" formControlName="title" />
+                                        <label>Título</label>
+                                    </div>
+                                    @if (shouldShowCounter('title')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('title') }} ({{
+                                        getFieldLength('title') }}/{{ getFieldConfig('title')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Descrição -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="3"
+                                            [class.is-invalid]="isFieldInvalid('description')"
+                                            formControlName="description"></textarea>
+                                        <label>Descrição</label>
+                                    </div>
+                                    @if (shouldShowCounter('description')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('description') }}
+                                        ({{ getFieldLength('description') }}/{{ getFieldConfig('description')?.max
+                                        }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Complemento -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="2"
+                                            [class.is-invalid]="isFieldInvalid('complement')"
+                                            formControlName="complement"></textarea>
+                                        <label>Complemento</label>
+                                    </div>
+                                    @if (shouldShowCounter('complement')) {
+                                    <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complement') }} ({{
+                                        getFieldLength('complement') }}/{{ getFieldConfig('complement')?.max }})</small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Accordion Notas Fiscais -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div ngbAccordion>
+                                        <div ngbAccordionItem [collapsed]="true">
+                                            <h2 ngbAccordionHeader>
+                                                <button ngbAccordionButton class="accordion-button">Notas Fiscais
+                                                    (NFs)</button>
+                                            </h2>
+                                            <div ngbAccordionCollapse>
+                                                <div ngbAccordionBody>
+                                                    <div class="alert alert-primary">
+                                                        <i class="bi bi-info-square-fill"></i>
+                                                        É possível adicionar até 5 notas fiscais relacionadas à
+                                                        ocorrência.
+                                                    </div>
+                                                    <ng-template>
+                                                        @for (i of [1,2,3,4,5]; track i) {
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-12">
+                                                                <div class="form-floating">
+                                                                    <input type="text" class="form-control"
+                                                                        [id]="'floatingNf'+i"
+                                                                        [formControlName]="'nf'+i" />
+                                                                    <label [for]="'floatingNf'+i">NF{{i}}</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        }
+                                                    </ng-template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <!-- Tab Dados da Reclamação -->
+                <li ngbNavItem="complaint">
+                    <button ngbNavLink>Dados da Reclamação</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('orderNumber')"
+                                            formControlName="orderNumber" />
+                                        <label>Número do Pedido</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100"
+                                        [class.is-invalid]="isFieldInvalid('complaintType')">
+                                        <div class="form-label mb-2">Tipo de Reclamação</div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" value="INTERNAL"
+                                                formControlName="complaintType">
+                                            <label class="form-check-label">Interna</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" value="EXTERNAL"
+                                                formControlName="complaintType">
+                                            <label class="form-check-label">Externa</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="3"
+                                            [class.is-invalid]="isFieldInvalid('complaintDescription')"
+                                            formControlName="complaintDescription"></textarea>
+                                        <label>Descrição da Reclamação</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="2"
+                                            [class.is-invalid]="isFieldInvalid('complaintComplement')"
+                                            formControlName="complaintComplement"></textarea>
+                                        <label>Informações Complementares</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (showAnonymousOption) {
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            formControlName="anonymousComplainer" />
+                                        <label class="form-check-label">Reclamante Deseja Não se Identificar</label>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </ng-template>
+                </li>
+
+                <!-- Tab Dados do Reclamante -->
+                @if (shouldShowComplainantTab()) {
+                <li ngbNavItem="complainant">
+                    <button ngbNavLink>Dados do Reclamante</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            @if (showInternalId) {
+                            <div [class.is-invalid]="isFieldInvalid('internalComplainer')">
+                                <app-user-type-head-search [initialId]="initialInternalComplainerId"
+                                    placeholder="Buscar Reclamante Interno" modalId="complainantSearchModal"
+                                    (outputUserSelected)="onInternalComplinantSelect($event)" />
+                            </div>
+                            }
+
+                            @if (showInternalId) {
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" formControlName="complainerId"
+                                            [disabled]="true" />
+                                        <label>ID</label>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerName')"
+                                            formControlName="complainerName" [disabled]="isInternalComplaint()" />
+                                        <label>Nome</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerEmail')"
+                                            formControlName="complainerEmail" />
+                                        <label>Email</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerPhone')"
+                                            formControlName="complainerPhone" />
+                                        <label>Telefone</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerCep')"
+                                            formControlName="complainerCep" (input)="applyCepMask($event)"
+                                            (blur)="searchCep()" />
+                                        <label>CEP</label>
+                                        @if (isLoadingCep) {
+                                        <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerStreet')"
+                                            formControlName="complainerStreet" />
+                                        <label>Logradouro</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerNumber')"
+                                            formControlName="complainerNumber" />
+                                        <label>Número</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerDistrict')"
+                                            formControlName="complainerDistrict" />
+                                        <label>Bairro</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('complainerAddressComplement')"
+                                            formControlName="complainerAddressComplement" />
+                                        <label>Complemento</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" formControlName="complainerCity"
+                                            [disabled]="true" />
+                                        <label>Cidade</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" formControlName="complainerState"
+                                            [disabled]="true" />
+                                        <label>UF</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+                }
+
+                <!-- Tab Anexos -->
+                <li ngbNavItem="attachments">
+                    <button ngbNavLink>Anexos</button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container">
+                            <div class="alert alert-primary">
+                                <i class="bi bi-info-square-fill"></i>
+                                É possível anexar até 10 arquivos. Formatos suportados: PDF, JPG, PNG, HEIC, XML.
+                            </div>
+
+                            @if(isDraft && attachedFiles.length > 0){
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                Arquivos não são salvos em rascunhos. Eles serão enviados apenas ao cadastrar a
+                                ocorrência.
+                            </div>
+                            }
+
+                            @if (!isDraft && existingFiles.length) {
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="mb-3">Arquivos Atuais</h6>
+                                    <div class="border rounded p-3">
+                                        @for (file of existingFiles; track file.id) {
+                                        <div
+                                            class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                                                <strong>{{ file.name }}</strong>
+                                                <small class="text-muted ms-2">{{ formatFileSize(file.size || 0)
+                                                    }}</small>
+                                            </div>
+                                            <button class="btn btn-primary btn-sm" (click)="viewFile(file)">
+                                                <i class="bi bi-eye-fill"></i> Visualizar
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <button class="btn btn-primary" (click)="fileInput.click()">
+                                        <i class="bi bi-upload"></i> Adicionar Arquivo
+                                    </button>
+                                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple
+                                        hidden (change)="onFileSelected($event)" />
+                                </div>
+                            </div>
+
+                            @if (attachedFiles.length) {
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <h6 class="mb-3">Novos Arquivos</h6>
+                                    <div class="border rounded p-3">
+                                        @for (file of attachedFiles; track $index) {
+                                        <div
+                                            class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                                                <strong>{{ file.name }}</strong>
+                                                <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
+                                            </div>
+                                            <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </ng-template>
+                </li>
+            </ul>
+
+            <div [ngbNavOutlet]="nav" class="mt-3"></div>
+
+            <!-- Botões -->
+            <div class="row mt-5">
+                <div class="col-md-12 text-center">
+                    <button class="btn btn-primary me-2" type="button" (click)="goBack()">
+                        <i class="bi bi-arrow-left-square-fill"></i> Voltar
+                    </button>
+
+                    @if (isDraft) {
+                    <button class="btn btn-outline-primary me-2" type="button"
+                        (click)="openSaveDraftModal(saveDraftModal)">
+                        <i class="bi bi-file-earmark-text"></i> Salvar Rascunho
+                    </button>
+                    }
+
+                    <button class="btn btn-danger me-2" type="button" (click)="openDeleteModal(deleteModal)">
+                        <i class="bi bi-trash-fill"></i> Apagar Ocorrência
+                    </button>
+
+                    <button class="btn btn-success" type="button" (click)="confirmUpdateOccurrence()"
+                        [disabled]="isSubmitting">
+                        <i class="bi bi-save-fill"></i>
+                        {{ isAwaitingEdit ? 'Atualizar Ocorrência' : 'Cadastrar Ocorrência' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    }
+</div>
+
+<!-- Modais -->
+<ng-template #saveDraftModal>
+    <div class="modal-header">
+        <h5 class="modal-title">Salvar Rascunho</h5>
+        <button type="button" class="btn-close" (click)="modalService.dismissAll()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p>Anexos não serão salvos no rascunho. Deseja continuar?</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-danger" (click)="modalService.dismissAll()">Fechar</button>
+        <button class="btn btn-outline-primary" (click)="confirmSaveDraft(); modalService.dismissAll()">Salvar
+            Rascunho</button>
+    </div>
+</ng-template>
+
+<ng-template #deleteModal>
+    <div class="modal-header">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" (click)="modalService.dismissAll()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p>Tem certeza que deseja excluir a ocorrência <strong>{{ occurData.code }}</strong>?</p>
+        <p class="text-muted small">Esta ação não pode ser desfeita.</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modalService.dismissAll()">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmDeleteOccurrence(); modalService.dismissAll()">Excluir</button>
+    </div>
+</ng-template>
+
+<ng-template #uploadProgressModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">Atualizando Ocorrência</h5>
+        <button type="button" class="btn-close" (click)="modal.dismissAll()" [disabled]="true"></button>
+    </div>
+    <div class="modal-body">
+        <p class="text-center mb-3">{{ uploadProgress.message }}</p>
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                [style.width.%]="uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : uploadProgress.current">
+                {{ uploadProgress.total > 0 ? uploadProgress.current + '/' + uploadProgress.total :
+                getProgressPercentage() + '%' }}
+            </div>
+        </div>
+    </div>
+</ng-template>

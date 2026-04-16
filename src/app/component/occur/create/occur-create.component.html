@@ -14,7 +14,8 @@
                             <!-- Tipo de Ocorrência -->
                             <div [class.is-invalid]="isFieldInvalid('occurrenceType')">
                                 <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
-                                    [placeholder]='"Tipo de Ocorrência"' />
+                                    [placeholder]='"Tipo de Ocorrência"'
+                                    [formTouched]="occurrenceForm.get('occurrenceType')?.touched || false" />
                             </div>
 
                             <!-- Prioridade + Data do Ocorrido -->
@@ -46,6 +47,7 @@
                             <div [class.is-invalid]="isFieldInvalid('qualityInspector')">
                                 <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
                                     [placeholder]='"Responsável Inspeção de Qualidade"'
+                                    [modalId]="'inspectorSearchModal'"
                                     (outputUserSelected)="onInspectorSelected($event)" />
                             </div>
 
@@ -324,6 +326,7 @@
                             @if (showInternalId) {
                             <div [class.is-invalid]="isFieldInvalid('internalComplainer')">
                                 <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
+                                    [modalId]="'complainantSearchModal'"
                                     (outputUserSelected)="onInternalComplinantSelect($event)" />
                             </div>
                             }
@@ -509,6 +512,16 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-12">
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        Arquivos não são salvos em rascunhos. Eles serão enviados apenas ao finalizar a
+                                        ocorrência.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-12">
                                     <button class="btn btn-primary" (click)="fileInput.click()">
                                         <i class="bi bi-upload"></i>
                                         Adicionar Arquivo
@@ -603,14 +616,14 @@
 <ng-template #uploadProgressModal let-modal>
     <div class="modal-header">
         <h5 class="modal-title">Enviando Ocorrência</h5>
-        <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismissAll()" [disabled]="true"></button>
+        <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismissAll()"
+            [disabled]="true"></button>
     </div>
     <div class="modal-body">
         <p class="text-center mb-3">{{ uploadProgress.message }}</p>
         <div class="progress" style="height: 25px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                 role="progressbar" 
-                 [style.width.%]="uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                [style.width.%]="uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 100">
                 {{ uploadProgress.total > 0 ? uploadProgress.current + '/' + uploadProgress.total : 'Aguarde...' }}
             </div>
         </div>

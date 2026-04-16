@@ -1,490 +1,153 @@
-<div>
-
-    @if(isOpener) {
-        @if(awaitingApproveOccurs.length > 0) {
-            <h1>Aguardando Análise Chatbot</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingApproveOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Abrir Ocorrência"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Minhas Pendências</h3>
+    </div>
+    <div class="surface-container-body">
+        <br>
+        <!-- Tipos para Opener -->
+        @if(isOpener){
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    @if(isDaltonEnabled){
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'chatbot'"
+                        [class.btn-primary]="activeTab === 'chatbot'" (click)="changeTab('chatbot')">
+                        Análise Chatbot
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'whatsapp'"
+                        [class.btn-primary]="activeTab === 'whatsapp'" (click)="changeTab('whatsapp')">
+                        Análise WhatsApp
+                    </button>
+                    }
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'awaitingEdit'"
+                        [class.btn-primary]="activeTab === 'awaitingEdit'" (click)="changeTab('awaitingEdit')">
+                        Aguardando Edição
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'awaitingClose'"
+                        [class.btn-primary]="activeTab === 'awaitingClose'" (click)="changeTab('awaitingClose')">
+                        Aguardando Encerramento
+                    </button>
+                </div>
             </div>
+        </div>
+        }
 
-            <!-- Paginação -->
+        <!-- Tipos para Inspector -->
+        @if(isInspector){
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'awaitingInspection'"
+                        [class.btn-primary]="activeTab === 'awaitingInspection'"
+                        (click)="changeTab('awaitingInspection')">
+                        Aguardando Inspeção
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'awaitingEditApprove'"
+                        [class.btn-primary]="activeTab === 'awaitingEditApprove'"
+                        (click)="changeTab('awaitingEditApprove')">
+                        Análise Edição
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <br>
+
+        @if(occurs.length !== 0 ){
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Data do Ocorrido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (occur of occurs; track occur.id) {
+                    <tr>
+                        <td>{{ occur.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ occur.code }}</span>
+                        </td>
+                        <td>
+                            @if (occur.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (occur.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>
+                            {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
+                            occur.title) : 'Sem título' }}
+                        </td>
+                        <td>{{ occur.occurType?.name }}</td>
+                        <td>{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
+
+                        @if(activeTab === 'awaitingEdit'){
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary me-1" title="Editar Ocorrência"
+                                [routerLink]="['/occurs/edit/', occur.id]">
+                                <i class="bi bi-pencil-square"></i>
+                                Editar
+                            </button>
+                        </td>
+
+                        }@else {
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary me-1" title="Abrir Ocorrência"
+                                [routerLink]="['/occurs/', occur.id]">
+                                <i class="bi bi-pencil-square"></i>
+                                Abrir
+                            </button>
+                        </td>
+                        }
+                    </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if(totalPages > 0){
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingApproveOccursPage === 0">
-                        <button class="page-link" (click)="goToPage('awaitingApprove', awaitingApproveOccursPage - 1)">
+                    <li class="page-item" [class.disabled]="page === 0">
+                        <button class="page-link" (click)="goToPage(page - 1)">
                             <i class="bi bi-chevron-left"></i> Anterior
                         </button>
                     </li>
 
-                    @for (page of [].constructor(totalPagesAwaitingApprove); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingApproveOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingApprove', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
+                    <!-- Criando array diretamente no HTML usando a sintaxe do Angular -->
+                    @for (p of totalPages > 0 ? [].constructor(totalPages) : []; track $index) {
+                    <li class="page-item" [class.active]="$index === page">
+                        <button class="page-link" (click)="goToPage($index)">
+                            {{ $index + 1 }}
+                        </button>
+                    </li>
                     }
 
-                    <li class="page-item" [class.disabled]="awaitingApproveOccursPage === totalPagesAwaitingApprove - 1">
-                        <button class="page-link" (click)="goToPage('awaitingApprove', awaitingApproveOccursPage + 1)">
+                    <li class="page-item" [class.disabled]="page === totalPages - 1">
+                        <button class="page-link" (click)="goToPage(page + 1)">
                             Próximo <i class="bi bi-chevron-right"></i>
                         </button>
                     </li>
                 </ul>
             </nav>
+            }
+        </div>
+        }@else {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Sem pendencias por aqui</h4>
+            <p class="text-muted">Não há ocorrências pendentes para essa categoria.</p>
+        </div>
         }
-
-        @if(awaitingApproveWhatsappOccurs.length > 0) {
-            <h1>Aguardando Análise WhatsApp</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingApproveWhatsappOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Abrir Ocorrência"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingApproveWhatsappOccursPage === 0">
-                        <button class="page-link"
-                            (click)="goToPage('awaitingApproveWhatsapp', awaitingApproveWhatsappOccursPage - 1)">
-                            <i class="bi bi-chevron-left"></i> Anterior
-                        </button>
-                    </li>
-
-                    @for (page of [].constructor(totalPagesAwaitingApproveWhatsapp); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingApproveWhatsappOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingApproveWhatsapp', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item"
-                        [class.disabled]="awaitingApproveWhatsappOccursPage === totalPagesAwaitingApproveWhatsapp - 1">
-                        <button class="page-link"
-                            (click)="goToPage('awaitingApproveWhatsapp', awaitingApproveWhatsappOccursPage + 1)">
-                            Próximo <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        }
-
-        @if(awaitingEditOccurs.length > 0) {
-            <h1>Aguardando Edição</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingEditOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Abrir Ocorrência"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingEditOccursPage === 0">
-                        <button class="page-link" (click)="goToPage('awaitingEdit', awaitingEditOccursPage - 1)">
-                            <i class="bi bi-chevron-left"></i> Anterior
-                        </button>
-                    </li>
-
-                    @for (page of [].constructor(totalPagesAwaitingEdit); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingEditOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingEdit', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item" [class.disabled]="awaitingEditOccursPage === totalPagesAwaitingEdit - 1">
-                        <button class="page-link" (click)="goToPage('awaitingEdit', awaitingEditOccursPage + 1)">
-                            Próximo <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        }
-
-        @if(awaitingCloseOccurs.length > 0) {
-            <h1>Aguardando Encerramento</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingCloseOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Abrir Ocorrência"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingCloseOccursPage === 0">
-                        <button class="page-link" (click)="goToPage('awaitingClose', awaitingCloseOccursPage - 1)">
-                            <i class="bi bi-chevron-left"></i> Anterior
-                        </button>
-                    </li>
-
-                    @for (page of [].constructor(totalPagesAwaitingClose); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingCloseOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingClose', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item" [class.disabled]="awaitingCloseOccursPage === totalPagesAwaitingClose - 1">
-                        <button class="page-link" (click)="goToPage('awaitingClose', awaitingCloseOccursPage + 1)">
-                            Próximo <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        }
-
-        @if(awaitingApproveOccurs.length === 0 && awaitingApproveWhatsappOccurs.length === 0 && awaitingEditOccurs.length === 0 && awaitingCloseOccurs.length === 0) {
-            <div class="surface-banner text-center">
-                <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
-                <br /><br />
-                <h3>Sem pendências de Atendimento</h3>
-                <p class="text-muted">Não há pendências em seu cadastro.</p>
-            </div>
-        }
-    }
-
-    @else if(isInspector) {
-        @if(awaitingInspectionOccurs.length > 0) {
-            <h1>Aguardando Inspeção</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingInspectionOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Inspecionar Ocorrência"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingInspectionOccursPage === 0">
-                        <button class="page-link" (click)="goToPage('awaitingInspection', awaitingInspectionOccursPage - 1)">
-                            <i class="bi bi-chevron-left"></i> Anterior
-                        </button>
-                    </li>
-
-                    @for (page of [].constructor(totalPagesAwaitingInspection); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingInspectionOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingInspection', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item" [class.disabled]="awaitingInspectionOccursPage === totalPagesAwaitingInspection - 1">
-                        <button class="page-link" (click)="goToPage('awaitingInspection', awaitingInspectionOccursPage + 1)">
-                            Próximo <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        }
-
-        @if(awaitingEditApproveOccurs.length > 0) {
-            <h1>Aguardando Aprovação Edição</h1>
-            <hr>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead>
-                        <tr class="text-center">
-                            <th>ID</th>
-                            <th>Código</th>
-                            <th>Prioridade</th>
-                            <th>Título</th>
-                            <th>Tipo</th>
-                            <th>Data do Ocorrido</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (occur of awaitingEditApproveOccurs; track occur.id) {
-                            <tr>
-                                <td class="text-center">{{ occur.id }}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ occur.code }}</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (occur.priority === 'HIGH') {
-                                        <span class="badge bg-danger">Alta</span>
-                                    } @else if (occur.priority === 'MEDIUM') {
-                                        <span class="badge bg-warning text-dark">Média</span>
-                                    } @else {
-                                        <span class="badge bg-info">Baixa</span>
-                                    }
-                                </td>
-                                <td>
-                                    {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
-                                    occur.title) : 'Sem título' }}
-                                </td>
-                                <td>{{ occur.occurType?.name }}</td>
-                                <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                                <td class="text-nowrap text-center">
-                                    <button class="btn btn-primary me-1" title="Aprovar Edição"
-                                        [routerLink]="['/occurs/', occur.id]">
-                                        <i class="bi bi-pencil-square"></i>
-                                        Abrir
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Paginação -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="awaitingEditApproveOccursPage === 0">
-                        <button class="page-link" (click)="goToPage('awaitingEditApprove', awaitingEditApproveOccursPage - 1)">
-                            <i class="bi bi-chevron-left"></i> Anterior
-                        </button>
-                    </li>
-
-                    @for (page of [].constructor(totalPagesAwaitingEditApprove); track $index) {
-                        <li class="page-item" [class.active]="$index === awaitingEditApproveOccursPage">
-                            <button class="page-link" (click)="goToPage('awaitingEditApprove', $index)">
-                                {{ $index + 1 }}
-                            </button>
-                        </li>
-                    }
-
-                    <li class="page-item"
-                        [class.disabled]="awaitingEditApproveOccursPage === totalPagesAwaitingEditApprove - 1">
-                        <button class="page-link" (click)="goToPage('awaitingEditApprove', awaitingEditApproveOccursPage + 1)">
-                            Próximo <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
-        }
-
-        @if(awaitingInspectionOccurs.length === 0 && awaitingEditApproveOccurs.length === 0) {
-            <div class="surface-banner text-center">
-                <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
-                <br /><br />
-                <h3>Sem pendências de Qualidade</h3>
-                <p class="text-muted">Não há pendências em seu cadastro.</p>
-            </div>
-        }
-    }
+    </div>
 </div>

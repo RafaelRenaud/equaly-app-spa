@@ -1,13 +1,14 @@
-import { Component, EventEmitter, Output, ChangeDetectorRef, ViewChild, ElementRef, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, OperatorFunction, debounceTime, switchMap, catchError, of, tap, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
+import { Observable, OperatorFunction, Subject, debounceTime, of, switchMap, tap } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { OccurTypeResponse } from '../../../../core/model/occurType/occur-type-response.model';
+import { OccurTypesResponse } from '../../../../core/model/occurType/occur-types-response.model';
+import { LoadingService } from '../../../../core/service/loading/loading.service';
 import { OccurTypeService } from '../../../../core/service/occurType/occur-type.service';
 import { SessionService } from '../../../../core/service/session/session.service';
-import { OccurTypesResponse } from '../../../../core/model/occurType/occur-types-response.model';
 
 @Component({
   selector: 'app-occur-type-head-search',
@@ -17,48 +18,87 @@ import { OccurTypesResponse } from '../../../../core/model/occurType/occur-types
   standalone: true
 })
 export class OccurTypeHeadSearchComponent {
-
   @Input() placeholder: string = 'Tipo de Ocorrência';
+  @Input() formTouched: boolean = false;
   @Output() occurTypeSelected = new EventEmitter<OccurTypeResponse | null>();
   @ViewChild('typeaheadInput') typeaheadInput!: ElementRef;
 
   selectedOccurType: OccurTypeResponse | null = null;
-  private _searchText: string = '';
-  
-  // Getter e Setter para garantir que searchText seja sempre string
-  get searchText(): string {
-    return this._searchText;
-  }
-  
-  set searchText(value: string | null | undefined) {
-    this._searchText = value ?? '';
-  }
-  
+  searchText: string = '';
   invalidInput: boolean = false;
   isLoading: boolean = false;
 
+  // Modal properties
+  searchedOccurTypes: OccurTypeResponse[] = [];
+  selectedFilter: string = 'name';
+  searchValue: string = '';
+  modalCurrentPage: number = 0;
+  modalTotalPages: number = 0;
+  modalPageSize: number = 5;
+  hasSearched: boolean = false;
+
   private readonly searchByIdSubject = new Subject<string>();
   private readonly MIN_SEARCH_LENGTH = 3;
+  private currentRequestId: number | null = null;
 
   constructor(
     private occurTypeService: OccurTypeService,
     private sessionService: SessionService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private loadingService: LoadingService
   ) {
     this.setupSearchById();
+  }
+
+  @Input() set initialId(value: number | null) {
+    if (value && value !== this.currentRequestId) {
+      this.currentRequestId = value;
+      this.selectedOccurType = null;
+      this.searchText = '';
+      this.invalidInput = false;
+      this.isLoading = true;
+      this.cdr.detectChanges();
+
+      this.occurTypeService.getOccurType(value).subscribe({
+        next: (response) => {
+          this.isLoading = false;
+          if (response?.id) {
+            this.selectedOccurType = response;
+            this.searchText = this.formatOccurType(response);
+            this.invalidInput = false;
+            this.occurTypeSelected.emit(response);
+          } else {
+            this.resetSearchState(true);
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Erro ao buscar tipo de ocorrência:', error);
+          this.isLoading = false;
+          this.resetSearchState(true);
+          this.handleError('Erro ao buscar tipo de ocorrência por ID');
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   private setupSearchById(): void {
     this.searchByIdSubject
       .pipe(
         debounceTime(300),
-        tap(() => this.setLoading(true)),
+        tap(() => this.isLoading = true),
         switchMap((term) => {
           const trimmedTerm = this.safeTrim(term);
-          return this.isNumeric(trimmedTerm)
-            ? this.searchById(parseInt(trimmedTerm, 10))
-            : this.setLoading(false);
+          if (this.isNumeric(trimmedTerm)) {
+            return this.occurTypeService.getOccurType(parseInt(trimmedTerm, 10)).pipe(
+              tap((response) => this.handleSearchByIdResponse(response)),
+              map(() => null)
+            );
+          }
+          this.isLoading = false;
+          return of(null);
         })
       )
       .subscribe();
@@ -68,30 +108,12 @@ export class OccurTypeHeadSearchComponent {
     return (value ?? '').trim();
   }
 
-  private setLoading(loading: boolean): Observable<null> {
-    this.isLoading = loading;
-    this.cdr.detectChanges();
-    return of(null);
-  }
-
   private isNumeric(value: string): boolean {
-    const safeValue = typeof value === 'string' ? value.trim() : '';
-    return /^\d+$/.test(safeValue);
-  }
-
-  private searchById(id: number): Observable<OccurTypeResponse | null> {
-    return this.occurTypeService.getOccurType(id).pipe(
-      tap((response) => this.handleSearchByIdResponse(response)),
-      catchError((error) => {
-        this.isLoading = false;
-        this.handleError('Erro ao buscar tipo de ocorrência por ID');
-        this.resetSearchState();
-        return of(null);
-      })
-    );
+    return /^\d+$/.test(value.trim());
   }
 
   private handleSearchByIdResponse(response: OccurTypeResponse | null): void {
+    this.isLoading = false;
     if (response?.id) {
       this.selectedOccurType = response;
       this.searchText = this.formatOccurType(response);
@@ -100,7 +122,6 @@ export class OccurTypeHeadSearchComponent {
     } else {
       this.resetSearchState(true);
     }
-    this.isLoading = false;
     this.cdr.detectChanges();
   }
 
@@ -120,10 +141,14 @@ export class OccurTypeHeadSearchComponent {
     }
 
     this.searchText = inputValue;
+
+    if (!inputValue || inputValue.trim() === '') {
+      this.resetSearchState();
+    }
   }
 
   onEnterPressed(): void {
-    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
+    const term = this.searchText.trim();
     if (!term) return;
 
     if (this.isNumeric(term)) {
@@ -142,12 +167,13 @@ export class OccurTypeHeadSearchComponent {
   ) =>
     text$.pipe(
       debounceTime(300),
-      tap(() => this.setLoading(true)),
+      tap(() => this.isLoading = true),
       switchMap((term) => {
         const trimmedTerm = this.safeTrim(term);
 
         if (this.isNumeric(trimmedTerm) || trimmedTerm.length < this.MIN_SEARCH_LENGTH) {
-          return this.setLoading(false).pipe(map(() => []));
+          this.isLoading = false;
+          return of([]);
         }
 
         return this.occurTypeService.getOccurTypes(
@@ -159,11 +185,8 @@ export class OccurTypeHeadSearchComponent {
           5
         ).pipe(
           map((response: OccurTypesResponse) => response.occurTypes || []),
-          tap(() => this.setLoading(false)),
-          catchError((error) => {
-            this.handleError('Erro ao buscar tipos de ocorrência');
-            return this.setLoading(false).pipe(map(() => []));
-          })
+          tap(() => this.isLoading = false),
+          map((types) => types)
         );
       })
     );
@@ -180,7 +203,7 @@ export class OccurTypeHeadSearchComponent {
   }
 
   onInputBlur(): void {
-    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
+    const term = this.searchText.trim();
 
     if (!this.selectedOccurType && term) {
       if (this.isNumeric(term)) {
@@ -213,5 +236,78 @@ export class OccurTypeHeadSearchComponent {
       queryParams: { action: 'ERROR', message },
       queryParamsHandling: 'merge',
     });
+  }
+
+  // ==================== MÉTODOS DO MODAL ====================
+
+  openModal(): void {
+    this.modalCurrentPage = 0;
+    setTimeout(() => this.searchOccurTypesModal(), 100);
+  }
+
+  searchOccurTypesModal(): void {
+    this.loadingService.show();
+    this.hasSearched = true;
+
+    const companyId = Number(this.sessionService.getItem('companyId'));
+    const searchTerm = this.searchValue?.trim() || '';
+
+    this.occurTypeService.getOccurTypes(
+      this.selectedFilter,
+      searchTerm,
+      companyId,
+      'ACTIVE',
+      this.modalCurrentPage,
+      this.modalPageSize
+    ).subscribe({
+      next: (response: OccurTypesResponse) => {
+        this.searchedOccurTypes = response.occurTypes || [];
+        this.modalTotalPages = response.pageable?.totalPages || 0;
+        this.loadingService.hide();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Erro ao buscar tipos de ocorrência:', error);
+        this.handleError('Erro ao buscar tipos de ocorrência');
+        this.searchedOccurTypes = [];
+        this.modalTotalPages = 0;
+        this.loadingService.hide();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  selectOccurTypeFromModal(occurType: OccurTypeResponse): void {
+    this.selectedOccurType = occurType;
+    this.searchText = this.formatOccurType(occurType);
+    this.invalidInput = false;
+    this.occurTypeSelected.emit(occurType);
+    this.cdr.detectChanges();
+
+    const modalElement = document.getElementById('occurTypeSearchModal');
+    if (modalElement) {
+      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement);
+      modal?.hide();
+    }
+  }
+
+  clearModalFilters(): void {
+    this.selectedFilter = 'name';
+    this.searchValue = '';
+    this.modalCurrentPage = 0;
+    this.searchedOccurTypes = [];
+    this.hasSearched = false;
+    this.modalTotalPages = 0;
+    this.cdr.detectChanges();
+  }
+
+  goToModalPage(page: number): void {
+    if (page < 0 || page >= this.modalTotalPages) return;
+    this.modalCurrentPage = page;
+    this.searchOccurTypesModal();
+  }
+
+  getModalPagesArray(): number[] {
+    return Array(this.modalTotalPages).fill(0).map((_, i) => i);
   }
 }

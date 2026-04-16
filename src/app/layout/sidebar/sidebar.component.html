@@ -121,7 +121,8 @@
               </a>
             </li>
             <li>
-              <a class="submenu-link" [routerLink]="['/occurs', 'drafts']" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs', 'drafts']" routerLinkActive="active"
+                (click)="closeMenu()">
                 <i class="bi bi-file-earmark-text-fill"></i>
                 <span>Rascunhos</span>
               </a>
@@ -130,25 +131,23 @@
 
             @if(hasEventOrInspectorAccess()) {
             <li>
-              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
-                <i class="bi bi-file-post-fill"></i>
-                <span>Minhas Ocorrências</span>
-              </a>
-            </li>
-            <li>
-              <a class="submenu-link" [routerLink]="['/occurs', 'pendings']" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs', 'pendings']" routerLinkActive="active"
+                (click)="closeMenu()">
                 <i class="bi bi-card-checklist"></i>
                 <span>Pendências</span>
               </a>
             </li>
             }
 
+            @if(hasOperationalAccess()){
             <li>
-              <a class="submenu-link" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs']" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">
                 <i class="bi bi-search"></i>
                 <span>Pesquisar</span>
               </a>
             </li>
+            }
 
             @if(sessionService.hasRole('MASTER_EVENT_OPENER') || sessionService.hasRole('COMMON_EVENT_OPENER')) {
             <li>
@@ -166,7 +165,8 @@
 
     <!-- Footer -->
     <div class="sidebar-footer">
-      <img [src]="userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'" alt="Avatar" class="footer-avatar rounded" />
+      <img [src]="userAvatar && userAvatar !== 'null' ? userAvatar : 'avatar.png'" alt="Avatar"
+        class="footer-avatar rounded" />
       <div class="footer-info">
         <strong>{{ userDisplayName }}</strong>
         <small>{{ companyDisplayName }}</small>

@@ -5,7 +5,15 @@ export interface OccurFilters {
   occurCode?: string;
   occurTypeId?: number;
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
-  status?: 'DRAFT_OPENED' | 'PENDING_EDIT_APPROVAL' | 'AWAITING_EDIT' | 'AWAITING_REPORT' | 'AWAITING_CLOSE' | 'AWAITING_RATING' | 'CLOSED';
+  status?: (
+  'DRAFT_OPENED' |
+  'PENDING_EDIT_APPROVAL' |
+  'AWAITING_EDIT' |
+  'AWAITING_REPORT' |
+  'AWAITING_CLOSE' |
+  'AWAITING_RATING' |
+  'CLOSED'
+)[];
   hasOpenerAssigned?: boolean;
   openerId?: number;
   hasInspectorAssigned?: boolean;

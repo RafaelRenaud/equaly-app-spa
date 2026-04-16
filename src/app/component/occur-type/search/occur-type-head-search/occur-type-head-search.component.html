@@ -1,25 +1,140 @@
 <div class="row mb-3">
-    <div class="form-floating col-md position-relative">
-        <input #typeaheadInput type="text" class="form-control" [class.is-invalid]="invalidInput"
-            id="floatingOccurrenceType" placeholder="Tipo de Ocorrência" [ngbTypeahead]="searchOccurTypes"
-            [inputFormatter]="inputFormatter" [resultFormatter]="resultFormatter" (selectItem)="onSelectItem($event)"
-            (blur)="onInputBlur()" (keydown.enter)="onEnterPressed()" (input)="onInputChange($event)"
-            [(ngModel)]="searchText" [ngModelOptions]="{ standalone: true }" />
-        <label for="floatingOccurrenceType" class="ps-4">{{ placeholder }}</label>
+    <div class="col-md d-flex align-items-end gap-2">
+        <div class="form-floating flex-grow-1 position-relative">
+            <input #typeaheadInput type="text" class="form-control" [class.is-invalid]="invalidInput || (!selectedOccurType && formTouched)"
+                id="floatingOccurrenceType" placeholder="Tipo de Ocorrência" [ngbTypeahead]="searchOccurTypes"
+                [inputFormatter]="inputFormatter" [resultFormatter]="resultFormatter" (selectItem)="onSelectItem($event)"
+                (blur)="onInputBlur()" (keydown.enter)="onEnterPressed()" (input)="onInputChange($event)"
+                [(ngModel)]="searchText" [ngModelOptions]="{ standalone: true }" />
+            <label for="floatingOccurrenceType">{{ placeholder }}</label>
 
-        @if (isLoading) {
-        <div class="position-absolute end-0 top-50 translate-middle-y me-4">
-            <div class="spinner-custom spinner-border spinner-border-sm" role="status">
-                <span class="visually-hidden">Carregando...</span>
+            @if (isLoading) {
+            <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+                <div class="spinner-custom spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+            </div>
+            }
+
+            @if (invalidInput) {
+            <div class="invalid-feedback d-block">
+                <i class="bi bi-exclamation-square-fill"></i>
+                Tipo de Ocorrência inválido, selecione novamente.
+            </div>
+            }
+        </div>
+        
+        <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="modal" data-bs-target="#occurTypeSearchModal" 
+                title="Listar Tipos de Ocorrência">
+            <i class="bi bi-list-ul"></i>
+        </button>
+    </div>
+</div>
+
+<div class="modal modal-lg fade" id="occurTypeSearchModal" tabindex="-1" role="dialog" 
+     aria-labelledby="occurTypeSearchModalLabel" aria-hidden="true"
+     (shown.bs.modal)="openModal()">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="occurTypeSearchModalLabel">
+                    Pesquisar Tipo de Ocorrência
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-3">
+                        <div class="form-floating">
+                            <select class="form-select form-control" [(ngModel)]="selectedFilter" title="Selecione o filtro">
+                                <option value="name" selected>Nome</option>
+                                <option value="description">Descrição</option>
+                            </select>
+                            <label>Filtro</label>
+                        </div>
+                    </div>
+                    <div class="col-9">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" [(ngModel)]="searchValue" placeholder="Digite"
+                                   (keydown.enter)="searchOccurTypesModal()" />
+                            <label>Busca</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <button class="btn btn-primary me-2" (click)="searchOccurTypesModal()">
+                            <i class="bi bi-search"></i>
+                            Buscar
+                        </button>
+                        <button class="btn btn-danger" (click)="clearModalFilters()">
+                            <i class="bi bi-trash-fill"></i>
+                            Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col">
+                        @if (searchedOccurTypes.length > 0) {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>Descrição</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (occurType of searchedOccurTypes; track occurType.id) {
+                                    <tr style="cursor: pointer" (click)="selectOccurTypeFromModal(occurType)">
+                                        <td class="align-middle">{{ occurType.id }}</td>
+                                        <td class="align-middle">{{ occurType.name }}</td>
+                                        <td class="align-middle">{{ occurType.description || '-' }}</td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        } @if (searchedOccurTypes.length === 0 && hasSearched) {
+                        <div class="surface-banner text-center">
+                            <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid" />
+                            <br />
+                            <h4>Nada foi encontrado por aqui...</h4>
+                            <br />
+                        </div>
+                        }
+                        @if (searchedOccurTypes.length > 0) {
+                        <br />
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" [class.disabled]="modalCurrentPage === 0">
+                                    <button class="page-link" (click)="goToModalPage(modalCurrentPage - 1)">
+                                        Anterior
+                                    </button>
+                                </li>
+
+                                @for (page of getModalPagesArray(); track $index) {
+                                <li class="page-item" [class.active]="$index === modalCurrentPage">
+                                    <button class="page-link" (click)="goToModalPage($index)">
+                                        {{ $index + 1 }}
+                                    </button>
+                                </li>
+                                }
+
+                                <li class="page-item" [class.disabled]="modalCurrentPage === modalTotalPages - 1">
+                                    <button class="page-link" (click)="goToModalPage(modalCurrentPage + 1)">
+                                        Próximo
+                                    </button>
+                                </li>
+                            </ul>
+                        </nav>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
-        }
-
-        @if (invalidInput) {
-        <div class="invalid-feedback d-block">
-            <i class="bi bi-exclamation-square-fill"></i>
-            Tipo de Ocorrência inválido, selecione novamente.
-        </div>
-        }
     </div>
 </div>

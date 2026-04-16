@@ -612,17 +612,36 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   private isDraftValid(): boolean {
     const type = this.occurrenceForm.get('occurrenceType')?.value;
     const priority = this.occurrenceForm.get('priority')?.value;
+
     if (!type || !priority) return false;
 
-    for (const control of Object.values(this.occurrenceForm.controls)) {
-      if (!control.disabled && control.value != null && control.value !== '' && control.invalid) return false;
+    const draftRequiredFields = ['occurrenceType', 'priority'];
+
+    for (const field of draftRequiredFields) {
+      const control = this.occurrenceForm.get(field);
+      if (!control?.value || control.invalid) {
+        return false;
+      }
     }
+
+    for (const control of Object.values(this.occurrenceForm.controls)) {
+      if (!control.disabled && control.value != null && control.value !== '' && control.invalid) {
+        return false;
+      }
+    }
+
     return true;
   }
 
   private markDraftInvalidFields(): void {
-    Object.values(this.occurrenceForm.controls).forEach(ctrl => {
-      if (!ctrl.disabled && ctrl.value != null && ctrl.value !== '' && ctrl.invalid) ctrl.markAsTouched();
+    this.occurrenceForm.updateValueAndValidity();
+
+    const draftRequiredFields = ['occurrenceType', 'priority'];
+    draftRequiredFields.forEach(field => {
+      const control = this.occurrenceForm.get(field);
+      if (control?.invalid) {
+        control.markAsTouched();
+      }
     });
   }
 

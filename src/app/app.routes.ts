@@ -25,6 +25,10 @@ import { UserEditComponent } from "./component/user/edit/user-edit.component";
 import { OccurCreateComponent } from "./component/occur/create/occur-create.component";
 import { OccurDraftComponent } from "./component/occur/draft/draft.component";
 import { OccurPendingComponent } from "./component/occur/pending/pending.component";
+import { OccurFeedbackComponent } from "./component/occur/feedback/occur-feedback/occur-feedback.component";
+import { OccurEditComponent } from "./component/occur/edit/occur-edit/occur-edit.component";
+import { NotFoundComponent } from "./component/error/not-found/not-found.component";
+import { OccurHubComponent } from "./component/occur/hub/occur-hub/occur-hub.component";
 
 export const routes: Routes = [
   {
@@ -38,6 +42,11 @@ export const routes: Routes = [
     path: "recovery",
     component: AuthLayoutComponent,
     children: [{ path: "", component: RecoveryComponent }],
+  },
+  {
+    path: "occur-feedback",
+    component: AuthLayoutComponent,
+    children: [{ path: "", component: OccurFeedbackComponent }],
   },
   {
     path: "",
@@ -175,6 +184,16 @@ export const routes: Routes = [
         path: "occurs",
         children: [
           {
+            path: "",
+            data: {
+              roles: ["MASTER_EVENT_OPENER",
+                "COMMON_EVENT_OPENER",
+                "MASTER_QUALITY_INSPECTOR",
+                "COMMON_QUALITY_INSPECTOR"]
+            },
+            component: OccurHubComponent,
+          },
+          {
             path: "create",
             data: {
               roles: [
@@ -201,12 +220,25 @@ export const routes: Routes = [
               ],
             },
             component: OccurPendingComponent
+          },
+          {
+            path: "edit/:id",
+            data: {
+              roles: [
+                "COMMON_EVENT_OPENER"
+              ],
+            },
+            component: OccurEditComponent
           }
         ],
       }
     ],
   },
+  {
+    path: "not-found",
+    children: [{ path: "", component: NotFoundComponent }],
+  },
 
   // Rota coringa
-  { path: "**", redirectTo: "" },
+  { path: "**", redirectTo: "not-found" },
 ];

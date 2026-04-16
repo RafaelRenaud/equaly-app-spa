@@ -44,7 +44,7 @@ body {
   overflow: hidden;
 }
 
-.bg-primary{
+.bg-primary {
   background-color: var(--primary-color) !important;
 }
 
@@ -60,7 +60,8 @@ body {
   background-color: --background-color;
 }
 
-input.form-control, select.form-select {
+input.form-control,
+select.form-select {
   border: 1px solid var(--border-color);
   margin-bottom: 1rem;
   font-size: var(--font-size-base);
@@ -80,8 +81,13 @@ i.btn-primary {
   border-color: var(--primary-color);
 
   &:hover {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+  }
+
+  &:active {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
   }
 }
 
@@ -92,8 +98,13 @@ i.btn-outline-primary {
   color: var(--primary-color);
 
   &:hover {
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+  }
+
+  &:active {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
   }
 }
 
@@ -111,6 +122,10 @@ i.btn-outline-primary {
 
 .btn {
   margin: 16px;
+}
+
+.btn-group .btn {
+  margin: 0;
 }
 
 .btn-success {
@@ -135,6 +150,7 @@ i.btn-outline-primary {
   width: 100%;
   max-width: 100%;
   border: 1px solid lightgray;
+  margin-bottom: 2rem !important;
 }
 
 /* Ajuste padrão para telas maiores (desktop) */
@@ -294,6 +310,6 @@ ngb-typeahead-window {
 
 .progress-bar.bg-success,
 .progress-bar.bg-primary,
-.progress-bar{
+.progress-bar {
   background-color: var(--primary-color) !important;
 }

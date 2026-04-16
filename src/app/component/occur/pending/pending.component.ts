@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { SessionService } from '../../../core/service/session/session.service';
-import { Occur } from '../../../core/model/occur/occur.model';
-import { OccurService } from '../../../core/service/occur/occur.service';
-import { Router, RouterModule } from '@angular/router';
-import { LoadingService } from '../../../core/service/loading/loading.service';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { OccurFilters } from '../../../core/model/occur/occur-filters.model';
+import { Occur } from '../../../core/model/occur/occur.model';
+import { LoadingService } from '../../../core/service/loading/loading.service';
+import { OccurService } from '../../../core/service/occur/occur.service';
+import { SessionService } from '../../../core/service/session/session.service';
 
 @Component({
   selector: 'app-pending',
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './pending.component.html',
   styleUrl: './pending.component.scss'
 })
@@ -25,8 +26,8 @@ export class OccurPendingComponent implements OnInit {
   public totalPages: number = 0;
   public pageSize: number = 10;
 
-  // Controle do tipo de pendência ativa
   public activeTab: string = '';
+  public showOnlyAssignedToMe: boolean = true;
 
   constructor(
     private sessionService: SessionService,
@@ -56,13 +57,17 @@ export class OccurPendingComponent implements OnInit {
     }
   }
 
+  onAssignedToMeChange(): void {
+    this.page = 0;
+    this.loadPendencies();
+  }
+
   loadPendencies(): void {
     this.loadingService.show();
 
     let filters: OccurFilters = {};
     const userId = Number(this.sessionService.getItem('userId'));
 
-    // Define os filtros baseado no perfil e tab ativa
     if (this.isOpener) {
       switch (this.activeTab) {
         case 'chatbot':
@@ -96,9 +101,14 @@ export class OccurPendingComponent implements OnInit {
       switch (this.activeTab) {
         case 'awaitingInspection':
           filters = {
-            status: ['AWAITING_REPORT'],
-            inspectorId: userId
+            status: ['AWAITING_REPORT']
           };
+
+          if (this.showOnlyAssignedToMe) {
+            filters.inspectorId = userId;
+          } else {
+            filters.hasInspectorAssigned = false;
+          }
           break;
         case 'awaitingEditApprove':
           filters = {
@@ -131,6 +141,7 @@ export class OccurPendingComponent implements OnInit {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
     this.page = 0;
+    this.showOnlyAssignedToMe = true;
     this.loadPendencies();
   }
 

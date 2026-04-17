@@ -97,11 +97,19 @@ export class LoginService {
       "X-Application-Key": this.sessionService.getItem("clientKey")!,
       "Authorization": this.sessionService.getItem("Authorization")!,
     });
-    return lastValueFrom(this.http.delete(this.authEndpoint.concat("/logout"), { headers })).then(() => {
-      sessionStorage.clear();
-      return this.router.navigateByUrl("/login", { replaceUrl: true });
-    });
-  }
+    
+    return lastValueFrom(this.http.delete(this.authEndpoint.concat("/logout"), { headers }))
+      .finally(() => {
+        sessionStorage.clear();
+      })
+      .then(() => {
+        return this.router.navigateByUrl("/login", { replaceUrl: true });
+      })
+      .catch((error) => {
+        console.error('Erro no logout da API:', error);
+        return this.router.navigateByUrl("/login", { replaceUrl: true });
+      });
+}
 
   refresh(): Observable<LoginResponse> {
     let body = new HttpParams().set(

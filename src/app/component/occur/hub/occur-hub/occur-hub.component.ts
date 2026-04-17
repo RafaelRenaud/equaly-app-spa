@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
-import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -17,6 +17,30 @@ import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
 import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 
+// Definindo o tipo para os filtros de data
+type FormFiltersType = {
+  priority: string;
+  hasInspectorAssigned: string;
+  hasRNCOpened: string;
+  hasComplainantAssigned: string;
+  complaintType: string;
+  complaintChannel: string;
+  closeStatus: string;
+  complaintOrderId: string;
+  startOccurredDate: string;
+  endOccurredDate: string;
+  rateStartDate: string;
+  rateEndDate: string;
+  creationStartDate: string;
+  creationEndDate: string;
+  officializeStartDate: string;
+  officializeEndDate: string;
+  closeStartDate: string;
+  closeEndDate: string;
+  content: string;
+  complainantInformation: string;
+};
+
 @Component({
   selector: 'occur-hub',
   templateUrl: './occur-hub.component.html',
@@ -30,10 +54,11 @@ import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head
     NgbAccordionModule, UserTypeHeadSearchComponent, OccurTypeHeadSearchComponent],
   standalone: true
 })
-export class OccurHubComponent implements OnInit {
+export class OccurHubComponent implements OnInit, AfterViewInit {
 
   @ViewChildren(UserTypeHeadSearchComponent) typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
   @ViewChild(OccurTypeHeadSearchComponent) occurTypeheadComponent!: OccurTypeHeadSearchComponent;
+  @ViewChildren('dateInput') dateInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   isOnlyOpener: boolean = false;
 
@@ -55,49 +80,28 @@ export class OccurHubComponent implements OnInit {
   totalElements: number = 0;
 
   // Filtros do formulário
-  formFilters: {
-    priority: string;
-    hasInspectorAssigned: string;
-    hasRNCOpened: string;
-    hasComplainantAssigned: string;
-    complaintType: string;
-    complaintChannel: string;
-    closeStatus: string;
-    complaintOrderId: string;
-    startOccurredDate: string;
-    endOccurredDate: string;
-    rateStartDate: string;
-    rateEndDate: string;
-    creationStartDate: string;
-    creationEndDate: string;
-    officializeStartDate: string;
-    officializeEndDate: string;
-    closeStartDate: string;
-    closeEndDate: string;
-    content: string;
-    complainantInformation: string;
-  } = {
-      priority: '',
-      hasInspectorAssigned: '',
-      hasRNCOpened: '',
-      hasComplainantAssigned: '',
-      complaintType: '',
-      complaintChannel: '',
-      closeStatus: '',
-      complaintOrderId: '',
-      startOccurredDate: '',
-      endOccurredDate: '',
-      rateStartDate: '',
-      rateEndDate: '',
-      creationStartDate: '',
-      creationEndDate: '',
-      officializeStartDate: '',
-      officializeEndDate: '',
-      closeStartDate: '',
-      closeEndDate: '',
-      content: '',
-      complainantInformation: ''
-    };
+  formFilters: FormFiltersType = {
+    priority: '',
+    hasInspectorAssigned: '',
+    hasRNCOpened: '',
+    hasComplainantAssigned: '',
+    complaintType: '',
+    complaintChannel: '',
+    closeStatus: '',
+    complaintOrderId: '',
+    startOccurredDate: '',
+    endOccurredDate: '',
+    rateStartDate: '',
+    rateEndDate: '',
+    creationStartDate: '',
+    creationEndDate: '',
+    officializeStartDate: '',
+    officializeEndDate: '',
+    closeStartDate: '',
+    closeEndDate: '',
+    content: '',
+    complainantInformation: ''
+  };
 
   selectedStatusMap: { [key: string]: boolean } = {
     DRAFT_OPENED: false,
@@ -109,13 +113,14 @@ export class OccurHubComponent implements OnInit {
     CLOSED: false
   };
 
-  private flatpickrInitialized: boolean = false;
+  private flatpickrInstances: any[] = [];
 
   constructor(
     private occurService: OccurService,
     private loadingService: LoadingService,
     private sessionService: SessionService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -126,133 +131,72 @@ export class OccurHubComponent implements OnInit {
     this.search();
   }
 
-  onDataAccordionShown(): void {
-    if (!this.flatpickrInitialized) {
+  ngAfterViewInit(): void {
+    // Observa mudanças nos inputs de data (quando o accordion é aberto/fechado)
+    this.dateInputs.changes.subscribe(() => {
       this.initDatePickers();
-      this.flatpickrInitialized = true;
-    }
+    });
+  }
+
+  // Método para forçar detecção de mudanças quando os typeheads mudam de estado
+  onTypeheadLoadingChange(): void {
+    this.cdr.detectChanges();
+  }
+
+  onDataAccordionShown(): void {
+    // O initDatePickers será chamado automaticamente pelo subscription do dateInputs.changes
+    // Mas garantimos que os datepickers sejam inicializados se o subscription não disparar
+    setTimeout(() => {
+      this.initDatePickers();
+    }, 0);
   }
 
   private initDatePickers(): void {
-    const startOccurredDate = document.getElementById('startOccurredDate') as HTMLInputElement;
-    if (startOccurredDate) {
-      flatpickr(startOccurredDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.startOccurredDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
+    // Destruir instâncias anteriores
+    this.destroyDatePickers();
 
-    const endOccurredDate = document.getElementById('endOccurredDate') as HTMLInputElement;
-    if (endOccurredDate) {
-      flatpickr(endOccurredDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.endOccurredDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
+    // Mapeamento dos IDs dos inputs para as propriedades do formFilters
+    const dateInputMapping: Record<string, keyof FormFiltersType> = {
+      'startOccurredDate': 'startOccurredDate',
+      'endOccurredDate': 'endOccurredDate',
+      'rateStartDate': 'rateStartDate',
+      'rateEndDate': 'rateEndDate',
+      'creationStartDate': 'creationStartDate',
+      'creationEndDate': 'creationEndDate',
+      'officializeStartDate': 'officializeStartDate',
+      'officializeEndDate': 'officializeEndDate',
+      'closeStartDate': 'closeStartDate',
+      'closeEndDate': 'closeEndDate'
+    };
 
-    const rateStartDate = document.getElementById('rateStartDate') as HTMLInputElement;
-    if (rateStartDate) {
-      flatpickr(rateStartDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.rateStartDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
+    // Inicializar flatpickr para cada input
+    this.dateInputs.forEach(input => {
+      const inputElement = input.nativeElement;
+      const inputId = inputElement.id;
+      const formFilterProperty = dateInputMapping[inputId];
 
-    const rateEndDate = document.getElementById('rateEndDate') as HTMLInputElement;
-    if (rateEndDate) {
-      flatpickr(rateEndDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.rateEndDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
+      if (formFilterProperty) {
+        const instance = flatpickr(inputElement, {
+          locale: Portuguese,
+          dateFormat: 'd/m/Y',
+          allowInput: true,
+          onChange: (dates) => {
+            // Usando tipo assertion para resolver o erro do TypeScript
+            (this.formFilters as any)[formFilterProperty] = dates[0] ? this.formatDateToYMD(dates[0]) : '';
+          }
+        });
+        this.flatpickrInstances.push(instance);
+      }
+    });
+  }
 
-    const creationStartDate = document.getElementById('creationStartDate') as HTMLInputElement;
-    if (creationStartDate) {
-      flatpickr(creationStartDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.creationStartDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
-
-    const creationEndDate = document.getElementById('creationEndDate') as HTMLInputElement;
-    if (creationEndDate) {
-      flatpickr(creationEndDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.creationEndDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
-
-    const officializeStartDate = document.getElementById('officializeStartDate') as HTMLInputElement;
-    if (officializeStartDate) {
-      flatpickr(officializeStartDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.officializeStartDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
-
-    const officializeEndDate = document.getElementById('officializeEndDate') as HTMLInputElement;
-    if (officializeEndDate) {
-      flatpickr(officializeEndDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.officializeEndDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
-
-    const closeStartDate = document.getElementById('closeStartDate') as HTMLInputElement;
-    if (closeStartDate) {
-      flatpickr(closeStartDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.closeStartDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
-
-    const closeEndDate = document.getElementById('closeEndDate') as HTMLInputElement;
-    if (closeEndDate) {
-      flatpickr(closeEndDate, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        onChange: (dates) => {
-          this.formFilters.closeEndDate = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-        }
-      });
-    }
+  private destroyDatePickers(): void {
+    this.flatpickrInstances.forEach(instance => {
+      if (instance && typeof instance.destroy === 'function') {
+        instance.destroy();
+      }
+    });
+    this.flatpickrInstances = [];
   }
 
   private formatDateToYMD(date: Date): string {
@@ -274,6 +218,7 @@ export class OccurHubComponent implements OnInit {
         this.totalPages = response.pageable.totalPages;
         this.totalElements = response.pageable.totalElements;
         this.loadingService.hide();
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.router.navigate([], {
@@ -285,6 +230,7 @@ export class OccurHubComponent implements OnInit {
         this.occurs = [];
         this.totalPages = 0;
         this.loadingService.hide();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -445,20 +391,14 @@ export class OccurHubComponent implements OnInit {
     this.occurTypeheadComponent.clear();
 
     // Limpar os valores dos inputs de data
-    const dateInputIds = [
-      'startOccurredDate', 'endOccurredDate', 'rateStartDate', 'rateEndDate',
-      'creationStartDate', 'creationEndDate', 'officializeStartDate', 'officializeEndDate',
-      'closeStartDate', 'closeEndDate'
-    ];
-
-    dateInputIds.forEach(inputId => {
-      const element = document.getElementById(inputId) as HTMLInputElement;
-      if (element) {
-        element.value = '';
+    this.dateInputs.forEach(input => {
+      if (input && input.nativeElement) {
+        input.nativeElement.value = '';
       }
     });
 
     this.search();
+    this.cdr.detectChanges();
   }
 
   goToPage(page: number): void {
@@ -477,6 +417,7 @@ export class OccurHubComponent implements OnInit {
         this.totalPages = response.pageable.totalPages;
         this.totalElements = response.pageable.totalElements;
         this.loadingService.hide();
+        this.cdr.detectChanges();
       },
       error: (error) => {
         this.router.navigate([], {
@@ -486,6 +427,7 @@ export class OccurHubComponent implements OnInit {
           }
         });
         this.loadingService.hide();
+        this.cdr.detectChanges();
       }
     });
   }
@@ -498,6 +440,7 @@ export class OccurHubComponent implements OnInit {
       this.selectedOpener = null;
       this.selectedOpenerDisplay = '';
     }
+    this.cdr.detectChanges();
   }
 
   onInspectorSelected(inspector: UserResponse | null): void {
@@ -508,6 +451,7 @@ export class OccurHubComponent implements OnInit {
       this.selectedInspector = null;
       this.selectedInspectorDisplay = '';
     }
+    this.cdr.detectChanges();
   }
 
   onComplainantSelected(complainant: UserResponse | null): void {
@@ -518,6 +462,7 @@ export class OccurHubComponent implements OnInit {
       this.selectedComplainant = null;
       this.selectedComplainantDisplay = '';
     }
+    this.cdr.detectChanges();
   }
 
   onOccurTypeSelected(occurType: OccurTypeResponse | null): void {
@@ -528,5 +473,6 @@ export class OccurHubComponent implements OnInit {
       this.selectedOccurType = null;
       this.selectedOccurTypeDisplay = '';
     }
+    this.cdr.detectChanges();
   }
 }

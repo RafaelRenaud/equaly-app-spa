@@ -1,12 +1,12 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
-import { UserResponse } from '../../../../core/model/user/user-response.model';
-import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, OperatorFunction, Subject, switchMap, tap } from 'rxjs';
-import { UserService } from '../../../../core/service/user/user.service';
 import { Router } from '@angular/router';
+import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
+import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, OperatorFunction, Subject, switchMap, tap } from 'rxjs';
+import { UserResponse } from '../../../../core/model/user/user-response.model';
 import { UsersResponse } from '../../../../core/model/user/users-response.model';
 import { LoadingService } from '../../../../core/service/loading/loading.service';
+import { UserService } from '../../../../core/service/user/user.service';
 
 @Component({
   selector: 'app-user-type-head-search',
@@ -20,6 +20,7 @@ export class UserTypeHeadSearchComponent {
   @Input() userRole: string[] = [];
   @Input() placeholder: string = 'Buscar Usuário';
   @Output() outputUserSelected = new EventEmitter<UserResponse | null>();
+  @Output() loadingStateChanged = new EventEmitter<boolean>();
   @ViewChild('typeaheadInput') typeaheadInput!: ElementRef;
 
   selectedUser: UserResponse | null = null;
@@ -56,11 +57,13 @@ export class UserTypeHeadSearchComponent {
       this.searchText = '';
       this.invalidInput = false;
       this.isLoading = true;
+      this.loadingStateChanged.emit(true);
       this.cdr.detectChanges();
 
       this.userService.getUser(value.toString()).subscribe({
         next: (response) => {
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
 
           if (response?.id) {
             const hasRequiredRole = this.userRole.length === 0 ||
@@ -85,6 +88,7 @@ export class UserTypeHeadSearchComponent {
         error: (error) => {
           console.error('Erro ao buscar usuário:', error);
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
           this.resetSearchState(true);
           this.handleError('Erro ao buscar usuário por ID');
           this.cdr.detectChanges();
@@ -97,7 +101,11 @@ export class UserTypeHeadSearchComponent {
     this.searchByIdSubject
       .pipe(
         debounceTime(300),
-        tap(() => this.isLoading = true),
+        tap(() => {
+          this.isLoading = true;
+          this.loadingStateChanged.emit(true);
+          this.cdr.detectChanges();
+        }),
         switchMap((term) => {
           const trimmedTerm = this.safeTrim(term);
           if (this.isNumeric(trimmedTerm)) {
@@ -107,6 +115,8 @@ export class UserTypeHeadSearchComponent {
             );
           }
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
+          this.cdr.detectChanges();
           return of(null);
         })
       )
@@ -123,6 +133,7 @@ export class UserTypeHeadSearchComponent {
 
   private handleSearchByIdResponse(response: UserResponse | null): void {
     this.isLoading = false;
+    this.loadingStateChanged.emit(false);
 
     if (response?.id) {
       const hasRequiredRole = this.userRole.length === 0 ||
@@ -153,32 +164,24 @@ export class UserTypeHeadSearchComponent {
     this.cdr.detectChanges();
   }
 
-  onInputChange(event: Event): void {
-    const inputValue = (event.target as HTMLInputElement)?.value ?? '';
-
-    if (this.selectedUser || this.invalidInput) {
-      this.resetSearchState();
-    }
-
-    this.searchText = inputValue;
-
-    if (!inputValue || inputValue.trim() === '') {
-      this.resetSearchState();
-    }
-  }
-
   searchUsers: OperatorFunction<string, readonly UserResponse[]> = (
     text$: Observable<string>
   ) =>
     text$.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      tap(() => this.isLoading = true),
+      tap(() => {
+        this.isLoading = true;
+        this.loadingStateChanged.emit(true);
+        this.cdr.detectChanges();
+      }),
       switchMap((term) => {
         const trimmedTerm = this.safeTrim(term);
 
         if (this.isNumeric(trimmedTerm) || trimmedTerm.length < this.MIN_SEARCH_LENGTH) {
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
+          this.cdr.detectChanges();
           return of([]);
         }
 
@@ -194,10 +197,16 @@ export class UserTypeHeadSearchComponent {
           5
         ).pipe(
           map((response: UsersResponse) => response.users || []),
-          tap(() => this.isLoading = false),
+          tap(() => {
+            this.isLoading = false;
+            this.loadingStateChanged.emit(false);
+            this.cdr.detectChanges();
+          }),
           catchError((error) => {
             this.handleError('Erro ao buscar usuários');
             this.isLoading = false;
+            this.loadingStateChanged.emit(false);
+            this.cdr.detectChanges();
             return of([]);
           })
         );
@@ -216,7 +225,7 @@ export class UserTypeHeadSearchComponent {
   }
 
   onInputBlur(): void {
-    const term = this.searchText.trim();
+    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
 
     if (!this.selectedUser && term) {
       if (this.isNumeric(term)) {
@@ -232,7 +241,7 @@ export class UserTypeHeadSearchComponent {
   }
 
   onEnterPressed(): void {
-    const term = this.searchText.trim();
+    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
     if (!term) return;
 
     if (this.isNumeric(term)) {
@@ -243,6 +252,20 @@ export class UserTypeHeadSearchComponent {
     } else if (term.length < this.MIN_SEARCH_LENGTH) {
       this.invalidInput = true;
       this.cdr.detectChanges();
+    }
+  }
+
+  onInputChange(event: Event): void {
+    const inputValue = (event.target as HTMLInputElement)?.value ?? '';
+
+    if (this.selectedUser || this.invalidInput) {
+      this.resetSearchState();
+    }
+
+    this.searchText = inputValue;
+
+    if (!inputValue || inputValue.trim() === '') {
+      this.resetSearchState();
     }
   }
 
@@ -355,6 +378,7 @@ export class UserTypeHeadSearchComponent {
     this.searchText = '';
     this.invalidInput = false;
     this.isLoading = false;
+    this.loadingStateChanged.emit(false);
     this.outputUserSelected.emit(null);
     this.cdr.detectChanges();
   }

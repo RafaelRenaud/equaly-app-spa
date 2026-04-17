@@ -56,7 +56,7 @@
 
         <!-- Filtros - Linha 2 -->
         <div class="row mb-3">
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="form-floating">
                     <select class="form-select" [(ngModel)]="formFilters.complaintType" title="Tipo de Reclamação">
                         <option value="">Todos</option>
@@ -66,18 +66,18 @@
                     <label>Tipo de Reclamação</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="form-floating">
                     <select class="form-select" [(ngModel)]="formFilters.complaintChannel" title="Canal de Origem">
                         <option value="">Todos</option>
-                        <option value="EQUALY">eQualy</option>
+                        <option value="EQUALY">Sistema Interno</option>
                         <option value="DALTON">Dalton</option>
                         <option value="WHATSAPP">WhatsApp</option>
                     </select>
                     <label>Canal de Origem</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="form-floating">
                     <select class="form-select" [(ngModel)]="formFilters.closeStatus" title="Tipo de Fechamento">
                         <option value="">Todos</option>
@@ -87,7 +87,7 @@
                     <label>Tipo de Fechamento</label>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md">
                 <div class="form-floating">
                     <input type="text" class="form-control" [(ngModel)]="formFilters.complaintOrderId"
                         placeholder="ID do Pedido" id="complaintOrderId" />
@@ -99,20 +99,20 @@
         <div class="row">
             <div class="col-md">
                 <app-occur-type-head-search [placeholder]='"Tipo de Ocorrência"'
-                    (occurTypeSelected)="onOccurTypeSelected($event)" />
+                    (occurTypeSelected)="onOccurTypeSelected($event)" (loadingStateChanged)="onTypeheadLoadingChange()"/>
             </div>
         </div>
 
         <!-- Filtros - Linha 3: Informações do Reclamante -->
         <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md">
                 <div class="form-floating">
                     <input type="text" class="form-control" [(ngModel)]="formFilters.complainantInformation"
                         id="complainantInformation" placeholder="Nome, Email ou Telefone" />
                     <label for="complainantInformation">Informações do Reclamante</label>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md">
                 <div class="form-floating">
                     <input type="text" class="form-control" [(ngModel)]="formFilters.content" id="content"
                         placeholder="Título/Descrição/Complemento" />
@@ -138,7 +138,7 @@
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
                                                 [placeholder]="'Responsável pela Ocorrência'"
-                                                [modalId]="'openerSearchModal'"
+                                                [modalId]="'openerSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onOpenerSelected($event)" />
                                         </div>
                                     </div>
@@ -147,14 +147,14 @@
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
                                                 [placeholder]="'Responsável Inspeção de Qualidade'"
-                                                [modalId]="'inspectorSearchModal'"
+                                                [modalId]="'inspectorSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onInspectorSelected($event)" />
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md">
                                             <app-user-type-head-search [placeholder]="'Reclamante Interno'"
-                                                [modalId]="'internalComplainantSearchModal'"
+                                                [modalId]="'internalComplainantSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onComplainantSelected($event)" />
                                         </div>
                                     </div>
@@ -181,28 +181,28 @@
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startOccurredDate"
+                                                <input type="text" class="form-control" id="startOccurredDate" #dateInput
                                                     placeholder="Data Início Ocorrido" />
                                                 <label for="startOccurredDate">Início Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endOccurredDate"
+                                                <input type="text" class="form-control" id="endOccurredDate" #dateInput
                                                     placeholder="Data Fim Ocorrido" />
                                                 <label for="endOccurredDate">Fim Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rateStartDate"
+                                                <input type="text" class="form-control" id="rateStartDate" #dateInput
                                                     placeholder="Data Início Feedback" />
                                                 <label for="rateStartDate">Início Feedback</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="rateEndDate"
+                                            <div class="form-floating"> 
+                                                <input type="text" class="form-control" id="rateEndDate" #dateInput
                                                     placeholder="Data Fim Feedback" />
                                                 <label for="rateEndDate">Fim Feedback</label>
                                             </div>
@@ -211,28 +211,28 @@
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="creationStartDate"
+                                                <input type="text" class="form-control" id="creationStartDate" #dateInput
                                                     placeholder="Data Início Criação" />
                                                 <label for="creationStartDate">Início Criação</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="creationEndDate"
+                                                <input type="text" class="form-control" id="creationEndDate" #dateInput
                                                     placeholder="Data Fim Criação" />
                                                 <label for="creationEndDate">Fim Criação</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeStartDate"
+                                                <input type="text" class="form-control" id="officializeStartDate" #dateInput
                                                     placeholder="Data Início Envio Análise" />
                                                 <label for="officializeStartDate">Início Envio Análise</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeEndDate"
+                                                <input type="text" class="form-control" id="officializeEndDate" #dateInput
                                                     placeholder="Data Fim Envio Análise" />
                                                 <label for="officializeEndDate">Fim Envio Análise</label>
                                             </div>
@@ -241,14 +241,14 @@
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="closeStartDate"
+                                                <input type="text" class="form-control" id="closeStartDate" #dateInput
                                                     placeholder="Data Início Encerramento" />
                                                 <label for="closeStartDate">Início Encerramento</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="closeEndDate"
+                                                <input type="text" class="form-control" id="closeEndDate" #dateInput
                                                     placeholder="Data Fim Encerramento" />
                                                 <label for="closeEndDate">Fim Encerramento</label>
                                             </div>

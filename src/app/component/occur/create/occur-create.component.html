@@ -14,7 +14,7 @@
                             <!-- Tipo de Ocorrência -->
                             <div [class.is-invalid]="isFieldInvalid('occurrenceType')">
                                 <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
-                                    [placeholder]='"Tipo de Ocorrência"'
+                                    [placeholder]='"Tipo de Ocorrência"' (loadingStateChanged)="onTypeheadLoadingChange()"
                                     [formTouched]="occurrenceForm.get('occurrenceType')?.touched || false" />
                             </div>
 
@@ -46,7 +46,7 @@
                             <!-- Responsável Inspeção de Qualidade -->
                             <div [class.is-invalid]="isFieldInvalid('qualityInspector')">
                                 <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
-                                    [placeholder]='"Responsável Inspeção de Qualidade"'
+                                    [placeholder]='"Responsável Inspeção de Qualidade"' (loadingStateChanged)="onTypeheadLoadingChange()"
                                     [modalId]="'inspectorSearchModal'"
                                     (outputUserSelected)="onInspectorSelected($event)" />
                             </div>
@@ -326,7 +326,7 @@
                             @if (showInternalId) {
                             <div [class.is-invalid]="isFieldInvalid('internalComplainer')">
                                 <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
-                                    [modalId]="'complainantSearchModal'"
+                                    [modalId]="'complainantSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
                                     (outputUserSelected)="onInternalComplinantSelect($event)" />
                             </div>
                             }

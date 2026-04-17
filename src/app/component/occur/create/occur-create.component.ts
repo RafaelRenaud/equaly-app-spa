@@ -896,4 +896,8 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
       this.occurrenceForm.patchValue({ internalComplainer: '', complainerId: '', complainerName: '', complainerEmail: '' });
     }
   }
+
+  onTypeheadLoadingChange(): void {
+    this.cdr.markForCheck();
+  }
 }

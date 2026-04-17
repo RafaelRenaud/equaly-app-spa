@@ -310,4 +310,13 @@ export class OccurTypeHeadSearchComponent {
   getModalPagesArray(): number[] {
     return Array(this.modalTotalPages).fill(0).map((_, i) => i);
   }
+
+  clear(): void {
+    this.selectedOccurType = null;
+    this.searchText = '';
+    this.invalidInput = false;
+    this.isLoading = false;
+    this.occurTypeSelected.emit(null);
+    this.cdr.detectChanges();
+  }
 }

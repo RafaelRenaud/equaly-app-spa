@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
-import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -8,12 +8,14 @@ import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { OccurFilters } from '../../../../core/model/occur/occur-filters.model';
 import { Occur } from '../../../../core/model/occur/occur.model';
 import { OccursResponse } from '../../../../core/model/occur/occurs-response.model';
+import { OccurTypeResponse } from '../../../../core/model/occurType/occur-type-response.model';
+import { UserResponse } from '../../../../core/model/user/user-response.model';
 import { LoadingService } from '../../../../core/service/loading/loading.service';
 import { OccurService } from '../../../../core/service/occur/occur.service';
-import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
-import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 import { SessionService } from '../../../../core/service/session/session.service';
-import { UserResponse } from '../../../../core/model/user/user-response.model';
+import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
+import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
+import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 
 @Component({
   selector: 'occur-hub',
@@ -25,12 +27,13 @@ import { UserResponse } from '../../../../core/model/user/user-response.model';
     DatePipe,
     RouterModule,
     OccurStatusPipe,
-    NgbAccordionModule, UserTypeHeadSearchComponent],
+    NgbAccordionModule, UserTypeHeadSearchComponent, OccurTypeHeadSearchComponent],
   standalone: true
 })
 export class OccurHubComponent implements OnInit {
 
   @ViewChildren(UserTypeHeadSearchComponent) typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
+  @ViewChild(OccurTypeHeadSearchComponent) occurTypeheadComponent!: OccurTypeHeadSearchComponent;
 
   isOnlyOpener: boolean = false;
 
@@ -38,10 +41,12 @@ export class OccurHubComponent implements OnInit {
   selectedOpener: UserResponse | null = null;
   selectedInspector: UserResponse | null = null;
   selectedComplainant: UserResponse | null = null;
+  selectedOccurType: OccurTypeResponse | null = null;
 
   selectedOpenerDisplay: string = '';
   selectedInspectorDisplay: string = '';
   selectedComplainantDisplay: string = '';
+  selectedOccurTypeDisplay: string = '';
 
   // Paginação
   currentPage: number = 0;
@@ -299,6 +304,10 @@ export class OccurHubComponent implements OnInit {
       filtersToSend.complainantId = this.selectedComplainant.id;
     }
 
+    if (this.selectedOccurType) {
+      filtersToSend.occurTypeId = this.selectedOccurType.id;
+    }
+
     if (this.formFilters.priority) {
       filtersToSend.priority = this.formFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
     }
@@ -424,12 +433,16 @@ export class OccurHubComponent implements OnInit {
     this.selectedOpener = null;
     this.selectedInspector = null;
     this.selectedComplainant = null;
+    this.selectedOccurType = null;
+
     this.selectedOpenerDisplay = '';
     this.selectedInspectorDisplay = '';
     this.selectedComplainantDisplay = '';
+    this.selectedOccurTypeDisplay = '';
 
     // Limpar os inputs dos typeheads
     this.typeheadComponents.forEach(typehead => typehead.clear());
+    this.occurTypeheadComponent.clear();
 
     // Limpar os valores dos inputs de data
     const dateInputIds = [
@@ -504,6 +517,16 @@ export class OccurHubComponent implements OnInit {
     } else {
       this.selectedComplainant = null;
       this.selectedComplainantDisplay = '';
+    }
+  }
+
+  onOccurTypeSelected(occurType: OccurTypeResponse | null): void {
+    if (occurType) {
+      this.selectedOccurType = occurType;
+      this.selectedOccurTypeDisplay = `${occurType.id} - ${occurType.name}`;
+    } else {
+      this.selectedOccurType = null;
+      this.selectedOccurTypeDisplay = '';
     }
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -11,6 +11,9 @@ import { OccursResponse } from '../../../../core/model/occur/occurs-response.mod
 import { LoadingService } from '../../../../core/service/loading/loading.service';
 import { OccurService } from '../../../../core/service/occur/occur.service';
 import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
+import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
+import { SessionService } from '../../../../core/service/session/session.service';
+import { UserResponse } from '../../../../core/model/user/user-response.model';
 
 @Component({
   selector: 'occur-hub',
@@ -22,12 +25,21 @@ import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
     DatePipe,
     RouterModule,
     OccurStatusPipe,
-    NgbAccordionModule],
+    NgbAccordionModule, UserTypeHeadSearchComponent],
   standalone: true
 })
-export class OccurHubComponent implements OnInit, AfterViewInit {
+export class OccurHubComponent implements OnInit {
+
+  isOnlyOpener: boolean = false;
 
   occurs: Occur[] = [];
+  selectedOpener: UserResponse | null = null;
+  selectedInspector: UserResponse | null = null;
+  selectedComplainant: UserResponse | null = null;
+
+  selectedOpenerDisplay: string = '';
+  selectedInspectorDisplay: string = '';
+  selectedComplainantDisplay: string = '';
 
   // Paginação
   currentPage: number = 0;
@@ -95,15 +107,17 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   constructor(
     private occurService: OccurService,
     private loadingService: LoadingService,
+    private sessionService: SessionService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    this.search();
-  }
 
-  ngAfterViewInit(): void {
-    // Não inicializa flatpickr aqui, espera o accordion ser aberto
+    if (this.sessionService.hasRole('COMMON_EVENT_OPENER') && this.sessionService.getRoles().length === 1) {
+      this.isOnlyOpener = true;
+    }
+
+    this.search();
   }
 
   onDataAccordionShown(): void {
@@ -272,6 +286,18 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   private prepareFilters(): OccurFilters {
     const filtersToSend: OccurFilters = {};
 
+    if (this.selectedOpener) {
+      filtersToSend.openerId = this.selectedOpener.id;
+    }
+
+    if (this.selectedInspector) {
+      filtersToSend.inspectorId = this.selectedInspector.id;
+    }
+
+    if (this.selectedComplainant) {
+      filtersToSend.complainantId = this.selectedComplainant.id;
+    }
+
     if (this.formFilters.priority) {
       filtersToSend.priority = this.formFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
     }
@@ -394,6 +420,16 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       this.selectedStatusMap[key] = false;
     });
 
+    // Limpar usuários selecionados
+    this.selectedOpener = null;
+    this.selectedInspector = null;
+    this.selectedComplainant = null;
+
+    // Limpar os displays (isso fará o input do componente ser limpo via [initialValue])
+    this.selectedOpenerDisplay = '';
+    this.selectedInspectorDisplay = '';
+    this.selectedComplainantDisplay = '';
+
     // Limpar os valores dos inputs de data
     const dateInputIds = [
       'startOccurredDate', 'endOccurredDate', 'rateStartDate', 'rateEndDate',
@@ -438,5 +474,35 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
       }
     });
+  }
+
+  onOpenerSelected(opener: UserResponse | null): void {
+    if (opener) {
+      this.selectedOpener = opener;
+      this.selectedOpenerDisplay = `${opener.id} - ${opener.username}`;
+    } else {
+      this.selectedOpener = null;
+      this.selectedOpenerDisplay = '';
+    }
+  }
+
+  onInspectorSelected(inspector: UserResponse | null): void {
+    if (inspector) {
+      this.selectedInspector = inspector;
+      this.selectedInspectorDisplay = `${inspector.id} - ${inspector.username}`;
+    } else {
+      this.selectedInspector = null;
+      this.selectedInspectorDisplay = '';
+    }
+  }
+
+  onComplainantSelected(complainant: UserResponse | null): void {
+    if (complainant) {
+      this.selectedComplainant = complainant;
+      this.selectedComplainantDisplay = `${complainant.id} - ${complainant.username}`;
+    } else {
+      this.selectedComplainant = null;
+      this.selectedComplainantDisplay = '';
+    }
   }
 }

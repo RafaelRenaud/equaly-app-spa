@@ -111,9 +111,54 @@
             </div>
         </div>
 
-        <!-- Accordion de Filtros de Data -->
-        <div ngbAccordion>
+         <div class="row">
+            <div class="col-md">
+<div ngbAccordion>
             <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                <h2 ngbAccordionHeader>
+                    <button ngbAccordionButton class="accordion-button">
+                        Filtros por Pessoa
+                    </button>
+                </h2>
+                <div ngbAccordionCollapse>
+                    <div ngbAccordionBody>
+                        <ng-template>
+                            @if(!isOnlyOpener){
+                            <div class="row">
+                                <div class="col-md">
+                                    <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
+                                        [placeholder]='"Responsável pela Ocorrência"' [modalId]="'openerSearchModal'"
+                                        (outputUserSelected)="onOpenerSelected($event)" />
+                                </div>
+                            </div>
+                            }
+                            <div class="row">
+                                <div class="col-md">
+                                    <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                                        [placeholder]='"Responsável Inspeção de Qualidade"'
+                                        [modalId]="'inspectorSearchModal'"
+                                        (outputUserSelected)="onInspectorSelected($event)" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md">
+                                    <app-user-type-head-search [placeholder]='"Reclamante Interno"'
+                                        [modalId]="'internalComplainantSearchModal'"
+                                        (outputUserSelected)="onComplainantSelected($event)" />
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+         </div>
+
+         <div class="row">
+            <div class="col-md">
+                <div ngbAccordion>
+            <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
                 <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="accordion-button">
                         Filtros por Data
@@ -203,9 +248,12 @@
                 </div>
             </div>
         </div>
+            </div>
+         </div>
 
-        <!-- Accordion de Status -->
-        <div ngbAccordion class="mt-3">
+         <div class="row">
+            <div class="col-md">
+                <div ngbAccordion class="mt-3">
             <div ngbAccordionItem [collapsed]="true">
                 <h2 ngbAccordionHeader>
                     <button ngbAccordionButton class="accordion-button">
@@ -295,6 +343,8 @@
                 </div>
             </div>
         </div>
+            </div>
+         </div>     
 
         <!-- Botões de Ação -->
         <div class="row mt-4">

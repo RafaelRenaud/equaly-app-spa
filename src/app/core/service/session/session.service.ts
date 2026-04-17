@@ -1,5 +1,5 @@
-import { Injectable, Inject, PLATFORM_ID } from "@angular/core";
 import { isPlatformBrowser } from "@angular/common";
+import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { JWT } from "../../model/jwt/jwt.model";
 import { JwtService } from "../jwt/jwt.service";
 
@@ -79,5 +79,11 @@ export class SessionService {
     } else {
       return false;
     }
+  }
+
+  getRoles(): string[] {
+    const rawRoles = this.safeGetItem("userRoles");
+    const roles = rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];
+    return roles;
   }
 }

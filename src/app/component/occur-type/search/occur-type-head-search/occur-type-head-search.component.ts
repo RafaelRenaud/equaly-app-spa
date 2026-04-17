@@ -21,6 +21,7 @@ export class OccurTypeHeadSearchComponent {
   @Input() placeholder: string = 'Tipo de Ocorrência';
   @Input() formTouched: boolean = false;
   @Output() occurTypeSelected = new EventEmitter<OccurTypeResponse | null>();
+  @Output() loadingStateChanged = new EventEmitter<boolean>();
   @ViewChild('typeaheadInput') typeaheadInput!: ElementRef;
 
   selectedOccurType: OccurTypeResponse | null = null;
@@ -58,11 +59,13 @@ export class OccurTypeHeadSearchComponent {
       this.searchText = '';
       this.invalidInput = false;
       this.isLoading = true;
+      this.loadingStateChanged.emit(true);
       this.cdr.detectChanges();
 
       this.occurTypeService.getOccurType(value).subscribe({
         next: (response) => {
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
           if (response?.id) {
             this.selectedOccurType = response;
             this.searchText = this.formatOccurType(response);
@@ -76,6 +79,7 @@ export class OccurTypeHeadSearchComponent {
         error: (error) => {
           console.error('Erro ao buscar tipo de ocorrência:', error);
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
           this.resetSearchState(true);
           this.handleError('Erro ao buscar tipo de ocorrência por ID');
           this.cdr.detectChanges();
@@ -88,7 +92,11 @@ export class OccurTypeHeadSearchComponent {
     this.searchByIdSubject
       .pipe(
         debounceTime(300),
-        tap(() => this.isLoading = true),
+        tap(() => {
+          this.isLoading = true;
+          this.loadingStateChanged.emit(true);
+          this.cdr.detectChanges();
+        }),
         switchMap((term) => {
           const trimmedTerm = this.safeTrim(term);
           if (this.isNumeric(trimmedTerm)) {
@@ -98,6 +106,8 @@ export class OccurTypeHeadSearchComponent {
             );
           }
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
+          this.cdr.detectChanges();
           return of(null);
         })
       )
@@ -114,6 +124,7 @@ export class OccurTypeHeadSearchComponent {
 
   private handleSearchByIdResponse(response: OccurTypeResponse | null): void {
     this.isLoading = false;
+    this.loadingStateChanged.emit(false);
     if (response?.id) {
       this.selectedOccurType = response;
       this.searchText = this.formatOccurType(response);
@@ -133,46 +144,23 @@ export class OccurTypeHeadSearchComponent {
     this.cdr.detectChanges();
   }
 
-  onInputChange(event: Event): void {
-    const inputValue = (event.target as HTMLInputElement)?.value ?? '';
-
-    if (this.selectedOccurType || this.invalidInput) {
-      this.resetSearchState();
-    }
-
-    this.searchText = inputValue;
-
-    if (!inputValue || inputValue.trim() === '') {
-      this.resetSearchState();
-    }
-  }
-
-  onEnterPressed(): void {
-    const term = this.searchText.trim();
-    if (!term) return;
-
-    if (this.isNumeric(term)) {
-      this.searchByIdSubject.next(term);
-    } else if (term.length >= this.MIN_SEARCH_LENGTH && !this.selectedOccurType) {
-      this.invalidInput = true;
-      this.cdr.detectChanges();
-    } else if (term.length < this.MIN_SEARCH_LENGTH) {
-      this.invalidInput = true;
-      this.cdr.detectChanges();
-    }
-  }
-
   searchOccurTypes: OperatorFunction<string, readonly OccurTypeResponse[]> = (
     text$: Observable<string>
   ) =>
     text$.pipe(
       debounceTime(300),
-      tap(() => this.isLoading = true),
+      tap(() => {
+        this.isLoading = true;
+        this.loadingStateChanged.emit(true);
+        this.cdr.detectChanges();
+      }),
       switchMap((term) => {
         const trimmedTerm = this.safeTrim(term);
 
         if (this.isNumeric(trimmedTerm) || trimmedTerm.length < this.MIN_SEARCH_LENGTH) {
           this.isLoading = false;
+          this.loadingStateChanged.emit(false);
+          this.cdr.detectChanges();
           return of([]);
         }
 
@@ -185,7 +173,11 @@ export class OccurTypeHeadSearchComponent {
           5
         ).pipe(
           map((response: OccurTypesResponse) => response.occurTypes || []),
-          tap(() => this.isLoading = false),
+          tap(() => {
+            this.isLoading = false;
+            this.loadingStateChanged.emit(false);
+            this.cdr.detectChanges();
+          }),
           map((types) => types)
         );
       })
@@ -203,7 +195,7 @@ export class OccurTypeHeadSearchComponent {
   }
 
   onInputBlur(): void {
-    const term = this.searchText.trim();
+    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
 
     if (!this.selectedOccurType && term) {
       if (this.isNumeric(term)) {
@@ -215,6 +207,35 @@ export class OccurTypeHeadSearchComponent {
     } else if (!term) {
       this.invalidInput = false;
       this.cdr.detectChanges();
+    }
+  }
+
+  onEnterPressed(): void {
+    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
+    if (!term) return;
+
+    if (this.isNumeric(term)) {
+      this.searchByIdSubject.next(term);
+    } else if (term.length >= this.MIN_SEARCH_LENGTH && !this.selectedOccurType) {
+      this.invalidInput = true;
+      this.cdr.detectChanges();
+    } else if (term.length < this.MIN_SEARCH_LENGTH) {
+      this.invalidInput = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  onInputChange(event: Event): void {
+    const inputValue = (event.target as HTMLInputElement)?.value ?? '';
+
+    if (this.selectedOccurType || this.invalidInput) {
+      this.resetSearchState();
+    }
+
+    this.searchText = inputValue;
+
+    if (!inputValue || inputValue.trim() === '') {
+      this.resetSearchState();
     }
   }
 
@@ -309,5 +330,15 @@ export class OccurTypeHeadSearchComponent {
 
   getModalPagesArray(): number[] {
     return Array(this.modalTotalPages).fill(0).map((_, i) => i);
+  }
+
+  clear(): void {
+    this.selectedOccurType = null;
+    this.searchText = '';
+    this.invalidInput = false;
+    this.isLoading = false;
+    this.loadingStateChanged.emit(false);
+    this.occurTypeSelected.emit(null);
+    this.cdr.detectChanges();
   }
 }

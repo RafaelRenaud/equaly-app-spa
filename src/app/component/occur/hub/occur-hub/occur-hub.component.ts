@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChildren, QueryList } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -29,6 +29,8 @@ import { UserResponse } from '../../../../core/model/user/user-response.model';
   standalone: true
 })
 export class OccurHubComponent implements OnInit {
+
+  @ViewChildren(UserTypeHeadSearchComponent) typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
 
   isOnlyOpener: boolean = false;
 
@@ -112,7 +114,6 @@ export class OccurHubComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
     if (this.sessionService.hasRole('COMMON_EVENT_OPENER') && this.sessionService.getRoles().length === 1) {
       this.isOnlyOpener = true;
     }
@@ -420,15 +421,15 @@ export class OccurHubComponent implements OnInit {
       this.selectedStatusMap[key] = false;
     });
 
-    // Limpar usuários selecionados
     this.selectedOpener = null;
     this.selectedInspector = null;
     this.selectedComplainant = null;
-
-    // Limpar os displays (isso fará o input do componente ser limpo via [initialValue])
     this.selectedOpenerDisplay = '';
     this.selectedInspectorDisplay = '';
     this.selectedComplainantDisplay = '';
+
+    // Limpar os inputs dos typeheads
+    this.typeheadComponents.forEach(typehead => typehead.clear());
 
     // Limpar os valores dos inputs de data
     const dateInputIds = [

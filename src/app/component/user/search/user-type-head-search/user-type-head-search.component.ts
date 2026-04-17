@@ -349,4 +349,13 @@ export class UserTypeHeadSearchComponent {
   getModalPagesArray(): number[] {
     return Array(this.modalTotalPages).fill(0).map((_, i) => i);
   }
+
+  clear(): void {
+    this.selectedUser = null;
+    this.searchText = '';
+    this.invalidInput = false;
+    this.isLoading = false;
+    this.outputUserSelected.emit(null);
+    this.cdr.detectChanges();
+  }
 }

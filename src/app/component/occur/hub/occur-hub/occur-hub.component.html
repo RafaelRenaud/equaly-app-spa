@@ -111,240 +111,242 @@
             </div>
         </div>
 
-         <div class="row">
-            <div class="col-md">
-<div ngbAccordion>
-            <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
-                <h2 ngbAccordionHeader>
-                    <button ngbAccordionButton class="accordion-button">
-                        Filtros por Pessoa
-                    </button>
-                </h2>
-                <div ngbAccordionCollapse>
-                    <div ngbAccordionBody>
-                        <ng-template>
-                            @if(!isOnlyOpener){
-                            <div class="row">
-                                <div class="col-md">
-                                    <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
-                                        [placeholder]='"Responsável pela Ocorrência"' [modalId]="'openerSearchModal'"
-                                        (outputUserSelected)="onOpenerSelected($event)" />
-                                </div>
-                            </div>
-                            }
-                            <div class="row">
-                                <div class="col-md">
-                                    <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
-                                        [placeholder]='"Responsável Inspeção de Qualidade"'
-                                        [modalId]="'inspectorSearchModal'"
-                                        (outputUserSelected)="onInspectorSelected($event)" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md">
-                                    <app-user-type-head-search [placeholder]='"Reclamante Interno"'
-                                        [modalId]="'internalComplainantSearchModal'"
-                                        (outputUserSelected)="onComplainantSelected($event)" />
-                                </div>
-                            </div>
-                        </ng-template>
-                    </div>
-                </div>
-            </div>
-        </div>
-            </div>
-         </div>
-
-         <div class="row">
+        <div class="row">
             <div class="col-md">
                 <div ngbAccordion>
-            <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
-                <h2 ngbAccordionHeader>
-                    <button ngbAccordionButton class="accordion-button">
-                        Filtros por Data
-                    </button>
-                </h2>
-                <div ngbAccordionCollapse>
-                    <div ngbAccordionBody>
-                        <ng-template>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="startOccurredDate"
-                                            placeholder="Data Início Ocorrido" />
-                                        <label for="startOccurredDate">Data Início Ocorrido</label>
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Pessoa
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    @if(!isOnlyOpener){
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
+                                                [placeholder]="'Responsável pela Ocorrência'"
+                                                [modalId]="'openerSearchModal'"
+                                                (outputUserSelected)="onOpenerSelected($event)" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="endOccurredDate"
-                                            placeholder="Data Fim Ocorrido" />
-                                        <label for="endOccurredDate">Data Fim Ocorrido</label>
+                                    }
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                                                [placeholder]="'Responsável Inspeção de Qualidade'"
+                                                [modalId]="'inspectorSearchModal'"
+                                                (outputUserSelected)="onInspectorSelected($event)" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="rateStartDate"
-                                            placeholder="Data Início Feedback" />
-                                        <label for="rateStartDate">Data Início Feedback</label>
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [placeholder]="'Reclamante Interno'"
+                                                [modalId]="'internalComplainantSearchModal'"
+                                                (outputUserSelected)="onComplainantSelected($event)" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="rateEndDate"
-                                            placeholder="Data Fim Feedback" />
-                                        <label for="rateEndDate">Data Fim Feedback</label>
-                                    </div>
-                                </div>
+                                </ng-template>
                             </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="creationStartDate"
-                                            placeholder="Data Início Criação" />
-                                        <label for="creationStartDate">Data Início Criação</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="creationEndDate"
-                                            placeholder="Data Fim Criação" />
-                                        <label for="creationEndDate">Data Fim Criação</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="officializeStartDate"
-                                            placeholder="Data Início Envio Análise" />
-                                        <label for="officializeStartDate">Data Início Envio Análise</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="officializeEndDate"
-                                            placeholder="Data Fim Envio Análise" />
-                                        <label for="officializeEndDate">Data Fim Envio Análise</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="closeStartDate"
-                                            placeholder="Data Início Encerramento" />
-                                        <label for="closeStartDate">Data Início Encerramento</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control" id="closeEndDate"
-                                            placeholder="Data Fim Encerramento" />
-                                        <label for="closeEndDate">Data Fim Encerramento</label>
-                                    </div>
-                                </div>
-                            </div>
-                        </ng-template>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-            </div>
-         </div>
 
-         <div class="row">
+        <div class="row">
+            <div class="col-md">
+                <div ngbAccordion>
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Data
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startOccurredDate"
+                                                    placeholder="Data Início Ocorrido" />
+                                                <label for="startOccurredDate">Início Ocorrido</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endOccurredDate"
+                                                    placeholder="Data Fim Ocorrido" />
+                                                <label for="endOccurredDate">Fim Ocorrido</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rateStartDate"
+                                                    placeholder="Data Início Feedback" />
+                                                <label for="rateStartDate">Início Feedback</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rateEndDate"
+                                                    placeholder="Data Fim Feedback" />
+                                                <label for="rateEndDate">Fim Feedback</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="creationStartDate"
+                                                    placeholder="Data Início Criação" />
+                                                <label for="creationStartDate">Início Criação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="creationEndDate"
+                                                    placeholder="Data Fim Criação" />
+                                                <label for="creationEndDate">Fim Criação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="officializeStartDate"
+                                                    placeholder="Data Início Envio Análise" />
+                                                <label for="officializeStartDate">Início Envio Análise</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="officializeEndDate"
+                                                    placeholder="Data Fim Envio Análise" />
+                                                <label for="officializeEndDate">Fim Envio Análise</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="closeStartDate"
+                                                    placeholder="Data Início Encerramento" />
+                                                <label for="closeStartDate">Início Encerramento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="closeEndDate"
+                                                    placeholder="Data Fim Encerramento" />
+                                                <label for="closeEndDate">Fim Encerramento</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-md">
                 <div ngbAccordion class="mt-3">
-            <div ngbAccordionItem [collapsed]="true">
-                <h2 ngbAccordionHeader>
-                    <button ngbAccordionButton class="accordion-button">
-                        Filtros por Status
-                    </button>
-                </h2>
-                <div ngbAccordionCollapse>
-                    <div ngbAccordionBody>
-                        <ng-template>
-                            <div class="row">
-                                <div class="col-md-12">
+                    <div ngbAccordionItem [collapsed]="true">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Status
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
                                     <div class="row">
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['DRAFT_OPENED']"
-                                                    id="statusDRAFT_OPENED">
-                                                <label class="form-check-label" for="statusDRAFT_OPENED">
-                                                    Em Rascunho
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['PENDING_EDIT_APPROVAL']"
-                                                    id="statusPENDING_EDIT_APPROVAL">
-                                                <label class="form-check-label" for="statusPENDING_EDIT_APPROVAL">
-                                                    Aguardando Aprovação de Edição
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['AWAITING_EDIT']"
-                                                    id="statusAWAITING_EDIT">
-                                                <label class="form-check-label" for="statusAWAITING_EDIT">
-                                                    Aguardando Edição
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['AWAITING_REPORT']"
-                                                    id="statusAWAITING_REPORT">
-                                                <label class="form-check-label" for="statusAWAITING_REPORT">
-                                                    Aguardando Inspeção de Qualidade
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['AWAITING_CLOSE']"
-                                                    id="statusAWAITING_CLOSE">
-                                                <label class="form-check-label" for="statusAWAITING_CLOSE">
-                                                    Aguardando Encerramento
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['AWAITING_RATING']"
-                                                    id="statusAWAITING_RATING">
-                                                <label class="form-check-label" for="statusAWAITING_RATING">
-                                                    Aguardando Feedback do Reclamante
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox"
-                                                    [(ngModel)]="selectedStatusMap['CLOSED']" id="statusCLOSED">
-                                                <label class="form-check-label" for="statusCLOSED">
-                                                    Encerrado
-                                                </label>
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['DRAFT_OPENED']"
+                                                            id="statusDRAFT_OPENED">
+                                                        <label class="form-check-label" for="statusDRAFT_OPENED">
+                                                            Em Rascunho
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['PENDING_EDIT_APPROVAL']"
+                                                            id="statusPENDING_EDIT_APPROVAL">
+                                                        <label class="form-check-label"
+                                                            for="statusPENDING_EDIT_APPROVAL">
+                                                            Aguardando Aprovação de Edição
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['AWAITING_EDIT']"
+                                                            id="statusAWAITING_EDIT">
+                                                        <label class="form-check-label" for="statusAWAITING_EDIT">
+                                                            Aguardando Edição
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['AWAITING_REPORT']"
+                                                            id="statusAWAITING_REPORT">
+                                                        <label class="form-check-label" for="statusAWAITING_REPORT">
+                                                            Aguardando Inspeção de Qualidade
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['AWAITING_CLOSE']"
+                                                            id="statusAWAITING_CLOSE">
+                                                        <label class="form-check-label" for="statusAWAITING_CLOSE">
+                                                            Aguardando Encerramento
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['AWAITING_RATING']"
+                                                            id="statusAWAITING_RATING">
+                                                        <label class="form-check-label" for="statusAWAITING_RATING">
+                                                            Aguardando Feedback do Reclamante
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedStatusMap['CLOSED']" id="statusCLOSED">
+                                                        <label class="form-check-label" for="statusCLOSED">
+                                                            Encerrado
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </ng-template>
                             </div>
-                        </ng-template>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-            </div>
-         </div>     
 
         <!-- Botões de Ação -->
         <div class="row mt-4">

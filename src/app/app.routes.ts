@@ -159,9 +159,9 @@ export const routes: Routes = [
         children: [
           {
             path: "",
-            data: {
+            /* data: {
               roles: ["EQUALY_MASTER_ADMIN", "MASTER_ADMIN", "COMMON_ADMIN"],
-            },
+            }, */
             component: UserHubComponent,
           },
           {

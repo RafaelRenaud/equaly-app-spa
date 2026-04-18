@@ -1,28 +1,25 @@
+import { isPlatformBrowser } from "@angular/common";
 import { Component, Inject, PLATFORM_ID } from "@angular/core";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
-import { UsersResponse } from "../../../core/model/user/users-response.model";
-import { UserResponse } from "../../../core/model/user/user-response.model";
+import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import {
+  NgbAccordionModule
+} from "@ng-bootstrap/ng-bootstrap";
+import { Modal } from "bootstrap";
+import { map, switchMap } from "rxjs";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { UniversalUserResponse } from "../../../core/model/user/universal-user.model";
-import { UserService } from "../../../core/service/user/user.service";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Router, RouterModule } from "@angular/router";
-import { isPlatformBrowser } from "@angular/common";
-import { Collapse, Modal } from "bootstrap";
-import { FormsModule } from "@angular/forms";
-import { SessionService } from "../../../core/service/session/session.service";
-import { RecoveryService } from "../../../core/service/recovery/recovery.service";
+import { UserResponse } from "../../../core/model/user/user-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
-import { map, switchMap } from "rxjs";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { RecoveryService } from "../../../core/service/recovery/recovery.service";
+import { SessionService } from "../../../core/service/session/session.service";
+import { UserService } from "../../../core/service/user/user.service";
+import { UserSystemPipe } from "../../../pipe/user-system-pipe";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { DepartmentSearchComponent } from "../../department/search/department-search.component";
 import { UniversalUserSearchComponent } from "../universal-user/search/universal-user-search.component";
-import {
-  NgbAccordionCollapse,
-  NgbAccordionModule,
-  NgbModule,
-} from "@ng-bootstrap/ng-bootstrap";
-import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "app-user-hub",
@@ -64,6 +61,7 @@ export class UserHubComponent {
   statusToUpdate: "ACTIVE" | "INACTIVE" | null = null;
   confirmModal!: Modal;
   isBrowser = false;
+  isOnlyOperational: boolean = false;
 
   //Controle Visual de Permissões
   userRoles: string[] | null = null;
@@ -89,6 +87,10 @@ export class UserHubComponent {
           this.confirmModal = new Modal(modalElement);
         }
       });
+    }
+
+    if (!this.sessionService.hasRole("EQUALY_MASTER_ADMIN") && !this.sessionService.hasRole("MASTER_ADMIN") && !this.sessionService.hasRole("COMMON_ADMIN")) {
+      this.isOnlyOperational = true;
     }
   }
 

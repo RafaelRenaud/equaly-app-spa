@@ -124,7 +124,6 @@ export class UserCreateComponent implements OnInit {
       this.isEqualyMasterAdmin = true;
     }
 
-    // Atualiza flags de validação quando o form mudar
     this.createUserForm.valueChanges.subscribe(() => this.validateFields());
   }
 
@@ -245,7 +244,7 @@ export class UserCreateComponent implements OnInit {
 
     const userRequest: UserCreateRequest = {
       universalUser: { id: this.universalUser?.id ?? 0 },
-      company: { id: this.selectedCompany?.id ?? null },
+      company: { id: this.selectedCompany?.id ?? Number(this.sessionService.getItem("companyId")) },
       department: { id: this.selectedDepartment?.id ?? null },
       login: this.createUserForm.get("login")?.value,
       username: this.createUserForm.get("username")?.value,

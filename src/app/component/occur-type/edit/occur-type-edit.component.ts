@@ -1,14 +1,19 @@
 import { Component } from "@angular/core";
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { OccurTypeResponse } from "../../../core/model/occurType/occur-type-response.model";
-import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
+import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
+import { SessionService } from "../../../core/service/session/session.service";
 
 @Component({
   selector: "app-occur-type-edit",
@@ -20,22 +25,28 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 export class OccurTypeEditComponent {
   selectedOccurType: OccurTypeResponse | null = null;
   occurTypeForm!: FormGroup;
+  private isCheckingDuplicate: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private occurTypeService: OccurTypeService,
     private loadingService: LoadingService,
+    private sessionService: SessionService,
     private route: ActivatedRoute,
     private router: Router
   ) {
     this.occurTypeForm = this.formBuilder.group({
       occurTypeName: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(64),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(64),
+          ],
+          asyncValidators: [this.duplicateNameValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       occurTypeDescription: [
         "",
@@ -48,10 +59,38 @@ export class OccurTypeEditComponent {
     });
   }
 
+  duplicateNameValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 2 || !this.selectedOccurType) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((name) => {
+        return this.occurTypeService.getOccurTypes("name", name, this.selectedOccurType?.company?.id ?? null, "NONE", 0, 10);
+      }),
+      map((response) => {
+        const existingType = response.occurTypes?.find(
+          (item) =>
+            item.name.toLowerCase() === control.value.toLowerCase() &&
+            item.id !== this.selectedOccurType?.id
+        );
+        return existingType ? { duplicateName: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
   ngOnInit() {
     this.loadingService.show();
     const idParam = this.route.snapshot.paramMap.get("id");
     if (!idParam) {
+      this.loadingService.hide();
       this.router.navigate(["/occur-types"], {
         queryParams: {
           action: "ERROR",
@@ -84,7 +123,7 @@ export class OccurTypeEditComponent {
   }
 
   editOccurType() {
-    if (this.occurTypeForm.invalid) {
+    if (this.occurTypeForm.invalid || this.isCheckingDuplicate) {
       this.occurTypeForm.markAllAsTouched();
       return;
     }

@@ -47,14 +47,12 @@ export class UserEditComponent implements OnInit {
   isEqualyMasterAdmin = false;
   rolesSelected = false;
 
-  // Flags de validação
   invalidUsername = false;
   invalidLogin = false;
   invalidNickname = false;
   invalidEmail = false;
   invalidAvatar = false;
 
-  // Upload de avatar
   fileType: "png" | "jpeg" = "png";
   imageChangedEvent: Event | null = null;
   imageName: string | null = null;
@@ -132,7 +130,6 @@ export class UserEditComponent implements OnInit {
         this.user = user;
         this.userRoles = roles;
 
-        // Converte o department do UserResponse para DepartmentResponse
         if (user.department) {
           this.selectedDepartment = {
             id: user.department.id,
@@ -151,7 +148,6 @@ export class UserEditComponent implements OnInit {
           };
         }
 
-        // Preenche o formulário com os dados do usuário
         this.editUserForm.patchValue({
           username: user.username || "",
           login: user.login || "",
@@ -159,7 +155,6 @@ export class UserEditComponent implements OnInit {
           email: user.email || "",
         });
 
-        // Preenche as roles atuais do usuário
         if (roles.roles && roles.roles.length > 0) {
           const rolesArray = this.editUserForm.get("roles") as FormArray;
           roles.roles.forEach((role) => {
@@ -199,7 +194,6 @@ export class UserEditComponent implements OnInit {
     const loginCtrl = this.editUserForm.get("login");
     if (!loginCtrl || loginCtrl.invalid || !this.user) return;
 
-    // Se o login é igual ao atual, não precisa validar
     if (loginCtrl.value === this.user.login) {
       this.invalidLogin = false;
       return;
@@ -225,7 +219,6 @@ export class UserEditComponent implements OnInit {
     const emailCtrl = this.editUserForm.get("email");
     if (!emailCtrl || emailCtrl.invalid || !this.user) return;
 
-    // Se o email é igual ao atual, não precisa validar
     if (emailCtrl.value === this.user.email) {
       this.invalidEmail = false;
       return;
@@ -236,7 +229,6 @@ export class UserEditComponent implements OnInit {
       .getUsers("email", emailCtrl.value, null, null, null, "NONE", null, 0, 1)
       .subscribe({
         next: (res) => {
-          // Verifica se existe algum usuário com este email que não seja o próprio usuário
           this.invalidEmail = res.users.some(
             (user) =>
               user.email === emailCtrl.value && user.id !== this.user!.id
@@ -306,14 +298,11 @@ export class UserEditComponent implements OnInit {
       email: this.editUserForm.get("email")?.value,
     };
 
-    // Atualiza o usuário
     this.userService.updateUser(this.user.id, userRequest).subscribe({
       next: () => {
-        // Atualiza as roles se houver alterações
         if (this.rolesSelected) {
           this.updateUserRoles(this.user!.id, this.roles);
         } else {
-          // Atualiza o avatar se necessário
           if (this.avatarSelected && this.croppedBlob && this.imageName) {
             this.updateUserAvatar(
               this.user!.id,
@@ -332,7 +321,6 @@ export class UserEditComponent implements OnInit {
   updateUserRoles(id: number, roles: FormArray) {
     this.userService.createUserRole(id, roles.value).subscribe({
       next: () => {
-        // Após atualizar as roles, atualiza o avatar se necessário
         if (this.avatarSelected && this.croppedBlob && this.imageName) {
           this.updateUserAvatar(id, this.croppedBlob, this.imageName);
         } else {

@@ -19,6 +19,7 @@ import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head
 
 // Definindo o tipo para os filtros de data
 type FormFiltersType = {
+  occurCode: string;
   priority: string;
   hasInspectorAssigned: string;
   hasRNCOpened: string;
@@ -100,8 +101,15 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     closeStartDate: '',
     closeEndDate: '',
     content: '',
-    complainantInformation: ''
+    complainantInformation: '',
+    occurCode: ''
   };
+
+  idFilter: string = '';
+
+  get isIdFilterFilled(): boolean {
+    return !!this.idFilter && this.idFilter.trim() !== '';
+  }
 
   selectedStatusMap: { [key: string]: boolean } = {
     DRAFT_OPENED: false,
@@ -132,30 +140,24 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Observa mudanças nos inputs de data (quando o accordion é aberto/fechado)
     this.dateInputs.changes.subscribe(() => {
       this.initDatePickers();
     });
   }
 
-  // Método para forçar detecção de mudanças quando os typeheads mudam de estado
   onTypeheadLoadingChange(): void {
     this.cdr.detectChanges();
   }
 
   onDataAccordionShown(): void {
-    // O initDatePickers será chamado automaticamente pelo subscription do dateInputs.changes
-    // Mas garantimos que os datepickers sejam inicializados se o subscription não disparar
     setTimeout(() => {
       this.initDatePickers();
     }, 0);
   }
 
   private initDatePickers(): void {
-    // Destruir instâncias anteriores
     this.destroyDatePickers();
 
-    // Mapeamento dos IDs dos inputs para as propriedades do formFilters
     const dateInputMapping: Record<string, keyof FormFiltersType> = {
       'startOccurredDate': 'startOccurredDate',
       'endOccurredDate': 'endOccurredDate',
@@ -169,22 +171,29 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       'closeEndDate': 'closeEndDate'
     };
 
-    // Inicializar flatpickr para cada input
     this.dateInputs.forEach(input => {
       const inputElement = input.nativeElement;
       const inputId = inputElement.id;
       const formFilterProperty = dateInputMapping[inputId];
 
       if (formFilterProperty) {
+        const currentValue = this.formFilters[formFilterProperty];
+
         const instance = flatpickr(inputElement, {
           locale: Portuguese,
           dateFormat: 'd/m/Y',
           allowInput: true,
           onChange: (dates) => {
-            // Usando tipo assertion para resolver o erro do TypeScript
             (this.formFilters as any)[formFilterProperty] = dates[0] ? this.formatDateToYMD(dates[0]) : '';
           }
         });
+
+        if (currentValue) {
+          const [year, month, day] = currentValue.split('-');
+          inputElement.value = `${day}/${month}/${year}`;
+          instance.setDate(new Date(Number(year), Number(month) - 1, Number(day)), false);
+        }
+
         this.flatpickrInstances.push(instance);
       }
     });
@@ -207,6 +216,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   }
 
   search(): void {
+    if (this.idFilter && this.idFilter.trim() !== '') {
+      this.searchById();
+      return;
+    }
+
     this.loadingService.show();
     this.currentPage = 0;
 
@@ -237,6 +251,10 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
 
   private prepareFilters(): OccurFilters {
     const filtersToSend: OccurFilters = {};
+
+    if (this.formFilters.occurCode) {
+      filtersToSend.occurCode = this.formFilters.occurCode;
+    }
 
     if (this.selectedOpener) {
       filtersToSend.openerId = this.selectedOpener.id;
@@ -369,7 +387,8 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       closeStartDate: '',
       closeEndDate: '',
       content: '',
-      complainantInformation: ''
+      complainantInformation: '',
+      occurCode: ''
     };
 
     Object.keys(this.selectedStatusMap).forEach(key => {
@@ -385,6 +404,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     this.selectedInspectorDisplay = '';
     this.selectedComplainantDisplay = '';
     this.selectedOccurTypeDisplay = '';
+    this.idFilter = '';
 
     // Limpar os inputs dos typeheads
     this.typeheadComponents.forEach(typehead => typehead.clear());
@@ -426,6 +446,37 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
             message: `Erro ao buscar ocorrências, tente novamente mais tarde.`
           }
         });
+        this.loadingService.hide();
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  searchById(): void {
+    if (!this.idFilter) {
+      this.search();
+      return;
+    }
+
+    this.loadingService.show();
+    this.occurService.getOccur(Number(this.idFilter)).subscribe({
+      next: (occur: Occur) => {
+        this.occurs = [occur];
+        this.totalPages = 1;
+        this.totalElements = 1;
+        this.currentPage = 0;
+        this.loadingService.hide();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.router.navigate([], {
+          queryParams: {
+            action: "ERROR",
+            message: `Ocorrência com ID ${this.idFilter} não encontrada.`
+          }
+        });
+        this.occurs = [];
+        this.totalPages = 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       }

@@ -1,0 +1,478 @@
+@if (occur) {
+<div class="mt-4">
+
+    <!-- HEADER -->
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">ID</div>
+                <div>{{ occur.id }}</div>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Código</div>
+                <div>{{ occur.code }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Empresa</div>
+                <div>{{ occur.company!.id + ' - ' + occur.company!.name }}</div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Canal de Abertura</div>
+                @if(occur.complaint?.channel == 'EQUALY'){
+                <div>Canal Interno</div>
+                }@else if(occur.complaint?.channel == 'DALTON'){
+                <div>Dalton</div>
+                }@else if(occur.complaint?.channel == 'WHATSAPP'){
+                <div>WhatsApp</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Prioridade</div>
+                <div class="mt-1">
+                    @if (occur.priority === 'HIGH') {
+                    <span class="badge bg-danger">Alta</span>
+                    } @else if (occur.priority === 'MEDIUM') {
+                    <span class="badge bg-warning text-dark">Média</span>
+                    } @else {
+                    <span class="badge bg-info">Baixa</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Estado</div>
+                <div>{{ occur.status | occurStatus }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIPO -->
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Tipo de Ocorrência</div>
+            <div>{{ occur.occurType!.id + ' - ' + occur.occurType!.name }}</div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Descrição do Tipo</div>
+            <div>{{ occur.occurType!.description }}</div>
+        </div>
+    </div>
+
+    <!-- RESPONSÁVEIS -->
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Aberto por</div>
+                <div>{{ occur.opener!.id + ' - ' + occur.opener!.username }}
+                    <i class="bi bi-info-square-fill" role="button" tabindex="0" [ngbPopover]="openerContent"
+                        popoverTitle="Aberto por" triggers="mouseenter:mouseleave" container="body"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Responsável Qualidade</div>
+                @if(occur.hasInspectorAssigned){
+                <div>{{ occur.inspector!.id + ' - ' + occur.inspector!.username }} <i class="bi bi-info-square-fill"
+                        role="button" tabindex="0" [ngbPopover]="inspectorContent" popoverTitle="Responsável Qualidade"
+                        triggers="mouseenter:mouseleave" container="body"></i></div>
+                }@else {
+                <div>Não informado</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if(occur.invoiceNotes!.length > 0){
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small mb-2">Notas Fiscais</div>
+            @for(note of occur.invoiceNotes; track note){
+            <div class="mb-1">{{ note }}</div>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- CONTEÚDO -->
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Título</div>
+            <div>{{ occur.title }}</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Data do Ocorrido</div>
+                <div>{{ occur.occurredDate | date:'dd/MM/yyyy' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Descrição</div>
+            <div>{{ occur.description }}</div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Complemento</div>
+            <div>{{ occur.complement ?? 'Não informado' }}</div>
+        </div>
+    </div>
+
+    <!-- SEÇÃO -->
+    <h5 class="border-bottom pb-2 mb-3">Dados da Reclamação</h5>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">ID do Pedido</div>
+                <div>{{ occur.complaint!.orderId ?? 'Não informado' }}</div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Tipo</div>
+                <div>{{ occur.complaint!.type === 'INTERNAL' ? 'Interna' : 'Externa' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Solicitação</div>
+            <div>{{ occur.complaint!.request!.description }}</div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Complemento da Solicitação</div>
+            <div>{{ occur.complaint!.request!.complement ?? 'Não informado' }}</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Reclamante Identificado</div>
+                <div>{{ occur.complaint!.isAnonymous ? 'Não' : 'Sim' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECLAMANTE (CONDICIONAL) -->
+    @if(!occur.complaint?.isAnonymous){
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Reclamante</div>
+            <div>
+                {{ occur.complaint!.complainant!.id
+                ? occur.complaint!.complainant!.id + ' - ' + occur.complaint!.complainant!.name
+                : occur.complaint!.complainant!.name }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Telefone</div>
+                <div>{{ occur.complaint!.complainant!.phone ?? 'Não informado' }}</div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">E-mail</div>
+                <div>{{ occur.complaint!.complainant!.email ?? 'Não informado' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-4">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Endereço</div>
+            <div>
+                @let address = occur.complaint?.complainant?.address;
+
+                <div>
+                    {{ address?.street ? address?.street + ', ' + (address?.number || 'S/N') : 'Rua Não Informada' }}
+                </div>
+
+                @if (address?.complement) {
+                <div>{{ address?.complement }}</div>
+                }
+
+                <div>
+                    @if (address?.district && address?.city && address?.uf) {
+                    {{ address?.district + ', ' + address?.city + ' - ' + address?.uf }}
+                    } @else {
+                    Bairro/Cidade/UF Não Informados
+                    }
+                </div>
+
+                <div>
+                    {{ address?.zipCode || 'CEP Não Informado' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    }
+
+    @if(occur.inspectorReport){
+
+    <h5 class="border-bottom pb-2 mb-3 mt-4">Dados de Análise</h5>
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Análise Inspeção de Qualidade</div>
+            <div>{{ occur.inspectorReport }}</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Gerou Não Conformidade</div>
+                <div class="mt-1">
+                    <span class="badge" [class.bg-danger]="occur.hasRNCOpened" [class.bg-success]="!occur.hasRNCOpened">
+                        {{ occur.hasRNCOpened ? 'Sim' : 'Não' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(occur.closeReason){
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Informações de Encerramento</div>
+            <div>{{ occur.closeReason }}</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Estado de Encerramento</div>
+                <div class="mt-1">
+                    @if(occur.closeStatus === 'CLOSED_WITH_RATING'){
+                    <span>Encerrado com Feedback</span>
+                    } @else if(occur.closeStatus === 'CLOSED_WITHOUT_RATING'){
+                    <span>Encerrado sem Feedback</span>
+                    } @else {
+                    <span>Aguardando Encerramento</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if(occur.closeStatus === 'CLOSED_WITH_RATING'){
+
+    <div class="mb-3">
+        <div class="p-3 border rounded">
+            <div class="text-secondary small">Feedback do Cliente</div>
+            <div>{{ occur.rate?.comment }}</div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Comentado em</div>
+                <div>{{ occur.rate?.sentAt | date:'dd/MM/yyyy HH:mm:ss' }}</div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Nota</div>
+                <div>
+                    <span>{{ occur.rate?.score }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    }
+
+    }
+    }
+
+    <h5 class="border-bottom pb-2 mb-3 mt-4">Dados de Auditoria</h5>
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Criado em</div>
+                <div>
+                    @if(occur.audit?.createdAt){
+                    {{ occur.audit!.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Criado por</div>
+                <div>
+                    @if(occur.audit?.createdBy){
+                    {{ occur.audit!.createdBy }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Enviado em</div>
+                <div>
+                    @if(occur.audit?.officializedAt){
+                    {{ occur.audit!.officializedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Enviado por</div>
+                <div>
+                    @if(occur.audit?.officializedBy){
+                    {{ occur.audit!.officializedBy }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Última Atualização em</div>
+                <div>
+                    @if(occur.audit?.updatedAt){
+                    {{ occur.audit!.updatedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Última Atualização por</div>
+                <div>
+                    @if(occur.audit?.updatedBy){
+                    {{ occur.audit!.updatedBy }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Encerrado em</div>
+                <div>
+                    @if(occur.audit?.closedAt){
+                    {{ occur.audit!.closedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="p-3 border rounded">
+                <div class="text-secondary small">Encerrado por</div>
+                <div>
+                    @if(occur.audit?.closedBy){
+                    {{ occur.audit!.closedBy }}
+                    } @else {
+                    Não se aplica
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Templates do Popover -->
+<ng-template #openerContent>
+    <div>
+        <div><strong>Pessoa:</strong> {{ occur.opener!.universalUser?.id?.toString()
+            ?.concat(" - ")
+            ?.concat(occur.opener!.universalUser?.name!) }}</div>
+        <div><strong>Email:</strong> {{ occur.opener!.email }}</div>
+        <div><strong>Status: </strong>
+            @if( occur.opener?.status === 'ACTIVE'){
+            <span class="badge bg-success">Ativo</span>
+            }@else {
+            <span class="badge bg-danger">Inativo</span>
+            }
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #inspectorContent>
+    <div>
+        <div><strong>Pessoa:</strong> {{ occur.inspector!.universalUser?.id?.toString()
+            ?.concat(" - ")
+            ?.concat(occur.inspector!.universalUser?.name!) }}</div>
+        <div><strong>Email:</strong> {{ occur.inspector!.email }}</div>
+        <div><strong>Status: </strong>
+            @if( occur.inspector?.status === 'ACTIVE'){
+            <span class="badge bg-success">Ativo</span>
+            }@else {
+            <span class="badge bg-danger">Inativo</span>
+            }
+        </div>
+    </div>
+</ng-template>
+}

@@ -1,14 +1,18 @@
 import { Component } from "@angular/core";
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { DepartmentService } from "../../../core/service/department/department.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Router, RouterModule } from "@angular/router";
 import { SessionService } from "../../../core/service/session/session.service";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
 
@@ -31,14 +35,20 @@ export class DepartmentCreateComponent {
     private sessionService: SessionService,
     private router: Router
   ) {
+    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
+
     this.departmentForm = this.formBuilder.group({
       departmentName: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(64),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(64),
+          ],
+          asyncValidators: [this.duplicateNameValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       departmentDescription: [
         "",
@@ -49,12 +59,44 @@ export class DepartmentCreateComponent {
         ],
       ],
     });
+  }
 
-    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
+  duplicateNameValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 2 || !this.getCompanyId()) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((name) => {
+        return this.departmentService.getDepartments("name", name, this.getCompanyId(), "NONE", 0, 10);
+      }),
+      map((response) => {
+        const existingDepartment = response.departments?.find(
+          (item) => item.name.toLowerCase() === control.value.toLowerCase()
+        );
+        return existingDepartment ? { duplicateName: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
+  private getCompanyId(): number | null {
+    if (this.isEqualyMasterAdmin && this.selectedCompany) {
+      return this.selectedCompany.id;
+    }
+    const companyId = this.sessionService.getItem("companyId");
+    return companyId ? Number(companyId) : null;
   }
 
   onSelectCompany(company: CompanyResponse | null) {
     this.selectedCompany = company;
+    this.departmentForm.get("departmentName")?.updateValueAndValidity();
   }
 
   submitDepartment() {
@@ -68,7 +110,7 @@ export class DepartmentCreateComponent {
       .createDepartment({
         name: this.departmentForm.get("departmentName")?.value,
         description: this.departmentForm.get("departmentDescription")?.value,
-        company: { id: this.selectedCompany?.id ?? null },
+        company: { id: this.selectedCompany?.id ?? Number(this.sessionService.getItem("companyId")) },
       })
       .subscribe({
         next: (response) => {

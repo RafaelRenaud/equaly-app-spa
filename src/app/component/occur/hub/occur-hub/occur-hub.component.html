@@ -3,127 +3,179 @@
         <h3 class="text-white pt-3 pb-2">Pesquisa de Ocorrências</h3>
     </div>
     <div class="surface-container-body">
-        <!-- Filtros - Linha 1 -->
+
         <div class="row mb-3">
             <div class="col-md">
                 <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.priority" title="Filtrar por prioridade">
-                        <option value="">Todas</option>
-                        <option value="LOW">Baixa</option>
-                        <option value="MEDIUM">Média</option>
-                        <option value="HIGH">Alta</option>
-                    </select>
-                    <label>Prioridade</label>
+                    <input type="text" class="form-control" [(ngModel)]="idFilter" id="idFilter"
+                        placeholder="ID da Ocorrência" />
+                    <label for="idFilter">ID da Ocorrência</label>
                 </div>
             </div>
             <div class="col-md">
                 <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.hasInspectorAssigned"
-                        title="Responsável de Qualidade Atribuído">
-                        <option value="">Todos</option>
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                    </select>
-                    <label>Responsável de Qualidade Atribuído</label>
+                    <input type="text" class="form-control" [(ngModel)]="formFilters.occurCode" id="occurCodeFilter"
+                        placeholder="Código da Ocorrência" [disabled]="isIdFilterFilled" />
+                    <label for="occurCodeFilter">Código da Ocorrência</label>
                 </div>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-md">
-                <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.hasRNCOpened"
-                        title="Possui Não-Conformidade Atribuída">
-                        <option value="">Todos</option>
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                    </select>
-                    <label>Possui Não-Conformidade</label>
-                </div>
-            </div>
-            <div class="col-md">
-                <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.hasComplainantAssigned"
-                        title="Reclamante Atribuído">
-                        <option value="">Todos</option>
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                    </select>
-                    <label>Reclamante Atribuído</label>
+                <div ngbAccordion [destroyOnHide]="false">
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros Gerais
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <div class="row mb-3">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="formFilters.priority"
+                                                    title="Filtrar por prioridade" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todas</option>
+                                                    <option value="LOW">Baixa</option>
+                                                    <option value="MEDIUM">Média</option>
+                                                    <option value="HIGH">Alta</option>
+                                                </select>
+                                                <label>Prioridade</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select"
+                                                    [(ngModel)]="formFilters.hasInspectorAssigned"
+                                                    title="Responsável de Qualidade Atribuído"
+                                                    [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="true">Sim</option>
+                                                    <option value="false">Não</option>
+                                                </select>
+                                                <label>Responsável de Qualidade Atribuído</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="formFilters.hasRNCOpened"
+                                                    title="Possui Não-Conformidade Atribuída"
+                                                    [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="true">Sim</option>
+                                                    <option value="false">Não</option>
+                                                </select>
+                                                <label>Possui Não-Conformidade</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select"
+                                                    [(ngModel)]="formFilters.hasComplainantAssigned"
+                                                    title="Reclamante Atribuído" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="true">Sim</option>
+                                                    <option value="false">Não</option>
+                                                </select>
+                                                <label>Reclamante Atribuído</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="formFilters.complaintType"
+                                                    title="Tipo de Reclamação" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="INTERNAL">Interna</option>
+                                                    <option value="EXTERNAL">Externa</option>
+                                                </select>
+                                                <label>Tipo de Reclamação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="formFilters.complaintChannel"
+                                                    title="Canal de Origem" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="EQUALY">Sistema Interno</option>
+                                                    <option value="DALTON">Dalton</option>
+                                                    <option value="WHATSAPP">WhatsApp</option>
+                                                </select>
+                                                <label>Canal de Origem</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="formFilters.closeStatus"
+                                                    title="Tipo de Fechamento" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="CLOSED_WITH_RATING">Com Avaliação</option>
+                                                    <option value="CLOSED_WITHOUT_RATING">Sem Avaliação</option>
+                                                </select>
+                                                <label>Tipo de Fechamento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.complaintOrderId"
+                                                    placeholder="ID do Pedido" id="complaintOrderId"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="complaintOrderId">Pedido</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if(!isIdFilterFilled){
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-occur-type-head-search [placeholder]='"Tipo de Ocorrência"'
+                                                (occurTypeSelected)="onOccurTypeSelected($event)"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()" />
+                                        </div>
+                                    </div>
+                                    }
+
+                                    <div class="row mb-4">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.complainantInformation"
+                                                    id="complainantInformation" placeholder="Nome, Email ou Telefone"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="complainantInformation">Informações do Reclamante</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.content" id="content"
+                                                    placeholder="Título/Descrição/Complemento"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="content">Título/Descrição/Complemento</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Filtros - Linha 2 -->
-        <div class="row mb-3">
-            <div class="col-md">
-                <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.complaintType" title="Tipo de Reclamação">
-                        <option value="">Todos</option>
-                        <option value="INTERNAL">Interna</option>
-                        <option value="EXTERNAL">Externa</option>
-                    </select>
-                    <label>Tipo de Reclamação</label>
-                </div>
-            </div>
-            <div class="col-md">
-                <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.complaintChannel" title="Canal de Origem">
-                        <option value="">Todos</option>
-                        <option value="EQUALY">Sistema Interno</option>
-                        <option value="DALTON">Dalton</option>
-                        <option value="WHATSAPP">WhatsApp</option>
-                    </select>
-                    <label>Canal de Origem</label>
-                </div>
-            </div>
-            <div class="col-md">
-                <div class="form-floating">
-                    <select class="form-select" [(ngModel)]="formFilters.closeStatus" title="Tipo de Fechamento">
-                        <option value="">Todos</option>
-                        <option value="CLOSED_WITH_RATING">Com Avaliação</option>
-                        <option value="CLOSED_WITHOUT_RATING">Sem Avaliação</option>
-                    </select>
-                    <label>Tipo de Fechamento</label>
-                </div>
-            </div>
-            <div class="col-md">
-                <div class="form-floating">
-                    <input type="text" class="form-control" [(ngModel)]="formFilters.complaintOrderId"
-                        placeholder="ID do Pedido" id="complaintOrderId" />
-                    <label for="complaintOrderId">Pedido</label>
-                </div>
-            </div>
-        </div>
-
+        @if(!isIdFilterFilled){
         <div class="row">
             <div class="col-md">
-                <app-occur-type-head-search [placeholder]='"Tipo de Ocorrência"'
-                    (occurTypeSelected)="onOccurTypeSelected($event)" (loadingStateChanged)="onTypeheadLoadingChange()"/>
-            </div>
-        </div>
-
-        <!-- Filtros - Linha 3: Informações do Reclamante -->
-        <div class="row mb-4">
-            <div class="col-md">
-                <div class="form-floating">
-                    <input type="text" class="form-control" [(ngModel)]="formFilters.complainantInformation"
-                        id="complainantInformation" placeholder="Nome, Email ou Telefone" />
-                    <label for="complainantInformation">Informações do Reclamante</label>
-                </div>
-            </div>
-            <div class="col-md">
-                <div class="form-floating">
-                    <input type="text" class="form-control" [(ngModel)]="formFilters.content" id="content"
-                        placeholder="Título/Descrição/Complemento" />
-                    <label for="content">Título/Descrição/Complemento</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md">
-                <div ngbAccordion>
+                <div ngbAccordion [destroyOnHide]="false">
                     <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
@@ -138,7 +190,8 @@
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
                                                 [placeholder]="'Responsável pela Ocorrência'"
-                                                [modalId]="'openerSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                [modalId]="'openerSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onOpenerSelected($event)" />
                                         </div>
                                     </div>
@@ -147,14 +200,16 @@
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
                                                 [placeholder]="'Responsável Inspeção de Qualidade'"
-                                                [modalId]="'inspectorSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                [modalId]="'inspectorSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onInspectorSelected($event)" />
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md">
                                             <app-user-type-head-search [placeholder]="'Reclamante Interno'"
-                                                [modalId]="'internalComplainantSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                [modalId]="'internalComplainantSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onComplainantSelected($event)" />
                                         </div>
                                     </div>
@@ -165,10 +220,11 @@
                 </div>
             </div>
         </div>
+        }
 
         <div class="row">
             <div class="col-md">
-                <div ngbAccordion>
+                <div ngbAccordion [destroyOnHide]="false">
                     <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
@@ -181,29 +237,30 @@
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startOccurredDate" #dateInput
-                                                    placeholder="Data Início Ocorrido" />
+                                                <input type="text" class="form-control" id="startOccurredDate"
+                                                    #dateInput placeholder="Data Início Ocorrido"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="startOccurredDate">Início Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="endOccurredDate" #dateInput
-                                                    placeholder="Data Fim Ocorrido" />
+                                                    placeholder="Data Fim Ocorrido" [disabled]="isIdFilterFilled" />
                                                 <label for="endOccurredDate">Fim Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="rateStartDate" #dateInput
-                                                    placeholder="Data Início Feedback" />
+                                                    placeholder="Data Início Feedback" [disabled]="isIdFilterFilled" />
                                                 <label for="rateStartDate">Início Feedback</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
-                                            <div class="form-floating"> 
+                                            <div class="form-floating">
                                                 <input type="text" class="form-control" id="rateEndDate" #dateInput
-                                                    placeholder="Data Fim Feedback" />
+                                                    placeholder="Data Fim Feedback" [disabled]="isIdFilterFilled" />
                                                 <label for="rateEndDate">Fim Feedback</label>
                                             </div>
                                         </div>
@@ -211,29 +268,32 @@
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="creationStartDate" #dateInput
-                                                    placeholder="Data Início Criação" />
+                                                <input type="text" class="form-control" id="creationStartDate"
+                                                    #dateInput placeholder="Data Início Criação"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="creationStartDate">Início Criação</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="creationEndDate" #dateInput
-                                                    placeholder="Data Fim Criação" />
+                                                    placeholder="Data Fim Criação" [disabled]="isIdFilterFilled" />
                                                 <label for="creationEndDate">Fim Criação</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeStartDate" #dateInput
-                                                    placeholder="Data Início Envio Análise" />
+                                                <input type="text" class="form-control" id="officializeStartDate"
+                                                    #dateInput placeholder="Data Início Envio Análise"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="officializeStartDate">Início Envio Análise</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeEndDate" #dateInput
-                                                    placeholder="Data Fim Envio Análise" />
+                                                <input type="text" class="form-control" id="officializeEndDate"
+                                                    #dateInput placeholder="Data Fim Envio Análise"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="officializeEndDate">Fim Envio Análise</label>
                                             </div>
                                         </div>
@@ -242,14 +302,15 @@
                                         <div class="col-md-3">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="closeStartDate" #dateInput
-                                                    placeholder="Data Início Encerramento" />
+                                                    placeholder="Data Início Encerramento"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="closeStartDate">Início Encerramento</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="closeEndDate" #dateInput
-                                                    placeholder="Data Fim Encerramento" />
+                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
                                                 <label for="closeEndDate">Fim Encerramento</label>
                                             </div>
                                         </div>
@@ -264,11 +325,11 @@
 
         <div class="row">
             <div class="col-md">
-                <div ngbAccordion class="mt-3">
+                <div ngbAccordion [destroyOnHide]="false" class="mt-3">
                     <div ngbAccordionItem [collapsed]="true">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
-                                Filtros por Status
+                                Filtros por Estado
                             </button>
                         </h2>
                         <div ngbAccordionCollapse>
@@ -277,11 +338,17 @@
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="row">
+                                                <div class="col-md alert alert-warning" role="alert">
+                                                    <i class="bi bi-info-square-fill me-2"></i>
+                                                    Atenção: ao selecionar rascunhos apenas ocorrências abertas por você serão pesquisadas.
+                                                </div>
+                                            </div>
+                                            <div class="row">
                                                 <div class="col-md-3 mb-2">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['DRAFT_OPENED']"
-                                                            id="statusDRAFT_OPENED">
+                                                            id="statusDRAFT_OPENED" [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusDRAFT_OPENED">
                                                             Em Rascunho
                                                         </label>
@@ -291,7 +358,8 @@
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['PENDING_EDIT_APPROVAL']"
-                                                            id="statusPENDING_EDIT_APPROVAL">
+                                                            id="statusPENDING_EDIT_APPROVAL"
+                                                            [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label"
                                                             for="statusPENDING_EDIT_APPROVAL">
                                                             Aguardando Aprovação de Edição
@@ -302,7 +370,7 @@
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['AWAITING_EDIT']"
-                                                            id="statusAWAITING_EDIT">
+                                                            id="statusAWAITING_EDIT" [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusAWAITING_EDIT">
                                                             Aguardando Edição
                                                         </label>
@@ -312,7 +380,7 @@
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['AWAITING_REPORT']"
-                                                            id="statusAWAITING_REPORT">
+                                                            id="statusAWAITING_REPORT" [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusAWAITING_REPORT">
                                                             Aguardando Inspeção de Qualidade
                                                         </label>
@@ -322,7 +390,7 @@
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['AWAITING_CLOSE']"
-                                                            id="statusAWAITING_CLOSE">
+                                                            id="statusAWAITING_CLOSE" [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusAWAITING_CLOSE">
                                                             Aguardando Encerramento
                                                         </label>
@@ -332,7 +400,7 @@
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
                                                             [(ngModel)]="selectedStatusMap['AWAITING_RATING']"
-                                                            id="statusAWAITING_RATING">
+                                                            id="statusAWAITING_RATING" [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusAWAITING_RATING">
                                                             Aguardando Feedback do Reclamante
                                                         </label>
@@ -341,7 +409,8 @@
                                                 <div class="col-md-3 mb-2">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox"
-                                                            [(ngModel)]="selectedStatusMap['CLOSED']" id="statusCLOSED">
+                                                            [(ngModel)]="selectedStatusMap['CLOSED']" id="statusCLOSED"
+                                                            [disabled]="isIdFilterFilled">
                                                         <label class="form-check-label" for="statusCLOSED">
                                                             Encerrado
                                                         </label>
@@ -358,7 +427,6 @@
             </div>
         </div>
 
-        <!-- Botões de Ação -->
         <div class="row mt-4">
             <div class="col-md-12">
                 <button class="btn btn-primary me-2" (click)="search()">
@@ -370,16 +438,15 @@
             </div>
         </div>
 
-        <!-- Tabela de Ocorrências -->
         @if (occurs.length > 0) {
         <div class="table-responsive mt-4">
             <table class="table table-hover table-striped align-middle">
                 <thead>
-                    <tr class="text-center">
+                    <tr>
                         <th>ID</th>
                         <th>Código</th>
                         <th>Prioridade</th>
-                        <th>Status</th>
+                        <th>Estado</th>
                         <th>Título</th>
                         <th>Tipo</th>
                         <th>Data do Ocorrido</th>
@@ -389,11 +456,11 @@
                 <tbody>
                     @for (occur of occurs; track occur.id) {
                     <tr>
-                        <td class="text-center">{{ occur.id }}</td>
-                        <td class="text-center">
+                        <td>{{ occur.id }}</td>
+                        <td>
                             <span class="badge bg-primary">{{ occur.code }}</span>
                         </td>
-                        <td class="text-center">
+                        <td>
                             @if (occur.priority === 'HIGH') {
                             <span class="badge bg-danger">Alta</span>
                             } @else if (occur.priority === 'MEDIUM') {
@@ -402,14 +469,14 @@
                             <span class="badge bg-info">Baixa</span>
                             }
                         </td>
-                        <td class="text-center">{{ occur.status | occurStatus }}</td>
+                        <td>{{ occur.status | occurStatus }}</td>
                         <td>
                             {{ occur.title ? (occur.title.length > 60 ? (occur.title | slice:0:60) + '...' :
                             occur.title) : 'Sem título' }}
                         </td>
                         <td>{{ occur.occurType?.name }}</td>
-                        <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
-                        <td class="text-nowrap text-center">
+                        <td>{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-nowrap">
                             <button class="btn btn-primary" title="Abrir Ocorrência"
                                 [routerLink]="['/occurs', occur.id]">
                                 <i class="bi bi-pencil-square"></i> Abrir
@@ -421,7 +488,6 @@
             </table>
         </div>
 
-        <!-- Paginação -->
         <nav class="mt-4">
             <ul class="pagination justify-content-center">
                 <li class="page-item" [class.disabled]="currentPage === 0">
@@ -447,7 +513,6 @@
         </nav>
         }
 
-        <!-- Sem Resultados -->
         @if (occurs.length === 0) {
         <div class="surface-banner text-center py-5">
             <img src="assets/no_data.svg" alt="Sem ocorrências" class="img-fluid w-25" />

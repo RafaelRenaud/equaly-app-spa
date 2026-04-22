@@ -4,80 +4,80 @@
   </div>
   <div class="surface-container-body">
     <form [formGroup]="occurTypeForm" (ngSubmit)="editOccurType()">
-      <div class="row">
+      <div class="row mb-3">
         <div class="form-floating col-md">
-          <input
-            type="number"
-            class="form-control"
-            id="floatingId"
-            disabled
-            [value]="selectedOccurType?.id"
-            title="ID"
-          />
+          <input type="number" class="form-control" id="floatingId" disabled [value]="selectedOccurType?.id"
+            title="ID" />
           <label for="floatingId" class="ps-4">ID do Tipo de Ocorrência</label>
         </div>
       </div>
 
-      <div class="row">
+      <div class="row mb-3">
         <div class="form-floating col-md">
-          <input
-            type="text"
-            class="form-control"
-            id="floatingCompany"
-            disabled
-            [value]="
+          <input type="text" class="form-control" id="floatingCompany" disabled [value]="
               selectedOccurType?.company?.id
                 ?.toString()
                 ?.concat(' - ')
                 ?.concat(selectedOccurType?.company?.name!)
-            "
-          />
+            " />
           <label for="floatingCompany" class="ps-4">Empresa</label>
         </div>
       </div>
 
-      <div class="row">
+      <div class="row mb-3">
         <div class="form-floating col-md">
-          <input
-            type="text"
-            maxlength="64"
-            class="form-control"
-            formControlName="occurTypeName"
+          <input type="text" maxlength="64" class="form-control" formControlName="occurTypeName"
             [class.is-invalid]="occurTypeForm.get('occurTypeName')?.invalid && (occurTypeForm.get('occurTypeName')?.touched || occurTypeForm.get('occurTypeName')?.dirty)"
-            title="Nome do Tipo de Ocorrência"
-          />
+            title="Nome do Tipo de Ocorrência" />
           <label class="ps-4">Nome do Tipo de Ocorrência</label>
-          @if(occurTypeForm.get('occurTypeName')?.invalid && (occurTypeForm.get('occurTypeName')?.touched || occurTypeForm.get('occurTypeName')?.dirty)){
-          <div class="invalid-feedback pb-2">
-            Tipo de Ocorrência não preenchido ou inválido.
+          <div class="form-text text-end small mb-1">
+            {{ occurTypeForm.get('occurTypeName')?.value?.length || 0 }}/64
           </div>
+          @if(occurTypeForm.get('occurTypeName')?.invalid && (occurTypeForm.get('occurTypeName')?.touched ||
+          occurTypeForm.get('occurTypeName')?.dirty)){
+            <div class="invalid-feedback d-block">
+              @if(occurTypeForm.get('occurTypeName')?.errors?.['required']){
+                <span>Tipo de Ocorrência não preenchido.</span>
+              }
+              @if(occurTypeForm.get('occurTypeName')?.errors?.['minlength']){
+                <span>Tipo de Ocorrência deve ter no mínimo 2 caracteres.</span>
+              }
+              @if(occurTypeForm.get('occurTypeName')?.errors?.['duplicateName']){
+                <span>Já existe um Tipo de Ocorrência com este nome para esta empresa.</span>
+              }
+            </div>
           }
         </div>
       </div>
 
-      <div class="form-floating">
-        <textarea
-          maxlength="256"
-          class="form-control"
-          id="occurTypeDescriptionLabel"
-          formControlName="occurTypeDescription"
-          [class.is-invalid]="occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched || occurTypeForm.get('occurTypeDescription')?.dirty)"
-        ></textarea>
+      <div class="form-floating mb-3">
+        <textarea maxlength="256" class="form-control" id="occurTypeDescriptionLabel"
+          formControlName="occurTypeDescription" style="min-height: 100px;"
+          [class.is-invalid]="occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched || occurTypeForm.get('occurTypeDescription')?.dirty)"></textarea>
         <label for="occurTypeDescriptionLabel">Descrição</label>
-        @if(occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched || occurTypeForm.get('occurTypeDescription')?.dirty)){
-        <div class="invalid-feedback pb-2">
-          Descrição não preenchida ou inválida.
+        <div class="form-text text-end small mb-1">
+          {{ occurTypeForm.get('occurTypeDescription')?.value?.length || 0 }}/256
         </div>
+        @if(occurTypeForm.get('occurTypeDescription')?.invalid && (occurTypeForm.get('occurTypeDescription')?.touched ||
+        occurTypeForm.get('occurTypeDescription')?.dirty)){
+          <div class="invalid-feedback d-block">
+            @if(occurTypeForm.get('occurTypeDescription')?.errors?.['required']){
+              <span>Descrição não preenchida.</span>
+            }
+            @if(occurTypeForm.get('occurTypeDescription')?.errors?.['minlength']){
+              <span>Descrição deve ter no mínimo 2 caracteres.</span>
+            }
+          </div>
         }
       </div>
 
       <div class="row">
         <div class="col-md text-center">
-          <button class="btn btn-primary" [routerLink]="['/occur-types']">
+          <button class="btn btn-primary me-2" [routerLink]="['/occur-types']">
             <i class="bi bi-arrow-left-square-fill"></i>
             Voltar
           </button>
-          <button type="submit" class="btn btn-success" [disabled]="occurTypeForm.invalid">
+          <button type="submit" class="btn btn-success" [disabled]="occurTypeForm.invalid || occurTypeForm.pending">
             <i class="bi bi-pencil-fill"></i>
             Editar
           </button>

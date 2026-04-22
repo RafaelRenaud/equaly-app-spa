@@ -68,6 +68,9 @@
             <input type="text" class="form-control" id="floatingName" formControlName="name"
               [value]="universalUser?.name" [class.is-invalid]="invalidName" placeholder="Nome Completo" />
             <label for="floatingName" class="ps-4">Nome Completo</label>
+            <div class="form-text text-end small mb-1">
+              {{ createUserForm.get('name')?.value?.length || 0 }}/128
+            </div>
             <div class="invalid-feedback pb-2">Nome inválido</div>
           </div>
         </div>
@@ -88,7 +91,20 @@
             <input type="text" class="form-control" id="floatingUsername" (blur)="setNickname()"
               formControlName="username" [class.is-invalid]="invalidUsername" placeholder="Nome de Usuário" />
             <label for="floatingUsername" class="ps-4">Nome de Usuário</label>
-            <div class="invalid-feedback pb-2">Nome de usuário inválido</div>
+            <div class="form-text text-end small mb-1">
+              {{ createUserForm.get('username')?.value?.length || 0 }}/128
+            </div>
+            @if(createUserForm.get('username')?.invalid && (createUserForm.get('username')?.touched ||
+            createUserForm.get('username')?.dirty)){
+            <div class="invalid-feedback d-block">
+              @if(createUserForm.get('username')?.errors?.['required']){
+              <span>Nome de usuário não preenchido.</span>
+              }
+              @if(createUserForm.get('username')?.errors?.['minlength']){
+              <span>Nome de usuário deve ter no mínimo 8 caracteres.</span>
+              }
+            </div>
+            }
           </div>
         </div>
 
@@ -97,13 +113,42 @@
             <input type="text" class="form-control" id="floatingLogin" formControlName="login"
               [class.is-invalid]="invalidLogin" (blur)="checkLoginExists()" placeholder="Login" />
             <label for="floatingLogin" class="ps-4">Login</label>
-            <div class="invalid-feedback pb-2">Login inválido</div>
+            <div class="form-text text-end small mb-1">
+              {{ createUserForm.get('login')?.value?.length || 0 }}/32
+            </div>
+            @if(createUserForm.get('login')?.invalid && (createUserForm.get('login')?.touched ||
+            createUserForm.get('login')?.dirty)){
+            <div class="invalid-feedback d-block">
+              @if(createUserForm.get('login')?.errors?.['required']){
+              <span>Login não preenchido.</span>
+              }
+              @if(createUserForm.get('login')?.errors?.['minlength']){
+              <span>Login deve ter no mínimo 4 caracteres.</span>
+              }
+              @if(createUserForm.get('login')?.errors?.['duplicateLogin']){
+              <span>Este login já está em uso.</span>
+              }
+            </div>
+            }
           </div>
           <div class="form-floating col-md">
             <input type="text" class="form-control" id="floatingNickname" formControlName="nickname"
               placeholder="Apelido" [class.is-invalid]="invalidNickname" />
             <label for="floatingNickname" class="ps-4">Apelido</label>
-            <div class="invalid-feedback pb-2">Apelido inválido</div>
+            <div class="form-text text-end small mb-1">
+              {{ createUserForm.get('nickname')?.value?.length || 0 }}/32
+            </div>
+            @if(createUserForm.get('nickname')?.invalid && (createUserForm.get('nickname')?.touched ||
+            createUserForm.get('nickname')?.dirty)){
+            <div class="invalid-feedback d-block">
+              @if(createUserForm.get('nickname')?.errors?.['required']){
+              <span>Apelido não preenchido.</span>
+              }
+              @if(createUserForm.get('nickname')?.errors?.['minlength']){
+              <span>Apelido deve ter no mínimo 4 caracteres.</span>
+              }
+            </div>
+            }
           </div>
         </div>
 
@@ -112,16 +157,125 @@
             <input type="email" class="form-control" id="floatingEmail" formControlName="email" placeholder="E-Mail"
               [class.is-invalid]="invalidEmail" (blur)="checkEmailExists()" />
             <label for="floatingEmail" class="ps-4">E-Mail</label>
-            <div class="invalid-feedback pb-2">E-Mail inválido</div>
+            <div class="form-text text-end small mb-1">
+              {{ createUserForm.get('email')?.value?.length || 0 }}/256
+            </div>
+            @if(createUserForm.get('email')?.invalid && (createUserForm.get('email')?.touched ||
+            createUserForm.get('email')?.dirty)){
+            <div class="invalid-feedback d-block">
+              @if(createUserForm.get('email')?.errors?.['required']){
+              <span>E-Mail não preenchido.</span>
+              }
+              @if(createUserForm.get('email')?.errors?.['email']){
+              <span>E-Mail inválido.</span>
+              }
+              @if(createUserForm.get('email')?.errors?.['duplicateEmail']){
+              <span>Este e-mail já está em uso.</span>
+              }
+            </div>
+            }
           </div>
         </div>
 
-        <div class="row">
-          <label class="ps-4 pb-2">Filtros de Permissões</label>
+        <div class="card mt-4">
+          <div class="card-header bg-light">
+            <label class="fw-bold mb-0">Filtros de Permissões</label>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              @if(isEqualyMasterAdmin){
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="EQUALY_MASTER_ADMIN" id="equalyMasterAdmin"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="equalyMasterAdmin">
+                    ADMINISTRADOR MASTER EQUALY
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="equalyMasterAdmin"></i>
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="MASTER_ADMIN" id="masterAdmin"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="masterAdmin">
+                    ADMINISTRADOR MASTER
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="masterAdmin"></i>
+                  </label>
+                </div>
+              </div>
+              }
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="COMMON_ADMIN" id="commonAdmin"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="commonAdmin">
+                    ADMINISTRADOR
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonAdmin"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="masterEventOpener">
+                    AGENTE DE EVENTOS MASTER
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="masterEventOpener"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="COMMON_EVENT_OPENER" id="commonEventOpener"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="commonEventOpener">
+                    AGENTE DE EVENTOS
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonEventOpener"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="MASTER_QUALITY_INSPECTOR" id="masterQualityInspector"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="masterQualityInspector">
+                    AGENTE DE QUALIDADE MASTER
+                    <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterQualityInspector"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="COMMON_QUALITY_INSPECTOR" id="commonQualityInspector"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="commonQualityInspector">
+                    AGENTE DE QUALIDADE
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonQualityInspector"></i>
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="COMMON_RNC_REPORTER" id="commonRncReporter"
+                    (change)="onCheckboxChange($event)" />
+                  <label class="form-check-label fw-bold" for="commonRncReporter">
+                    PREENCHEDOR DE RNC
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonRncReporter"></i>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Texto das Permissões -->
-
         <ng-template #equalyMasterAdmin>
           <p>Exclusivo para administradores eQualy.</p>
           <p>
@@ -189,86 +343,6 @@
         </ng-template>
 
         <div class="row">
-          @if(isEqualyMasterAdmin){
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="EQUALY_MASTER_ADMIN" id="equalyMasterAdmin"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="equalyMasterAdmin">
-              ADMINISTRADOR MASTER EQUALY
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="equalyMasterAdmin"></i>
-            </label>
-          </div>
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="MASTER_ADMIN" id="masterAdmin"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="masterAdmin">
-              ADMINISTRADOR MASTER
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterAdmin"></i>
-            </label>
-          </div>
-          }
-
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="COMMON_ADMIN" id="commonAdmin"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="commonAdmin">
-              ADMINISTRADOR
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonAdmin"></i>
-            </label>
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row">
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="masterEventOpener">
-              AGENTE DE EVENTOS MASTER
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterEventOpener"></i>
-            </label>
-          </div>
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="COMMON_EVENT_OPENER" id="commonEventOpener"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="commonEventOpener">
-              AGENTE DE EVENTOS
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonEventOpener"></i>
-            </label>
-          </div>
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="MASTER_QUALITY_INSPECTOR" id="masterQualityInspector"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="masterQualityInspector">
-              AGENTE DE QUALIDADE MASTER
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="masterQualityInspector"></i>
-            </label>
-          </div>
-        </div>
-
-        <br />
-
-        <div class="row">
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="COMMON_QUALITY_INSPECTOR" id="commonQualityInspector"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="commonQualityInspector">
-              AGENTE DE QUALIDADE
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonQualityInspector"></i>
-            </label>
-          </div>
-          <div class="col-md form-check">
-            <input class="form-check-input" type="checkbox" value="COMMON_RNC_REPORTER" id="commonRncReporter"
-              (change)="onCheckboxChange($event)" />
-            <label class="form-check-label" for="commonRncReporter">
-              PREENCHEDOR DE RNC
-              <i class="bi bi-info-square-fill" placement="top" [ngbTooltip]="commonRncReporter"></i>
-            </label>
-          </div>
-        </div>
-
-        <div class="row">
           <div class="col-md text-center">
             <button class="btn btn-primary" [routerLink]="['/users']">
               <i class="bi bi-arrow-left-square-fill"></i>
@@ -281,7 +355,8 @@
                 invalidUsername ||
                 invalidLogin ||
                 invalidNickname ||
-                invalidEmail
+                invalidEmail ||
+                createUserForm.pending
               ">
               <i class="bi bi-plus-square-fill"></i>
               Cadastrar

@@ -1,11 +1,15 @@
 import { Component } from "@angular/core";
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { DepartmentService } from "../../../core/service/department/department.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
@@ -31,11 +35,15 @@ export class DepartmentEditComponent {
     this.departmentForm = this.formBuilder.group({
       departmentName: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(64),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(64),
+          ],
+          asyncValidators: [this.duplicateNameValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       departmentDescription: [
         "",
@@ -48,10 +56,38 @@ export class DepartmentEditComponent {
     });
   }
 
+  duplicateNameValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 2 || !this.selectedDepartment) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((name) => {
+        return this.departmentService.getDepartments("name", name, this.selectedDepartment?.company?.id ?? null, "NONE", 0, 10);
+      }),
+      map((response) => {
+        const existingDepartment = response.departments?.find(
+          (item) =>
+            item.name.toLowerCase() === control.value.toLowerCase() &&
+            item.id !== this.selectedDepartment?.id
+        );
+        return existingDepartment ? { duplicateName: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
   ngOnInit() {
     this.loadingService.show();
     const idParam = this.route.snapshot.paramMap.get("id");
     if (!idParam) {
+      this.loadingService.hide();
       this.router.navigate(["/departments"], {
         queryParams: {
           action: "ERROR",

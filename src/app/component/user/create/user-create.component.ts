@@ -1,30 +1,34 @@
 import { Component, OnInit, TemplateRef, ViewChild } from "@angular/core";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
-import { DepartmentSearchComponent } from "../../department/search/department-search.component";
-import { SessionService } from "../../../core/service/session/session.service";
-import { LoadingService } from "../../../core/service/loading/loading.service";
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
-import { UniversalUserService } from "../../../core/service/user/universal-user.service";
-import { UserService } from "../../../core/service/user/user.service";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { Router, RouterModule } from "@angular/router";
-import { UniversalUserResponse } from "../../../core/model/user/universal-user.model";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { DepartmentResponse } from "../../../core/model/department/department-response.model";
-import { UserCreateRequest } from "../../../core/model/user/user-create-request.model";
-import { UniversalUserCreateRequest } from "../../../core/model/user/universal-user-create-request.model";
 import {
   NgbModal,
   NgbModalModule,
   NgbTooltipModule,
 } from "@ng-bootstrap/ng-bootstrap";
-import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
+import { Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { DepartmentResponse } from "../../../core/model/department/department-response.model";
+import { UniversalUserCreateRequest } from "../../../core/model/user/universal-user-create-request.model";
+import { UniversalUserResponse } from "../../../core/model/user/universal-user.model";
+import { UserCreateRequest } from "../../../core/model/user/user-create-request.model";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { SessionService } from "../../../core/service/session/session.service";
+import { UniversalUserService } from "../../../core/service/user/universal-user.service";
+import { UserService } from "../../../core/service/user/user.service";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
+import { DepartmentSearchComponent } from "../../department/search/department-search.component";
 
 @Component({
   selector: "app-user-create",
@@ -78,7 +82,7 @@ export class UserCreateComponent implements OnInit {
     private router: Router,
     private sanitizer: DomSanitizer,
     private modalService: NgbModal
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.createUserForm = this.formBuilder.group({
@@ -102,11 +106,15 @@ export class UserCreateComponent implements OnInit {
       ],
       login: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(4),
-          Validators.maxLength(32),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(4),
+            Validators.maxLength(32),
+          ],
+          asyncValidators: [this.duplicateLoginValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       nickname: [
         "",
@@ -116,7 +124,14 @@ export class UserCreateComponent implements OnInit {
           Validators.maxLength(32),
         ],
       ],
-      email: ["", [Validators.required, Validators.email]],
+      email: [
+        "",
+        {
+          validators: [Validators.required, Validators.email],
+          asyncValidators: [this.duplicateEmailValidator.bind(this)],
+          updateOn: "blur",
+        },
+      ],
       roles: this.formBuilder.array([], Validators.required),
     });
 
@@ -124,8 +139,53 @@ export class UserCreateComponent implements OnInit {
       this.isEqualyMasterAdmin = true;
     }
 
-    // Atualiza flags de validação quando o form mudar
     this.createUserForm.valueChanges.subscribe(() => this.validateFields());
+  }
+
+  duplicateLoginValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 4) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((login) => {
+        return this.userService.getUsers("login", login, null, null, null, "NONE", null, 0, 1);
+      }),
+      map((response) => {
+        const exists = response.users.some((u) => u.login === control.value);
+        return exists ? { duplicateLogin: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
+  duplicateEmailValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || !control.value.includes('@')) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((email) => {
+        return this.userService.getUsers("email", email, null, null, null, "NONE", null, 0, 1);
+      }),
+      map((response) => {
+        const exists = response.users.some((u) => u.email === control.value);
+        return exists ? { duplicateEmail: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
   }
 
   private validateFields() {
@@ -179,7 +239,7 @@ export class UserCreateComponent implements OnInit {
 
     this.loadingService.show();
     this.userService
-      .getUsers("login", loginCtrl.value, null, null, null, "NONE", [] , 0, 1)
+      .getUsers("login", loginCtrl.value, null, null, null, "NONE", null, 0, 1)
       .subscribe({
         next: (res) => {
           this.invalidLogin = res.users.some(
@@ -189,7 +249,6 @@ export class UserCreateComponent implements OnInit {
         error: () => this.handleValidationError("Erro ao validar login."),
         complete: () => this.loadingService.hide(),
       });
-
   }
 
   checkEmailExists() {
@@ -198,7 +257,7 @@ export class UserCreateComponent implements OnInit {
 
     this.loadingService.show();
     this.userService
-      .getUsers("email", emailCtrl.value, null, null, null, "NONE", null,  0, 1)
+      .getUsers("email", emailCtrl.value, null, null, null, "NONE", null, 0, 1)
       .subscribe({
         next: (res) => {
           this.invalidEmail = res.users.some(
@@ -233,7 +292,10 @@ export class UserCreateComponent implements OnInit {
 
   get canSubmit(): boolean {
     return (
-      this.createUserForm.valid && !this.invalidEmail && !this.invalidLogin
+      this.createUserForm.valid &&
+      !this.invalidEmail &&
+      !this.invalidLogin &&
+      !this.createUserForm.pending
     );
   }
 
@@ -245,7 +307,7 @@ export class UserCreateComponent implements OnInit {
 
     const userRequest: UserCreateRequest = {
       universalUser: { id: this.universalUser?.id ?? 0 },
-      company: { id: this.selectedCompany?.id ?? null },
+      company: { id: this.selectedCompany?.id ?? Number(this.sessionService.getItem("companyId")) },
       department: { id: this.selectedDepartment?.id ?? null },
       login: this.createUserForm.get("login")?.value,
       username: this.createUserForm.get("username")?.value,
@@ -306,7 +368,6 @@ export class UserCreateComponent implements OnInit {
 
   createUserAvatar(id: number, blob: Blob, blobName: string) {
     if (blob.size > 2 * 1024 * 1024) {
-      // valida 2MB
       this.invalidAvatar = true;
       this.loadingService.hide();
       return;
@@ -374,7 +435,6 @@ export class UserCreateComponent implements OnInit {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      // 2MB
       this.invalidAvatar = true;
       return;
     }

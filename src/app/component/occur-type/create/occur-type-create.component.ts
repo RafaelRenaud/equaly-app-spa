@@ -1,16 +1,20 @@
 import { Component } from "@angular/core";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
 import {
+  AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { SessionService } from "../../../core/service/session/session.service";
 import { Router, RouterModule } from "@angular/router";
+import { Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
+import { SessionService } from "../../../core/service/session/session.service";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 
 @Component({
   selector: "app-occur-type-create",
@@ -23,6 +27,7 @@ export class OccurTypeCreateComponent {
   occurTypeForm!: FormGroup;
   selectedCompany: CompanyResponse | null = null;
   isEqualyMasterAdmin: boolean = false;
+  private isCheckingDuplicate: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -31,14 +36,20 @@ export class OccurTypeCreateComponent {
     private sessionService: SessionService,
     private router: Router
   ) {
+    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
+
     this.occurTypeForm = this.formBuilder.group({
       occurTypeName: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(2),
-          Validators.maxLength(64),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(64),
+          ],
+          asyncValidators: [this.duplicateNameValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       occurTypeDescription: [
         "",
@@ -49,16 +60,48 @@ export class OccurTypeCreateComponent {
         ],
       ],
     });
+  }
 
-    this.isEqualyMasterAdmin = sessionService.hasRole("EQUALY_MASTER_ADMIN");
+  duplicateNameValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 2 || !this.getCompanyId()) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((name) => {
+        return this.occurTypeService.getOccurTypes("name", name, this.getCompanyId(), "NONE", 0, 10);
+      }),
+      map((response) => {
+        const existingType = response.occurTypes?.find(
+          (item) => item.name.toLowerCase() === control.value.toLowerCase()
+        );
+        return existingType ? { duplicateName: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
+  private getCompanyId(): number | null {
+    if (this.isEqualyMasterAdmin && this.selectedCompany) {
+      return this.selectedCompany.id;
+    }
+    const companyId = this.sessionService.getItem("companyId");
+    return companyId ? Number(companyId) : null;
   }
 
   onSelectCompany(company: CompanyResponse | null) {
     this.selectedCompany = company;
+    this.occurTypeForm.get("occurTypeName")?.updateValueAndValidity();
   }
 
   submitOccurType() {
-    if (this.occurTypeForm.invalid) {
+    if (this.occurTypeForm.invalid || this.isCheckingDuplicate) {
       this.occurTypeForm.markAllAsTouched();
       return;
     }
@@ -68,7 +111,7 @@ export class OccurTypeCreateComponent {
       .createOccurType({
         name: this.occurTypeForm.get("occurTypeName")?.value,
         description: this.occurTypeForm.get("occurTypeDescription")?.value,
-        company: { id: this.selectedCompany?.id ?? null },
+        company: { id: this.selectedCompany?.id ?? Number(this.sessionService.getItem("companyId")) },
       })
       .subscribe({
         next: (response) => {

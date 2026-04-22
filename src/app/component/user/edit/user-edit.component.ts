@@ -1,28 +1,31 @@
 import { Component, OnInit, TemplateRef, ViewChild } from "@angular/core";
-import { DepartmentSearchComponent } from "../../department/search/department-search.component";
-import { SessionService } from "../../../core/service/session/session.service";
-import { LoadingService } from "../../../core/service/loading/loading.service";
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormGroup,
-  Validators,
   ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
 } from "@angular/forms";
-import { UserService } from "../../../core/service/user/user.service";
-import { Router, RouterModule, ActivatedRoute } from "@angular/router";
-import { DepartmentResponse } from "../../../core/model/department/department-response.model";
-import { UserResponse } from "../../../core/model/user/user-response.model";
-import { UserEditRequest } from "../../../core/model/user/user-edit-request.model";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import {
   NgbModal,
   NgbModalModule,
   NgbTooltipModule,
 } from "@ng-bootstrap/ng-bootstrap";
-import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 import { ImageCroppedEvent, ImageCropperComponent } from "ngx-image-cropper";
+import { forkJoin, Observable, of } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, map, switchMap } from "rxjs/operators";
+import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { RolesResponse } from "../../../core/model/role/roles-response.model";
-import { forkJoin } from "rxjs";
+import { UserEditRequest } from "../../../core/model/user/user-edit-request.model";
+import { UserResponse } from "../../../core/model/user/user-response.model";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { SessionService } from "../../../core/service/session/session.service";
+import { UserService } from "../../../core/service/user/user.service";
+import { DepartmentSearchComponent } from "../../department/search/department-search.component";
 
 @Component({
   selector: "app-user-edit",
@@ -33,7 +36,7 @@ import { forkJoin } from "rxjs";
     NgbTooltipModule,
     ImageCropperComponent,
     DepartmentSearchComponent
-],
+  ],
   templateUrl: "./user-edit.component.html",
   styleUrl: "./user-edit.component.scss",
   standalone: true,
@@ -71,7 +74,7 @@ export class UserEditComponent implements OnInit {
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
     private modalService: NgbModal
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.editUserForm = this.formBuilder.group({
@@ -85,11 +88,15 @@ export class UserEditComponent implements OnInit {
       ],
       login: [
         "",
-        [
-          Validators.required,
-          Validators.minLength(4),
-          Validators.maxLength(32),
-        ],
+        {
+          validators: [
+            Validators.required,
+            Validators.minLength(4),
+            Validators.maxLength(32),
+          ],
+          asyncValidators: [this.duplicateLoginValidator.bind(this)],
+          updateOn: "blur",
+        },
       ],
       nickname: [
         "",
@@ -99,7 +106,14 @@ export class UserEditComponent implements OnInit {
           Validators.maxLength(32),
         ],
       ],
-      email: ["", [Validators.required, Validators.email]],
+      email: [
+        "",
+        {
+          validators: [Validators.required, Validators.email],
+          asyncValidators: [this.duplicateEmailValidator.bind(this)],
+          updateOn: "blur",
+        },
+      ],
       roles: this.formBuilder.array([], Validators.required),
     });
 
@@ -107,7 +121,6 @@ export class UserEditComponent implements OnInit {
       this.isEqualyMasterAdmin = true;
     }
 
-    // Obtém o ID do usuário da rota
     const userId = this.route.snapshot.paramMap.get("id");
     if (userId) {
       this.loadUserData(userId);
@@ -115,8 +128,61 @@ export class UserEditComponent implements OnInit {
       this.router.navigate(["/users"]);
     }
 
-    // Atualiza flags de validação quando o form mudar
     this.editUserForm.valueChanges.subscribe(() => this.validateFields());
+  }
+
+  duplicateLoginValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || control.value.length < 4 || !this.user) {
+      return of(null);
+    }
+
+    if (control.value === this.user.login) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((login) => {
+        return this.userService.getUsers("login", login, null, null, null, "NONE", null, 0, 1);
+      }),
+      map((response) => {
+        const exists = response.users.some((u) => u.login === control.value && u.id !== this.user!.id);
+        return exists ? { duplicateLogin: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
+  }
+
+  duplicateEmailValidator(control: AbstractControl): Promise<ValidationErrors | null> | Observable<ValidationErrors | null> {
+    if (!control.value || !control.value.includes('@') || !this.user) {
+      return of(null);
+    }
+
+    if (control.value === this.user.email) {
+      return of(null);
+    }
+
+    this.loadingService.show();
+
+    return of(control.value).pipe(
+      debounceTime(500),
+      distinctUntilChanged(),
+      switchMap((email) => {
+        return this.userService.getUsers("email", email, null, null, null, "NONE", null, 0, 1);
+      }),
+      map((response) => {
+        const exists = response.users.some((u) => u.email === control.value && u.id !== this.user!.id);
+        return exists ? { duplicateEmail: true } : null;
+      }),
+      finalize(() => {
+        this.loadingService.hide();
+      })
+    );
   }
 
   private loadUserData(userId: string) {
@@ -201,7 +267,7 @@ export class UserEditComponent implements OnInit {
 
     this.loadingService.show();
     this.userService
-      .getUsers("login", loginCtrl.value, null, null, null, "NONE", null,  0, 1)
+      .getUsers("login", loginCtrl.value, null, null, null, "NONE", null, 0, 1)
       .subscribe({
         next: (res) => {
           this.invalidLogin = res.users.some(
@@ -212,7 +278,6 @@ export class UserEditComponent implements OnInit {
         error: () => this.handleValidationError("Erro ao validar login."),
         complete: () => this.loadingService.hide(),
       });
-
   }
 
   checkEmailExists() {
@@ -237,7 +302,6 @@ export class UserEditComponent implements OnInit {
         error: () => this.handleValidationError("Erro ao validar email."),
         complete: () => this.loadingService.hide(),
       });
-
   }
 
   private handleValidationError(message: string) {
@@ -279,7 +343,12 @@ export class UserEditComponent implements OnInit {
   }
 
   get canSubmit(): boolean {
-    return this.editUserForm.valid && !this.invalidEmail && !this.invalidLogin;
+    return (
+      this.editUserForm.valid &&
+      !this.invalidEmail &&
+      !this.invalidLogin &&
+      !this.editUserForm.pending
+    );
   }
 
   updateUser() {
@@ -333,7 +402,6 @@ export class UserEditComponent implements OnInit {
 
   updateUserAvatar(id: number, blob: Blob, blobName: string) {
     if (blob.size > 2 * 1024 * 1024) {
-      // valida 2MB
       this.invalidAvatar = true;
       this.loadingService.hide();
       return;
@@ -379,7 +447,6 @@ export class UserEditComponent implements OnInit {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      // 2MB
       this.invalidAvatar = true;
       return;
     }

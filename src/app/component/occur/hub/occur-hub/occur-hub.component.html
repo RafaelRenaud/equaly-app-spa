@@ -4,6 +4,15 @@
     </div>
     <div class="surface-container-body">
 
+        @if(isOnlyOpener || isOnlyInspector){
+        <div class="row">
+            <div class="col-md alert alert-primary" role="alert">
+                <i class="bi bi-info-square-fill me-2"></i>
+                Não é possível exibir ocorrências atreladas a outros usuários.
+            </div>
+        </div>
+        }
+
         <div class="row mb-3">
             <div class="col-md">
                 <div class="form-floating">
@@ -337,12 +346,15 @@
                                 <ng-template>
                                     <div class="row">
                                         <div class="col-md-12">
+                                            @if(selectedStatusMap['DRAFT_OPENED']){
                                             <div class="row">
                                                 <div class="col-md alert alert-warning" role="alert">
-                                                    <i class="bi bi-info-square-fill me-2"></i>
-                                                    Atenção: ao selecionar rascunhos apenas ocorrências abertas por você serão pesquisadas.
+                                                    <i class="bi bi-exclamation-square-fill me-2"></i>
+                                                    Ao selecionar "Em Rascunho", apenas rascunhos abertos por você serão
+                                                    exibidos.
                                                 </div>
                                             </div>
+                                            }
                                             <div class="row">
                                                 <div class="col-md-3 mb-2">
                                                     <div class="form-check">

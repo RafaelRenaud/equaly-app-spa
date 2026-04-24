@@ -40,6 +40,29 @@
         </div>
     </div>
 
+    @if(occur.status === 'DRAFT_OPENED'){
+    <div class="row">
+        <div class="col-md alert alert-primary" role="alert">
+            <i class="bi bi-info-square-fill me-2"></i>
+            Para editar, deletar ou submeter rascunhos, acesse o menu "Rascunhos" e procure pela ocorrência.
+        </div>
+    </div>
+    }@else if(occur.status === 'PENDING_EDIT_APPROVAL' && isOccurInspector){
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-info-exclamation-fill me-2"></i>
+            Essa ocorrência aguarda sua aprovação de edição, para aprovar acesse o menu inferior da ocorrência na aba "Solicitações de Edição"
+        </div>
+    </div>
+    }@else if(occur.status === 'AWAITING_EDIT' && isOccurOpener){
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-info-exclamation-fill me-2"></i>
+            Essa ocorrência aguarda sua edição, para editar acesse o menu "Pendências" e "Aguardando Edição"
+        </div>
+    </div>
+    }
+
     <div class="row mb-3">
         <div class="col-md">
             <div class="p-3 border rounded">
@@ -293,7 +316,7 @@
                     } @else if(occur.closeStatus === 'CLOSED_WITHOUT_RATING'){
                     <span>Encerrado sem Feedback</span>
                     } @else {
-                    <span>Aguardando Encerramento</span>
+                    <span>Encerrado aguardando Feedback</span>
                     }
                 </div>
             </div>

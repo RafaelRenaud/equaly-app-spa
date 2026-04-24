@@ -57,7 +57,6 @@ export class OccurViewerComponent implements OnInit {
           }
         },
         error: (err) => {
-          console.error('Erro ao carregar ocorrência:', err);
           this.handleError("Ocorrência Inválida");
         }
       });

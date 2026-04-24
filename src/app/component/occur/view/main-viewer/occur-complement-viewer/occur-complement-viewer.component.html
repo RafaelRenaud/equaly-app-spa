@@ -1,24 +1,15 @@
+<!-- occur-complement-viewer.component.html -->
 @if (occur) {
 <div class="surface-container">
     <div class="surface-container-header">
         <h3 class="text-white pt-3 pb-2">Ações Secundárias</h3>
     </div>
     <div class="surface-container-body">
-        <!-- Tabs de navegação -->
         <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-4" [destroyOnHide]="false">
-            <!-- Anexos -->
             <li ngbNavItem="attachments">
                 <button ngbNavLink>Anexos</button>
                 <ng-template ngbNavContent>
                     <div class="tab-content-container p-3">
-                        @if (isLoadingFiles) {
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Carregando...</span>
-                            </div>
-                            <p class="text-muted mt-2">Carregando anexos...</p>
-                        </div>
-                        } @else {
                         @if (existingFiles.length === 0) {
                         <div class="alert alert-primary" role="alert">
                             <i class="bi bi-info-square-fill me-2"></i>
@@ -46,24 +37,14 @@
                             </div>
                         </div>
                         }
-                        }
                     </div>
                 </ng-template>
             </li>
 
-            <!-- Solicitações de Edição -->
             <li ngbNavItem="editRequests">
                 <button ngbNavLink>Solicitações de Edição</button>
                 <ng-template ngbNavContent>
                     <div class="tab-content-container p-3">
-                        @if (isLoadingEditRequests) {
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Carregando...</span>
-                            </div>
-                            <p class="text-muted mt-2">Carregando solicitações...</p>
-                        </div>
-                        } @else {
                         @if (editRequests.length === 0) {
                         <div class="alert alert-primary" role="alert">
                             <i class="bi bi-info-square-fill me-2"></i>
@@ -92,24 +73,74 @@
                             }
                         </div>
                         }
-                        }
                     </div>
                 </ng-template>
             </li>
 
-            <!-- Histórico de Atividades -->
+            @if(occur.status === 'AWAITING_REPORT' && isOccurInspector){
+            <li ngbNavItem="inspectOccur">
+                <button ngbNavLink>Inspecionar Ocorrência</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Análise de Qualidade</label>
+                            <textarea class="form-control" rows="5" [(ngModel)]="inspectionReport" maxlength="512"
+                                placeholder="Descreva sua análise de qualidade..."></textarea>
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted"
+                                    [class.text-danger]="inspectionReport.length < 8 && inspectionReport.length > 0">
+                                    {{ inspectionReport.length }}/512 caracteres (mínimo 8)
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="generateNonConformity"
+                                [(ngModel)]="generateNonConformity">
+                            <label class="form-check-label" for="generateNonConformity">
+                                Gerar Não-Conformidade
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary" (click)="openInspectModal(inspectModal)"
+                            [disabled]="inspectionReport.length < 8 || inspectionReport.length > 512">
+                            <i class="bi bi-check-square-fill me-1"></i> Confirmar Inspeção
+                        </button>
+                    </div>
+                </ng-template>
+            </li>
+            }
+
+            @if(occur.status === 'AWAITING_CLOSE' && isOccurOpener){
+            <li ngbNavItem="closeOccur">
+                <button ngbNavLink>Encerrar Ocorrência</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Informações de Fechamento</label>
+                            <textarea class="form-control" rows="5" [(ngModel)]="closeInfo" maxlength="512"
+                                placeholder="Descreva as informações de fechamento..."></textarea>
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted"
+                                    [class.text-danger]="closeInfo.length < 8 && closeInfo.length > 0">
+                                    {{ closeInfo.length }}/512 caracteres (mínimo 8)
+                                </small>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" (click)="openCloseModal(closeModal)"
+                            [disabled]="closeInfo.length < 8 || closeInfo.length > 512">
+                            <i class="bi bi-check-square-fill me-1"></i> Confirmar Encerramento
+                        </button>
+                    </div>
+                </ng-template>
+            </li>
+            }
+
             <li ngbNavItem="activityHistory">
                 <button ngbNavLink>Histórico de Atividades</button>
                 <ng-template ngbNavContent>
                     <div class="tab-content-container p-3">
-                        @if (isLoadingActivities) {
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Carregando...</span>
-                            </div>
-                            <p class="text-muted mt-2">Carregando histórico...</p>
-                        </div>
-                        } @else {
                         @if (activities.length === 0) {
                         <div class="alert alert-primary" role="alert">
                             <i class="bi bi-info-square-fill me-2"></i>
@@ -121,7 +152,7 @@
                             <div class="timeline-item mb-3">
                                 <div class="d-flex">
                                     <div class="timeline-icon me-3">
-                                        <i class="bi" [class.bi-plus-circle]="activity.type === 'CREATE'"
+                                        <i class="bi" [class.bi-plus-square]="activity.type === 'CREATE'"
                                             [class.bi-pencil-square]="activity.type === 'UPDATE'"
                                             [class.bi-paperclip]="activity.type === 'ATTACHMENT'"
                                             [class.bi-chat-dots]="activity.type === 'COMMENT'"></i>
@@ -140,25 +171,15 @@
                             }
                         </div>
                         }
-                        }
                     </div>
                 </ng-template>
             </li>
 
-            <!-- Avaliações do Dalton -->
             @if(isDaltonEnabled){
             <li ngbNavItem="daltonRatings">
                 <button ngbNavLink>Avaliações do Dalton</button>
                 <ng-template ngbNavContent>
                     <div class="tab-content-container p-3">
-                        @if (isLoadingRatings) {
-                        <div class="text-center py-5">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Carregando...</span>
-                            </div>
-                            <p class="text-muted mt-2">Carregando avaliações...</p>
-                        </div>
-                        } @else {
                         @if (ratings.length === 0) {
                         <div class="alert alert-primary" role="alert">
                             <i class="bi bi-info-square-fill me-2"></i>
@@ -188,15 +209,76 @@
                             }
                         </div>
                         }
-                        }
                     </div>
                 </ng-template>
             </li>
             }
         </ul>
 
-        <!-- Outlet para as abas -->
         <div [ngbNavOutlet]="nav" class="mt-3"></div>
     </div>
 </div>
 }
+
+<ng-template #inspectModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Confirmar Inspeção</h4>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p class="mb-0">
+            @if(generateNonConformity) {
+        <p class="mt-3">
+            A ocorrência {{occur?.code}} terá análise encerrada e uma não conformidade será gerada.
+        </p>
+        <p class="text-muted small">Deseja seguir com a ação?</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+
+        } @else {
+        <p class="mt-3">
+            A ocorrência {{occur?.code}} terá análise encerrada e retornará para o fechamento do requisitante.
+        </p>
+        <p class="text-muted small">Deseja seguir com a ação?</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+
+        }
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+            <i class="bi bi-x-square-fill"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="modal.close(); confirmInspection()">
+
+            <i class="bi bi-check-square-fill"></i> Confirmar
+        </button>
+    </div>
+</ng-template>
+
+<ng-template #closeModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Confirmar Encerramento</h4>
+        <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p class="mb-0">
+            @if(occur?.complaint?.isAnonymous) {
+            Deseja prosseguir com o encerramento da ocorrência {{ occur?.code }}?
+            } @else {
+            A ocorrência será internamente encerrada e aguardará o retorno do cliente por 30 dias, ele será notificado
+            por e-mail, e recomendamos o contato direto pelos canais de atendimento da empresa.
+            }
+        </p>
+        <p class="text-mutel small">Deseja prosseguir com o fechamento?</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+            <i class="bi bi-x-square-fill"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="modal.close(); confirmClose()">
+
+            <i class="bi bi-check-square-fill"></i> Confirmar
+        </button>
+    </div>
+</ng-template>

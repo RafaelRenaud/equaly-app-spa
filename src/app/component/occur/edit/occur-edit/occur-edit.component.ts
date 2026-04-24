@@ -954,15 +954,15 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
   }
 
   private redirectWithSuccess(message: string): void {
-    this.router.navigate(['/'], { queryParams: { action: 'SUCCESS', message } });
+    this.router.navigate(['/occurs'], { queryParams: { action: 'SUCCESS', message } });
   }
 
   private redirectWithWarning(message: string): void {
-    this.router.navigate(['/'], { queryParams: { action: 'WARNING', message } });
+    this.router.navigate([], { queryParams: { action: 'WARNING', message } });
   }
 
   private redirectWithError(message: string): void {
-    this.router.navigate(['/'], { queryParams: { action: 'ERROR', message } });
+    this.router.navigate(['/occurs'], { queryParams: { action: 'ERROR', message } });
   }
 
   private showAlert(type: 'SUCCESS' | 'WARNING' | 'ERROR', message: string): void {

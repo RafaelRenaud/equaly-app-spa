@@ -62,6 +62,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   @ViewChildren('dateInput') dateInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   isOnlyOpener: boolean = false;
+  isOnlyInspector: boolean = false;
 
   occurs: Occur[] = [];
   selectedOpener: UserResponse | null = null;
@@ -132,9 +133,8 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    if (this.sessionService.hasRole('COMMON_EVENT_OPENER') && this.sessionService.getRoles().length === 1) {
-      this.isOnlyOpener = true;
-    }
+    this.isOnlyOpener = this.sessionService.hasRole('COMMON_EVENT_OPENER') && this.sessionService.getRoles().length === 1;
+    this.isOnlyInspector = this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR') && this.sessionService.getRoles().length === 1;
 
     this.search();
   }

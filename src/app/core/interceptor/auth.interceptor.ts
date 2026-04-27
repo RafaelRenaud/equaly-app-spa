@@ -22,6 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (
     "/authentication/v2/oauth/token",
     "/authentication/v2/oauth/token/refresh",
     "/authentication/v2/recovery",
+    "/occurs/*/rating"
   ];
 
   const isPublic = excludedUrls.some((url) => req.url.includes(url));

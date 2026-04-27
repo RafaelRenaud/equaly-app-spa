@@ -129,8 +129,12 @@ export class OccurService {
    * PATCH /occurs/{occur_id}/rating
    * Rate an Awaiting Rating Occur
    */
-  rateOccur(occurId: number, rating: RateOccur): Observable<Occur> {
-    const headers = this.getDefaultHeaders();
+  rateOccur(occurId: number, token: string, rating: RateOccur): Observable<Occur> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Basic ${token}`,
+      'X-Equaly-Channel': 'GENERIC'
+    });
     const url = `${this.endpoint}/${occurId}/rating`;
 
     return this.http.patch<Occur>(url, rating, { headers });

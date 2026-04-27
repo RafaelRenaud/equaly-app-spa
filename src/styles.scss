@@ -89,6 +89,11 @@ i.btn-primary {
     background-color: var(--secondary-color) !important;
     border-color: var(--secondary-color) !important;
   }
+
+  &:disabled{
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+  }
 }
 
 button.btn-outline-primary,

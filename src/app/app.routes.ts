@@ -45,7 +45,7 @@ export const routes: Routes = [
     children: [{ path: "", component: RecoveryComponent }],
   },
   {
-    path: "occur-feedback",
+    path: "occur-rating",
     component: AuthLayoutComponent,
     children: [{ path: "", component: OccurFeedbackComponent }],
   },

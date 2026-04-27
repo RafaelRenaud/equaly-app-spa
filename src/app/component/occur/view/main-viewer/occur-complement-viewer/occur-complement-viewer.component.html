@@ -77,7 +77,7 @@
                 </ng-template>
             </li>
 
-            @if(occur.status === 'AWAITING_REPORT' && isOccurInspector){
+            @if((occur.status === 'AWAITING_REPORT' && isOccurInspector) || (occur.status === 'AWAITING_REPORT' && !occur.hasInspectorAssigned)){
             <li ngbNavItem="inspectOccur">
                 <button ngbNavLink>Inspecionar Ocorrência</button>
                 <ng-template ngbNavContent>
@@ -239,7 +239,7 @@
             A ocorrência {{occur?.code}} terá análise encerrada e retornará para o fechamento do requisitante.
         </p>
         <p class="text-muted small">Deseja seguir com a ação?</p>
-        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+        <img src="assets/analysis.svg" alt="Aviso" class="w-25" />
 
         }
         </p>
@@ -270,7 +270,7 @@
             }
         </p>
         <p class="text-mutel small">Deseja prosseguir com o fechamento?</p>
-        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+        <img src="assets/answer.svg" alt="Aviso" class="w-25" />
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">

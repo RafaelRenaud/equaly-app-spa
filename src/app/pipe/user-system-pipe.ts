@@ -8,6 +8,10 @@ export class UserSystemPipe implements PipeTransform {
       return "Usuário Sistêmico";
     }else if (value === "DALTON") {
       return "Dalton Assistant";
+    }else if (value === "WHATSAPP") {
+      return "Dalton Assistant via WhatsApp";
+    }else if (value === "EQUALY") {
+      return "Sistema Interno";
     }else{
       return value;
     }

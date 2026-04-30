@@ -73,15 +73,13 @@ export class OccurPendingComponent implements OnInit {
         case 'chatbot':
           filters = {
             status: ['DRAFT_OPENED'],
-            complaintChannel: 'DALTON',
-            openerId: userId
+            complaintChannel: 'DALTON'
           };
           break;
         case 'whatsapp':
           filters = {
             status: ['DRAFT_OPENED'],
-            complaintChannel: 'WHATSAPP',
-            openerId: userId
+            complaintChannel: 'WHATSAPP'
           };
           break;
         case 'awaitingEdit':

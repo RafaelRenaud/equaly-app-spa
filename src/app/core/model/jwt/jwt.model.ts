@@ -24,6 +24,9 @@ export interface JWT{
         picture: string;
         username: string;
     };
+    dalton : {
+        enabled: boolean;
+    };
     iat: number;
     exp: number;
 }

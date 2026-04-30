@@ -65,6 +65,8 @@ export class SessionService {
     this.safeSetItem("email", jwtPayload.user.email);
     this.safeSetItem("name", jwtPayload.user.name);
     this.safeSetItem("userAvatar", jwtPayload.user.picture);
+
+    this.safeSetItem("isDaltonEnabled", jwtPayload.dalton.enabled.toString());
   }
 
   getItem(key: string): string | null {

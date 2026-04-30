@@ -30,7 +30,7 @@
             <div class="p-3 border rounded">
                 <div class="text-secondary small">Canal de Abertura</div>
                 @if(occur.complaint?.channel == 'EQUALY'){
-                <div>Canal Interno</div>
+                <div>Sistema Interno</div>
                 }@else if(occur.complaint?.channel == 'DALTON'){
                 <div>Dalton</div>
                 }@else if(occur.complaint?.channel == 'WHATSAPP'){
@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    @if(occur.status === 'DRAFT_OPENED'){
+    @if(occur.status === 'DRAFT_OPENED' && occur.complaint?.channel === 'EQUALY' && isOccurOpener){
     <div class="row">
         <div class="col-md alert alert-primary" role="alert">
             <i class="bi bi-info-square-fill me-2"></i>
@@ -51,7 +51,8 @@
     <div class="row">
         <div class="col-md alert alert-warning" role="alert">
             <i class="bi bi-info-exclamation-fill me-2"></i>
-            Essa ocorrência aguarda sua aprovação de edição, para aprovar acesse o menu inferior da ocorrência na aba "Solicitações de Edição"
+            Essa ocorrência aguarda sua aprovação de edição, para aprovar acesse o menu inferior da ocorrência na aba
+            "Solicitações de Edição"
         </div>
     </div>
     }@else if(occur.status === 'AWAITING_EDIT' && isOccurOpener){
@@ -107,10 +108,15 @@
         <div class="col-md">
             <div class="p-3 border rounded">
                 <div class="text-secondary small">Aberto por</div>
-                <div>{{ occur.opener!.id + ' - ' + occur.opener!.username }}
-                    <i class="bi bi-info-square-fill" role="button" tabindex="0" [ngbPopover]="openerContent"
-                        popoverTitle="Aberto por" triggers="mouseenter:mouseleave" container="body"></i>
-                </div>
+                @if(occur.hasOpenerAssigned){
+                <div>{{ occur.opener!.id + ' - ' + occur.opener!.username }} <i class="bi bi-info-square-fill"
+                        role="button" tabindex="0" [ngbPopover]="openerContent" popoverTitle="Aberto por"
+                        triggers="mouseenter:mouseleave" container="body"></i></div>
+                }@else {
+                <div>Aguardando Oficialização <i class="bi bi-info-square-fill" placement="top"
+                        ngbTooltip="A ocorrência aguarda uma aprovação de um responsável para que esse vire o responsável"
+                        role="button" tabindex="0"></i></div>
+                }
             </div>
         </div>
 
@@ -375,7 +381,7 @@
                 <div class="text-secondary small">Criado por</div>
                 <div>
                     @if(occur.audit?.createdBy){
-                    {{ occur.audit!.createdBy }}
+                    {{ occur.audit!.createdBy! | systemName}}
                     } @else {
                     Não se aplica
                     }

@@ -11,7 +11,7 @@
         class="nav-tabs mb-4"
         [destroyOnHide]="false"
       >
-        @if (occur.status !== "DRAFT_OPENED") {
+        @if (occur.status !== "DRAFT_OPENED" || (occur.status === "DRAFT_OPENED" && occur.complaint?.channel != "EQUALY")) {
           <li ngbNavItem="attachments">
             <button ngbNavLink>Anexos</button>
             <ng-template ngbNavContent>

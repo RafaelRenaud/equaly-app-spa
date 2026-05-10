@@ -1,9 +1,17 @@
-// occur-complement-viewer.component.ts
-import { CommonModule, DatePipe } from "@angular/common";
-import { Component, Input, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import {
+  Component,
+  Input,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { NgbModal, NgbNavModule } from "@ng-bootstrap/ng-bootstrap";
+import { Subscription, interval, forkJoin, of } from "rxjs";
+import { catchError, finalize, map } from "rxjs/operators";
 import { FileAccessResponse } from "../../../../../core/model/file/file-access.model";
 import { FileResponse } from "../../../../../core/model/file/file-response.model";
 import { FilesResponse } from "../../../../../core/model/file/files-response.model";
@@ -14,7 +22,6 @@ import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
-import { finalize } from "rxjs";
 import { CreateUpdateOccur } from "../../../../../core/model/occur/occur-create-update.model";
 import { UserTypeHeadSearchComponent } from "../../../../user/search/user-type-head-search/user-type-head-search.component";
 import { UserResponse } from "../../../../../core/model/user/user-response.model";
@@ -49,7 +56,6 @@ interface DaltonRating {
   imports: [
     CommonModule,
     NgbNavModule,
-    DatePipe,
     FormsModule,
     UserTypeHeadSearchComponent,
   ],
@@ -57,12 +63,15 @@ interface DaltonRating {
   styleUrl: "./occur-complement-viewer.component.scss",
   standalone: true,
 })
-export class OccurComplementViewerComponent implements OnInit {
+export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   @Input({ required: true }) occur!: Occur;
+  @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild("uploadProgressModal") uploadProgressModal: any;
 
   activeTab: string = "attachments";
 
   existingFiles: FileResponse[] = [];
+  attachedFiles: File[] = [];
   editRequests: EditRequest[] = [];
   activities: Activity[] = [];
   ratings: DaltonRating[] = [];
@@ -71,12 +80,22 @@ export class OccurComplementViewerComponent implements OnInit {
   isOccurOpener: boolean = false;
   isOccurInspector: boolean = false;
   hasInspectorRole: boolean = false;
+  isSavingAttachments: boolean = false;
 
   inspectionReport: string = "";
   generateNonConformity: boolean = false;
   closeInfo: string = "";
 
   occurToUpdate: CreateUpdateOccur | null = null;
+
+  maxFiles: number = 10;
+  uploadProgress = {
+    percent: 0,
+    message: "Enviando arquivos...",
+  };
+
+  private refreshTimerSubscription?: Subscription;
+  private readonly REFRESH_INTERVAL_MS = 120000;
 
   constructor(
     private fileService: FileService,
@@ -95,25 +114,64 @@ export class OccurComplementViewerComponent implements OnInit {
     this.isOccurInspector =
       Number(this.sessionService.getItem("userId")) ===
       this.occur?.inspector?.id;
-    this.hasInspectorRole = this.sessionService.hasRole("COMMON_QUALITY_INSPECTOR");
+    this.hasInspectorRole = this.sessionService.hasRole(
+      "COMMON_QUALITY_INSPECTOR",
+    );
 
     if (this.occur) {
       this.occurToUpdate = this.convertOccurToCreateUpdateOccur(this.occur);
     }
 
-    if (this.occur?.id) {
+    if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
       this.loadAttachments();
+      this.startAutoRefresh();
+    }
+
+    if (this.occur?.id) {
       this.loadEditRequests();
       this.loadActivities();
       this.loadRatings();
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
+  }
+
+  private startAutoRefresh(): void {
+    this.stopAutoRefresh();
+    this.refreshTimerSubscription = interval(
+      this.REFRESH_INTERVAL_MS,
+    ).subscribe(() => {
+      if (
+        this.activeTab === "attachments" &&
+        this.occur?.status !== "DRAFT_OPENED"
+      ) {
+        this.loadAttachmentsSilently();
+      }
+    });
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.refreshTimerSubscription) {
+      this.refreshTimerSubscription.unsubscribe();
+      this.refreshTimerSubscription = undefined;
+    }
+  }
+
+  refreshAttachments(): void {
+    if (!this.occur?.id) return;
+    this.loadAttachments();
+  }
+
   private loadAttachments(): void {
     if (!this.occur?.id) return;
 
+    this.loadingService.show();
+
     this.fileService
       .getFiles(this.occur.id.toString(), "OCCUR", 0, 10)
+      .pipe(finalize(() => this.loadingService.hide()))
       .subscribe({
         next: (response: FilesResponse) => {
           if (response && response.files && Array.isArray(response.files)) {
@@ -125,12 +183,109 @@ export class OccurComplementViewerComponent implements OnInit {
           }
         },
         error: () => {
-          this.router.navigate([], {
-            queryParams: {
-              action: "ERROR",
-              message: `Erro ao carregar arquivos da ocorrência.`,
-            },
-          });
+          this.showAlert("ERROR", "Erro ao carregar arquivos da ocorrência.");
+        },
+      });
+  }
+
+  private loadAttachmentsSilently(): void {
+    if (!this.occur?.id) return;
+
+    this.fileService
+      .getFiles(this.occur.id.toString(), "OCCUR", 0, 10)
+      .subscribe({
+        next: (response: FilesResponse) => {
+          const newFiles =
+            response && response.files && Array.isArray(response.files)
+              ? response.files
+              : response && Array.isArray(response)
+                ? response
+                : [];
+
+          this.existingFiles = newFiles;
+        },
+        error: () => {
+          console.error("Erro ao carregar anexos automaticamente");
+        },
+      });
+  }
+
+  private showAlert(
+    type: "SUCCESS" | "WARNING" | "ERROR",
+    message: string,
+  ): void {
+    this.router.navigate([], { queryParams: { action: type, message } });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files) return;
+
+    const totalFiles = this.existingFiles.length + this.attachedFiles.length;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      if (totalFiles + i >= this.maxFiles) {
+        this.showAlert(
+          "WARNING",
+          `Limite máximo de ${this.maxFiles} anexos atingido.`,
+        );
+        break;
+      }
+
+      const allowedExtensions = [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic",
+        ".xml",
+      ];
+      const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension)) {
+        this.showAlert(
+          "WARNING",
+          `Tipo de arquivo não suportado: ${file.name}. Formatos permitidos: PDF, JPG, PNG, HEIC, XML.`,
+        );
+        continue;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        this.showAlert(
+          "WARNING",
+          `Arquivo muito grande: ${file.name} (máximo 10MB).`,
+        );
+        continue;
+      }
+
+      this.attachedFiles.push(file);
+    }
+
+    input.value = "";
+  }
+
+  removeNewFile(index: number): void {
+    this.attachedFiles.splice(index, 1);
+  }
+
+  removeExistingFile(file: FileResponse): void {
+    if (!this.occur?.id || !file.id) return;
+
+    this.loadingService.show();
+
+    this.fileService
+      .deleteFile(file.id.toString(), this.occur.id.toString(), "OCCUR")
+      .pipe(finalize(() => this.loadingService.hide()))
+      .subscribe({
+        next: () => {
+          this.loadAttachments();
+          this.showAlert("SUCCESS", "Arquivo removido com sucesso!");
+        },
+        error: () => {
+          this.showAlert("ERROR", "Erro ao remover arquivo. Tente novamente.");
         },
       });
   }
@@ -167,12 +322,10 @@ export class OccurComplementViewerComponent implements OnInit {
         },
         error: () => {
           this.loadingService.hide();
-          this.router.navigate([], {
-            queryParams: {
-              action: "ERROR",
-              message: `Erro ao acessar o arquivo. Tente novamente.`,
-            },
-          });
+          this.showAlert(
+            "ERROR",
+            "Erro ao acessar o arquivo. Tente novamente.",
+          );
         },
       });
   }
@@ -207,10 +360,7 @@ export class OccurComplementViewerComponent implements OnInit {
           this.router.navigate(["/occurs"], {
             queryParams: {
               action: "SUCCESS",
-              message:
-                `Inspeção da ocorrência ` +
-                this.occur?.code +
-                ` realizada com sucesso!`,
+              message: `Inspeção da ocorrência ${this.occur?.code} realizada com sucesso!`,
             },
           });
         },
@@ -245,8 +395,7 @@ export class OccurComplementViewerComponent implements OnInit {
         this.router.navigate(["/occurs"], {
           queryParams: {
             action: "SUCCESS",
-            message:
-              `Ocorrência ` + this.occur?.code + ` encerrada com sucesso!`,
+            message: `Ocorrência ${this.occur?.code} encerrada com sucesso!`,
           },
         });
       },
@@ -282,7 +431,7 @@ export class OccurComplementViewerComponent implements OnInit {
               },
             });
           },
-          error: (error) => {
+          error: () => {
             modal.close();
             this.router.navigate([], {
               queryParams: {
@@ -311,7 +460,7 @@ export class OccurComplementViewerComponent implements OnInit {
               },
             });
           },
-          error: (error) => {
+          error: () => {
             this.router.navigate([], {
               queryParams: {
                 action: "ERROR",
@@ -351,5 +500,83 @@ export class OccurComplementViewerComponent implements OnInit {
           }
         : undefined,
     };
+  }
+
+  async saveAttachments(): Promise<void> {
+    if (!this.occur?.id || this.attachedFiles.length === 0) return;
+
+    const totalAfterAdd = this.existingFiles.length + this.attachedFiles.length;
+    if (totalAfterAdd > this.maxFiles) {
+      this.showAlert(
+        "WARNING",
+        `Limite máximo de ${this.maxFiles} anexos. Você pode adicionar no máximo ${this.maxFiles - this.existingFiles.length}.`,
+      );
+      return;
+    }
+
+    this.isSavingAttachments = true;
+    this.modalService.open(this.uploadProgressModal, {
+      centered: true,
+      backdrop: "static",
+      keyboard: false,
+      size: "md",
+    });
+
+    let currentProgress = 0;
+
+    try {
+      this.uploadProgress.percent = 10;
+      this.uploadProgress.message = "Comprimindo imagens...";
+
+      const compressedFiles = await Promise.all(
+        this.attachedFiles.map((file) => this.fileService.compressImage(file)),
+      );
+
+      this.uploadProgress.percent = 20;
+      this.uploadProgress.message = "Enviando arquivos...";
+      currentProgress = 20;
+
+      const totalFiles = compressedFiles.length;
+      let completedFiles = 0;
+
+      const uploads = compressedFiles.map((file) =>
+        this.fileService
+          .createFile(this.occur!.id!.toString(), "OCCUR", file, file.name)
+          .pipe(
+            map(() => {
+              completedFiles++;
+              const newPercent =
+                20 + Math.floor((completedFiles / totalFiles) * 80);
+              if (newPercent > currentProgress) {
+                currentProgress = newPercent;
+                this.uploadProgress.percent = currentProgress;
+              }
+              return true;
+            }),
+            catchError(() => of(false)),
+          ),
+      );
+
+      const results = await forkJoin(uploads).toPromise();
+      const failedCount = results?.filter((r) => r === false).length || 0;
+
+      if (failedCount > 0) {
+        this.showAlert("ERROR", `${failedCount} arquivo(s) não foram salvos.`);
+      } else {
+        this.attachedFiles = [];
+        await this.loadAttachments();
+        this.showAlert(
+          "SUCCESS",
+          `${compressedFiles.length} anexo(s) adicionado(s) com sucesso!`,
+        );
+      }
+
+      this.modalService.dismissAll();
+    } catch (error) {
+      this.modalService.dismissAll();
+      this.showAlert("ERROR", "Erro ao adicionar anexos. Tente novamente.");
+    } finally {
+      this.isSavingAttachments = false;
+    }
   }
 }

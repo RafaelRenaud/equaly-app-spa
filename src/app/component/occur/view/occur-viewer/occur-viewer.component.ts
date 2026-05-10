@@ -6,24 +6,28 @@ import { LoadingService } from '../../../../core/service/loading/loading.service
 import { OccurService } from '../../../../core/service/occur/occur.service';
 import { OccurComplementViewerComponent } from "../main-viewer/occur-complement-viewer/occur-complement-viewer.component";
 import { OccurMainViewerComponent } from "../main-viewer/occur-main-viewer/occur-main-viewer.component";
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-occur-viewer',
-  imports: [OccurMainViewerComponent, OccurComplementViewerComponent],
-  templateUrl: './occur-viewer.component.html',
-  styleUrl: './occur-viewer.component.scss',
-  standalone: true
+  selector: "app-occur-viewer",
+  imports: [
+    OccurMainViewerComponent,
+    OccurComplementViewerComponent,
+    NgbNavModule
+  ],
+  templateUrl: "./occur-viewer.component.html",
+  styleUrl: "./occur-viewer.component.scss",
+  standalone: true,
 })
 export class OccurViewerComponent implements OnInit {
-
   public occur: Occur | null = null;
 
   constructor(
     private occurService: OccurService,
     private route: ActivatedRoute,
     private router: Router,
-    private loadingService: LoadingService
-  ) { }
+    private loadingService: LoadingService,
+  ) {}
 
   ngOnInit() {
     this.loadingService.show();
@@ -42,11 +46,12 @@ export class OccurViewerComponent implements OnInit {
       return;
     }
 
-    this.occurService.getOccur(occurId)
+    this.occurService
+      .getOccur(occurId)
       .pipe(
         finalize(() => {
           this.loadingService.hide();
-        })
+        }),
       )
       .subscribe({
         next: (occur) => {
@@ -58,7 +63,7 @@ export class OccurViewerComponent implements OnInit {
         },
         error: (err) => {
           this.handleError("Ocorrência Inválida");
-        }
+        },
       });
   }
 

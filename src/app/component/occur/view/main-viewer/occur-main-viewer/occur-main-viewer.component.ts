@@ -24,7 +24,7 @@ export class OccurMainViewerComponent implements OnInit{
   ){}
 
   ngOnInit(): void {
-    this.isOccurInspector = Number(this.sessionService.getItem("userId")) === this.occur?.opener?.id;
+    this.isOccurOpener = Number(this.sessionService.getItem("userId")) === this.occur?.opener?.id;
     this.isOccurInspector = Number(this.sessionService.getItem("userId")) === this.occur?.inspector?.id;
   }
 

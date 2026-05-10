@@ -1,37 +1,58 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
-import { catchError, debounceTime, distinctUntilChanged, map, Observable, of, OperatorFunction, Subject, switchMap, tap } from 'rxjs';
-import { UserResponse } from '../../../../core/model/user/user-response.model';
-import { UsersResponse } from '../../../../core/model/user/users-response.model';
-import { LoadingService } from '../../../../core/service/loading/loading.service';
-import { UserService } from '../../../../core/service/user/user.service';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  TemplateRef,
+} from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
+import { NgbTypeahead, NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  OperatorFunction,
+  Subject,
+  switchMap,
+  tap,
+} from "rxjs";
+import { UserResponse } from "../../../../core/model/user/user-response.model";
+import { UsersResponse } from "../../../../core/model/user/users-response.model";
+import { LoadingService } from "../../../../core/service/loading/loading.service";
+import { UserService } from "../../../../core/service/user/user.service";
 
 @Component({
-  selector: 'app-user-type-head-search',
+  selector: "app-user-type-head-search",
   imports: [NgbTypeahead, FormsModule],
-  templateUrl: './user-type-head-search.component.html',
-  styleUrl: './user-type-head-search.component.scss',
-  standalone: true
+  templateUrl: "./user-type-head-search.component.html",
+  styleUrl: "./user-type-head-search.component.scss",
+  standalone: true,
 })
 export class UserTypeHeadSearchComponent {
-  @Input() modalId: string = 'userSearchModal';
+  @Input() modalId: string = "userSearchModal"; // Mantido para compatibilidade, mas não usado mais
   @Input() userRole: string[] = [];
-  @Input() placeholder: string = 'Buscar Usuário';
+  @Input() placeholder: string = "Buscar Usuário";
   @Output() outputUserSelected = new EventEmitter<UserResponse | null>();
   @Output() loadingStateChanged = new EventEmitter<boolean>();
-  @ViewChild('typeaheadInput') typeaheadInput!: ElementRef;
+  @ViewChild("typeaheadInput") typeaheadInput!: ElementRef;
+  @ViewChild("userSearchModal") userSearchModal!: TemplateRef<any>;
 
   selectedUser: UserResponse | null = null;
-  searchText: string = '';
+  searchText: string = "";
   invalidInput: boolean = false;
   isLoading: boolean = false;
 
   // Modal properties
   searchedUsers: UserResponse[] = [];
-  selectedFilter: string = 'name';
-  searchValue: string = '';
+  selectedFilter: string = "name";
+  searchValue: string = "";
   modalCurrentPage: number = 0;
   modalTotalPages: number = 0;
   modalPageSize: number = 5;
@@ -45,7 +66,8 @@ export class UserTypeHeadSearchComponent {
     private userService: UserService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private modalService: NgbModal,
   ) {
     this.setupSearchById();
   }
@@ -54,7 +76,7 @@ export class UserTypeHeadSearchComponent {
     if (value && value !== this.currentRequestId) {
       this.currentRequestId = value;
       this.selectedUser = null;
-      this.searchText = '';
+      this.searchText = "";
       this.invalidInput = false;
       this.isLoading = true;
       this.loadingStateChanged.emit(true);
@@ -66,12 +88,14 @@ export class UserTypeHeadSearchComponent {
           this.loadingStateChanged.emit(false);
 
           if (response?.id) {
-            const hasRequiredRole = this.userRole.length === 0 ||
-              (response.roles?.some(role => this.userRole.includes(role)) ?? false);
+            const hasRequiredRole =
+              this.userRole.length === 0 ||
+              (response.roles?.some((role) => this.userRole.includes(role)) ??
+                false);
 
             if (!hasRequiredRole) {
               this.resetSearchState(true);
-              this.handleError('Usuário não possui a role necessária');
+              this.handleError("Usuário não possui a role necessária");
               this.cdr.detectChanges();
               return;
             }
@@ -86,13 +110,13 @@ export class UserTypeHeadSearchComponent {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Erro ao buscar usuário:', error);
+          console.error("Erro ao buscar usuário:", error);
           this.isLoading = false;
           this.loadingStateChanged.emit(false);
           this.resetSearchState(true);
-          this.handleError('Erro ao buscar usuário por ID');
+          this.handleError("Erro ao buscar usuário por ID");
           this.cdr.detectChanges();
-        }
+        },
       });
     }
   }
@@ -109,22 +133,24 @@ export class UserTypeHeadSearchComponent {
         switchMap((term) => {
           const trimmedTerm = this.safeTrim(term);
           if (this.isNumeric(trimmedTerm)) {
-            return this.userService.getUser(parseInt(trimmedTerm, 10).toString()).pipe(
-              tap((response) => this.handleSearchByIdResponse(response)),
-              map(() => null)
-            );
+            return this.userService
+              .getUser(parseInt(trimmedTerm, 10).toString())
+              .pipe(
+                tap((response) => this.handleSearchByIdResponse(response)),
+                map(() => null),
+              );
           }
           this.isLoading = false;
           this.loadingStateChanged.emit(false);
           this.cdr.detectChanges();
           return of(null);
-        })
+        }),
       )
       .subscribe();
   }
 
   private safeTrim(value: string | null | undefined): string {
-    return (value ?? '').trim();
+    return (value ?? "").trim();
   }
 
   private isNumeric(value: string): boolean {
@@ -136,12 +162,13 @@ export class UserTypeHeadSearchComponent {
     this.loadingStateChanged.emit(false);
 
     if (response?.id) {
-      const hasRequiredRole = this.userRole.length === 0 ||
-        (response.roles?.some(role => this.userRole.includes(role)) ?? false);
+      const hasRequiredRole =
+        this.userRole.length === 0 ||
+        (response.roles?.some((role) => this.userRole.includes(role)) ?? false);
 
       if (!hasRequiredRole) {
         this.resetSearchState(true);
-        this.handleError('Usuário não possui a role necessária');
+        this.handleError("Usuário não possui a role necessária");
         this.cdr.detectChanges();
         return;
       }
@@ -158,14 +185,14 @@ export class UserTypeHeadSearchComponent {
 
   private resetSearchState(invalid: boolean = false): void {
     this.selectedUser = null;
-    this.searchText = '';
+    this.searchText = "";
     this.invalidInput = invalid;
     this.outputUserSelected.emit(null);
     this.cdr.detectChanges();
   }
 
   searchUsers: OperatorFunction<string, readonly UserResponse[]> = (
-    text$: Observable<string>
+    text$: Observable<string>,
   ) =>
     text$.pipe(
       debounceTime(300),
@@ -178,39 +205,44 @@ export class UserTypeHeadSearchComponent {
       switchMap((term) => {
         const trimmedTerm = this.safeTrim(term);
 
-        if (this.isNumeric(trimmedTerm) || trimmedTerm.length < this.MIN_SEARCH_LENGTH) {
+        if (
+          this.isNumeric(trimmedTerm) ||
+          trimmedTerm.length < this.MIN_SEARCH_LENGTH
+        ) {
           this.isLoading = false;
           this.loadingStateChanged.emit(false);
           this.cdr.detectChanges();
           return of([]);
         }
 
-        return this.userService.getUsers(
-          'name',
-          trimmedTerm,
-          null,
-          null,
-          null,
-          'ACTIVE',
-          this.userRole,
-          0,
-          5
-        ).pipe(
-          map((response: UsersResponse) => response.users || []),
-          tap(() => {
-            this.isLoading = false;
-            this.loadingStateChanged.emit(false);
-            this.cdr.detectChanges();
-          }),
-          catchError((error) => {
-            this.handleError('Erro ao buscar usuários');
-            this.isLoading = false;
-            this.loadingStateChanged.emit(false);
-            this.cdr.detectChanges();
-            return of([]);
-          })
-        );
-      })
+        return this.userService
+          .getUsers(
+            "name",
+            trimmedTerm,
+            null,
+            null,
+            null,
+            "ACTIVE",
+            this.userRole,
+            0,
+            5,
+          )
+          .pipe(
+            map((response: UsersResponse) => response.users || []),
+            tap(() => {
+              this.isLoading = false;
+              this.loadingStateChanged.emit(false);
+              this.cdr.detectChanges();
+            }),
+            catchError((error) => {
+              this.handleError("Erro ao buscar usuários");
+              this.isLoading = false;
+              this.loadingStateChanged.emit(false);
+              this.cdr.detectChanges();
+              return of([]);
+            }),
+          );
+      }),
     );
 
   onSelectItem(event: any): void {
@@ -225,7 +257,8 @@ export class UserTypeHeadSearchComponent {
   }
 
   onInputBlur(): void {
-    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
+    const term =
+      typeof this.searchText === "string" ? this.searchText.trim() : "";
 
     if (!this.selectedUser && term) {
       if (this.isNumeric(term)) {
@@ -241,7 +274,8 @@ export class UserTypeHeadSearchComponent {
   }
 
   onEnterPressed(): void {
-    const term = typeof this.searchText === 'string' ? this.searchText.trim() : '';
+    const term =
+      typeof this.searchText === "string" ? this.searchText.trim() : "";
     if (!term) return;
 
     if (this.isNumeric(term)) {
@@ -256,7 +290,7 @@ export class UserTypeHeadSearchComponent {
   }
 
   onInputChange(event: Event): void {
-    const inputValue = (event.target as HTMLInputElement)?.value ?? '';
+    const inputValue = (event.target as HTMLInputElement)?.value ?? "";
 
     if (this.selectedUser || this.invalidInput) {
       this.resetSearchState();
@@ -264,78 +298,95 @@ export class UserTypeHeadSearchComponent {
 
     this.searchText = inputValue;
 
-    if (!inputValue || inputValue.trim() === '') {
+    if (!inputValue || inputValue.trim() === "") {
       this.resetSearchState();
     }
   }
 
   inputFormatter = (user: UserResponse | string): string => {
-    if (typeof user === 'string') return user;
+    if (typeof user === "string") return user;
     if (user?.id) return this.formatUser(user);
-    return this.searchText || '';
+    return this.searchText || "";
   };
 
   resultFormatter = (user: UserResponse): string =>
-    user ? this.formatUser(user) : '';
+    user ? this.formatUser(user) : "";
 
   private formatUser(user: UserResponse): string {
-    return user ? `${user.id} - ${user.username}` : '';
+    return user ? `${user.id} - ${user.username}` : "";
   }
 
   private handleError(message: string): void {
     this.router.navigate([], {
-      queryParams: { action: 'ERROR', message },
-      queryParamsHandling: 'merge',
+      queryParams: { action: "ERROR", message },
+      queryParamsHandling: "merge",
     });
   }
 
   // ==================== MÉTODOS DO MODAL ====================
 
-  openModal(): void {
+  openUserSearchModal(): void {
     this.modalCurrentPage = 0;
-    setTimeout(() => this.searchUsersModal(), 100);
+    this.searchValue = "";
+    this.selectedFilter = "name";
+    this.searchedUsers = [];
+    this.hasSearched = false;
+
+    const modalRef = this.modalService.open(this.userSearchModal, {
+      size: "lg",
+      centered: true,
+      backdrop: "static",
+    });
+
+    // Executa a busca automaticamente quando o modal abrir
+    setTimeout(() => {
+      this.searchUsersModal();
+    }, 100);
   }
 
   searchUsersModal(): void {
     this.loadingService.show();
     this.hasSearched = true;
 
-    const searchTerm = this.searchValue?.trim() || '';
+    const searchTerm = this.searchValue?.trim() || "";
 
-    this.userService.getUsers(
-      this.selectedFilter,
-      searchTerm,
-      null,
-      null,
-      null,
-      'ACTIVE',
-      this.userRole,
-      this.modalCurrentPage,
-      this.modalPageSize
-    ).subscribe({
-      next: (response: UsersResponse) => {
-        this.searchedUsers = response.users || [];
-        this.modalTotalPages = response.pageable?.totalPages || 0;
-        this.loadingService.hide();
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Erro ao buscar usuários:', error);
-        this.handleError('Erro ao buscar usuários');
-        this.searchedUsers = [];
-        this.modalTotalPages = 0;
-        this.loadingService.hide();
-        this.cdr.detectChanges();
-      }
-    });
+    this.userService
+      .getUsers(
+        this.selectedFilter,
+        searchTerm,
+        null,
+        null,
+        null,
+        "ACTIVE",
+        this.userRole,
+        this.modalCurrentPage,
+        this.modalPageSize,
+      )
+      .subscribe({
+        next: (response: UsersResponse) => {
+          this.searchedUsers = response.users || [];
+          this.modalTotalPages = response.pageable?.totalPages || 0;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error("Erro ao buscar usuários:", error);
+          this.handleError("Erro ao buscar usuários");
+          this.searchedUsers = [];
+          this.modalTotalPages = 0;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        },
+      });
   }
 
-  selectUserFromModal(user: UserResponse): void {
-    const hasRequiredRole = this.userRole.length === 0 ||
-      (user.roles?.some(role => this.userRole.includes(role)) ?? false);
+  selectUserFromModal(user: UserResponse, modalRef: any): void {
+    const hasRequiredRole =
+      this.userRole.length === 0 ||
+      (user.roles?.some((role) => this.userRole.includes(role)) ?? false);
 
     if (!hasRequiredRole) {
-      this.handleError('Usuário não possui a role necessária');
+      this.handleError("Usuário não possui a role necessária");
       return;
     }
 
@@ -345,16 +396,12 @@ export class UserTypeHeadSearchComponent {
     this.outputUserSelected.emit(user);
     this.cdr.detectChanges();
 
-    const modalElement = document.getElementById(this.modalId);
-    if (modalElement) {
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement);
-      modal?.hide();
-    }
+    modalRef.close();
   }
 
   clearModalFilters(): void {
-    this.selectedFilter = 'name';
-    this.searchValue = '';
+    this.selectedFilter = "name";
+    this.searchValue = "";
     this.modalCurrentPage = 0;
     this.searchedUsers = [];
     this.hasSearched = false;
@@ -370,12 +417,14 @@ export class UserTypeHeadSearchComponent {
   }
 
   getModalPagesArray(): number[] {
-    return Array(this.modalTotalPages).fill(0).map((_, i) => i);
+    return Array(this.modalTotalPages)
+      .fill(0)
+      .map((_, i) => i);
   }
 
   clear(): void {
     this.selectedUser = null;
-    this.searchText = '';
+    this.searchText = "";
     this.invalidInput = false;
     this.isLoading = false;
     this.loadingStateChanged.emit(false);

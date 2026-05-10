@@ -1,6 +1,47 @@
 @if (occur) {
 <div class="mt-4">
 
+    <!-- Informativo Rascunho do Usuário Interno -->
+    @if(occur.status === 'DRAFT_OPENED' && occur.complaint?.channel === 'EQUALY' && isOccurOpener){
+    <div class="row">
+        <div class="col-md alert alert-primary" role="alert">
+            <i class="bi bi-info-square-fill me-2"></i>
+            Para editar, deletar ou submeter rascunhos, acesse o menu "Rascunhos" e procure pela ocorrência.
+        </div>
+    </div>
+    }
+    
+    <!-- Informativo Aguardando Aprovação de Edição -->
+    @else if(occur.status === 'PENDING_EDIT_APPROVAL' && isOccurInspector){
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-square-fill me-2"></i>
+            Essa ocorrência aguarda sua aprovação de edição, para aprovar acesse o menu inferior da ocorrência na aba
+            "Solicitações de Edição"
+        </div>
+    </div>
+    }
+    
+    <!-- Informativo Aguardando Edição -->
+    @else if(occur.status === 'AWAITING_EDIT' && isOccurOpener){
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <<i class="bi bi-exclamation-square-fill me-2"></i>
+            Essa ocorrência aguarda sua edição, para editar acesse o menu "Pendências" e "Aguardando Edição"
+        </div>
+    </div>
+    }
+    
+    <!-- Informativo Aguardando Aprovação de Canal Externo -->
+    @else if(occur.complaint?.channel != 'EQUALY' && !occur.hasOpenerAssigned){
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-square-fill me-2"></i>
+            Essa ocorrência foi aberta externamente e aguarda uma aprovação. Ela será atrelada a você e enviada para análise de qualidade.
+        </div>
+    </div>
+    }
+
     <!-- HEADER -->
     <div class="row mb-3">
         <div class="col-md">
@@ -39,30 +80,6 @@
             </div>
         </div>
     </div>
-
-    @if(occur.status === 'DRAFT_OPENED' && occur.complaint?.channel === 'EQUALY' && isOccurOpener){
-    <div class="row">
-        <div class="col-md alert alert-primary" role="alert">
-            <i class="bi bi-info-square-fill me-2"></i>
-            Para editar, deletar ou submeter rascunhos, acesse o menu "Rascunhos" e procure pela ocorrência.
-        </div>
-    </div>
-    }@else if(occur.status === 'PENDING_EDIT_APPROVAL' && isOccurInspector){
-    <div class="row">
-        <div class="col-md alert alert-warning" role="alert">
-            <i class="bi bi-info-exclamation-fill me-2"></i>
-            Essa ocorrência aguarda sua aprovação de edição, para aprovar acesse o menu inferior da ocorrência na aba
-            "Solicitações de Edição"
-        </div>
-    </div>
-    }@else if(occur.status === 'AWAITING_EDIT' && isOccurOpener){
-    <div class="row">
-        <div class="col-md alert alert-warning" role="alert">
-            <i class="bi bi-info-exclamation-fill me-2"></i>
-            Essa ocorrência aguarda sua edição, para editar acesse o menu "Pendências" e "Aguardando Edição"
-        </div>
-    </div>
-    }
 
     <div class="row mb-3">
         <div class="col-md">

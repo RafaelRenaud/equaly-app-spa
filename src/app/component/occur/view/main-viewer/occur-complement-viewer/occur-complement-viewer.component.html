@@ -11,166 +11,160 @@
         class="nav-tabs mb-4"
         [destroyOnHide]="false"
       >
-        @if (
-          occur.status !== "DRAFT_OPENED" ||
-          (occur.status === "DRAFT_OPENED" &&
-            occur.complaint?.channel != "EQUALY")
-        ) {
-          <li ngbNavItem="attachments">
-            <button ngbNavLink>Anexos</button>
-            <ng-template ngbNavContent>
-              <div class="tab-content-container p-3">
-                @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
-                  <div class="alert alert-primary">
-                    <i class="bi bi-info-square-fill me-2"></i>
-                    É possível anexar até 10 arquivos no total. Formatos
-                    suportados: PDF, JPG, PNG, HEIC, XML.
-                  </div>
-                }
+        <li ngbNavItem="attachments">
+          <button ngbNavLink>Anexos</button>
+          <ng-template ngbNavContent>
+            <div class="tab-content-container p-3">
+              @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
+                <div class="alert alert-primary">
+                  <i class="bi bi-info-square-fill me-2"></i>
+                  É possível anexar até 10 arquivos no total. Formatos
+                  suportados: PDF, JPG, PNG, HEIC, XML.
+                </div>
+              }
 
-                @if (existingFiles.length > 0) {
-                  <div class="row mb-4">
-                    <div class="col-md">
-                      <h6 class="mb-3">
-                        Arquivos Anexados ({{ existingFiles.length }}/10)
-                      </h6>
-                      <div class="border rounded p-3">
-                        @for (file of existingFiles; track file.id) {
-                          <div
-                            class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center"
-                          >
-                            <div>
-                              <i
-                                class="bi bi-file-earmark fs-4 text-secondary me-3"
-                              ></i>
-                              <strong>{{ file.name }}</strong>
-                              <small class="text-muted ms-2">{{
-                                formatFileSize(file.size || 0)
-                              }}</small>
-                            </div>
-                            <div>
-                              <button
-                                class="btn btn-primary btn-sm me-2"
-                                (click)="viewFile(file)"
-                              >
-                                <i class="bi bi-eye-fill me-1"></i> Visualizar
-                              </button>
-                              @if (
-                                occur.status === "AWAITING_REPORT" &&
-                                isOccurOpener
-                              ) {
-                                <button
-                                  class="btn btn-danger btn-sm"
-                                  (click)="removeExistingFile(file)"
-                                >
-                                  <i class="bi bi-trash-fill me-1"></i> Remover
-                                </button>
-                              }
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    </div>
-                  </div>
-                } @else {
-                  <div class="row mb-3">
-                    <div class="col-md">
-                      <div class="alert alert-primary" role="alert">
-                        <i class="bi bi-info-square-fill me-2"></i>
-                        Nenhum anexo disponível para esta ocorrência.
-                      </div>
-                    </div>
-                  </div>
-                }
-
-                <div class="row mb-3">
-                  @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
-                    @if (existingFiles.length + attachedFiles.length < 10) {
-                      <div class="col-md">
-                        <button
-                          class="btn btn-primary"
-                          (click)="fileInput.click()"
-                        >
-                          <i class="bi bi-upload me-1"></i> Adicionar Arquivo
-                        </button>
-                      </div>
-                    }
-                    @if (attachedFiles.length > 0) {
-                      <div class="col-md">
-                        <button
-                          class="btn btn-success"
-                          (click)="saveAttachments()"
-                          [disabled]="isSavingAttachments"
-                        >
-                          <i class="bi bi-save-fill me-1"></i>
-                          {{
-                            isSavingAttachments
-                              ? "Salvando..."
-                              : "Salvar Alterações"
-                          }}
-                        </button>
-                      </div>
-                    }
-                    <input
-                      #fileInput
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png,.heic,.xml"
-                      multiple
-                      hidden
-                      (change)="onFileSelected($event)"
-                    />
-                  }
+              @if (existingFiles.length > 0) {
+                <div class="row mb-4">
                   <div class="col-md">
-                    <button
-                      class="btn btn-outline-primary"
-                      (click)="refreshAttachments()"
-                      title="Atualizar lista"
-                    >
-                      <i class="bi bi-arrow-repeat"></i> Atualizar
-                    </button>
+                    <h6 class="mb-3">
+                      Arquivos Anexados ({{ existingFiles.length }}/10)
+                    </h6>
+                    <div class="border rounded p-3">
+                      @for (file of existingFiles; track file.id) {
+                        <div
+                          class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <i
+                              class="bi bi-file-earmark fs-4 text-secondary me-3"
+                            ></i>
+                            <strong>{{ file.name }}</strong>
+                            <small class="text-muted ms-2">{{
+                              formatFileSize(file.size || 0)
+                            }}</small>
+                          </div>
+                          <div>
+                            <button
+                              class="btn btn-primary btn-sm me-2"
+                              (click)="viewFile(file)"
+                            >
+                              <i class="bi bi-eye-fill me-1"></i> Visualizar
+                            </button>
+                            @if (
+                              occur.status === "AWAITING_REPORT" &&
+                              isOccurOpener
+                            ) {
+                              <button
+                                class="btn btn-danger btn-sm"
+                                (click)="removeExistingFile(file)"
+                              >
+                                <i class="bi bi-trash-fill me-1"></i> Remover
+                              </button>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
                   </div>
                 </div>
-
-                @if (
-                  occur.status === "AWAITING_REPORT" &&
-                  isOccurOpener &&
-                  attachedFiles.length > 0
-                ) {
-                  <div class="row mb-4">
-                    <div class="col-md">
-                      <h6 class="mb-3">
-                        Novos Arquivos ({{ attachedFiles.length }})
-                      </h6>
-                      <div class="border rounded p-3">
-                        @for (file of attachedFiles; track $index) {
-                          <div
-                            class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center"
-                          >
-                            <div>
-                              <i
-                                class="bi bi-file-earmark fs-4 text-secondary me-3"
-                              ></i>
-                              <strong>{{ file.name }}</strong>
-                              <small class="text-muted ms-2">{{
-                                formatFileSize(file.size)
-                              }}</small>
-                            </div>
-                            <button
-                              class="btn btn-danger btn-sm"
-                              (click)="removeNewFile($index)"
-                            >
-                              <i class="bi bi-trash-fill me-1"></i> Remover
-                            </button>
-                          </div>
-                        }
-                      </div>
+              } @else {
+                <div class="row mb-3">
+                  <div class="col-md">
+                    <div class="alert alert-primary" role="alert">
+                      <i class="bi bi-info-square-fill me-2"></i>
+                      Nenhum anexo disponível para esta ocorrência.
                     </div>
                   </div>
+                </div>
+              }
+
+              <div class="row mb-3">
+                @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
+                  @if (existingFiles.length + attachedFiles.length < 10) {
+                    <div class="col-md">
+                      <button
+                        class="btn btn-primary"
+                        (click)="fileInput.click()"
+                      >
+                        <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                      </button>
+                    </div>
+                  }
+                  @if (attachedFiles.length > 0) {
+                    <div class="col-md">
+                      <button
+                        class="btn btn-success"
+                        (click)="saveAttachments()"
+                        [disabled]="isSavingAttachments"
+                      >
+                        <i class="bi bi-save-fill me-1"></i>
+                        {{
+                          isSavingAttachments
+                            ? "Salvando..."
+                            : "Salvar Alterações"
+                        }}
+                      </button>
+                    </div>
+                  }
+                  <input
+                    #fileInput
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.heic,.xml"
+                    multiple
+                    hidden
+                    (change)="onFileSelected($event)"
+                  />
                 }
+                <div class="col-md">
+                  <button
+                    class="btn btn-outline-primary"
+                    (click)="refreshAttachments()"
+                    title="Atualizar lista"
+                  >
+                    <i class="bi bi-arrow-repeat"></i> Atualizar
+                  </button>
+                </div>
               </div>
-            </ng-template>
-          </li>
-        }
+
+              @if (
+                occur.status === "AWAITING_REPORT" &&
+                isOccurOpener &&
+                attachedFiles.length > 0
+              ) {
+                <div class="row mb-4">
+                  <div class="col-md">
+                    <h6 class="mb-3">
+                      Novos Arquivos ({{ attachedFiles.length }})
+                    </h6>
+                    <div class="border rounded p-3">
+                      @for (file of attachedFiles; track $index) {
+                        <div
+                          class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <i
+                              class="bi bi-file-earmark fs-4 text-secondary me-3"
+                            ></i>
+                            <strong>{{ file.name }}</strong>
+                            <small class="text-muted ms-2">{{
+                              formatFileSize(file.size)
+                            }}</small>
+                          </div>
+                          <button
+                            class="btn btn-danger btn-sm"
+                            (click)="removeNewFile($index)"
+                          >
+                            <i class="bi bi-trash-fill me-1"></i> Remover
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </li>
 
         @if (occur.status != "DRAFT_OPENED") {
           <li ngbNavItem="editRequests">

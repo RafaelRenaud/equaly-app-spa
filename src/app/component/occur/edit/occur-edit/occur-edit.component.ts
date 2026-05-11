@@ -155,9 +155,6 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    this.isOccurOpener =
-      this.occurData?.opener?.id ===
-      Number(this.sessionService.getItem("userId"));
     this.initializeForm();
     this.setupFormListeners();
     this.loadOccurrence();
@@ -184,6 +181,10 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.occurData = occur;
         this.isLoading = false;
+
+        this.isOccurOpener =
+          this.occurData?.opener?.id ===
+          Number(this.sessionService.getItem("userId"));
 
         if (
           occur.status !== "DRAFT_OPENED" &&

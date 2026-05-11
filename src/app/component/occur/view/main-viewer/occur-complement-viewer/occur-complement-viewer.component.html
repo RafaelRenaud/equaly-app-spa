@@ -11,7 +11,11 @@
         class="nav-tabs mb-4"
         [destroyOnHide]="false"
       >
-        @if (occur.status !== "DRAFT_OPENED" || (occur.status === "DRAFT_OPENED" && occur.complaint?.channel != "EQUALY")) {
+        @if (
+          occur.status !== "DRAFT_OPENED" ||
+          (occur.status === "DRAFT_OPENED" &&
+            occur.complaint?.channel != "EQUALY")
+        ) {
           <li ngbNavItem="attachments">
             <button ngbNavLink>Anexos</button>
             <ng-template ngbNavContent>
@@ -163,43 +167,6 @@
                     </div>
                   </div>
                 }
-              </div>
-            </ng-template>
-          </li>
-        }
-
-        @if (
-          occur.status === "DRAFT_OPENED" &&
-          occur.complaint?.channel != "EQUALY"
-        ) {
-          <li ngbNavItem="external-approval">
-            <button ngbNavLink>Aprovar/Reprovar</button>
-            <ng-template ngbNavContent>
-              <div class="tab-content-container p-3">
-                <div class="alert alert-primary" role="alert">
-                  <i class="bi bi-info-square-fill me-2"></i>
-                  Se houver necessidade de edição, aprove a ocorrência e
-                  solicite a edição quando um inspetor de qualidade estiver
-                  atrelado.
-                </div>
-                <div class="row text-center">
-                  <div class="col-md">
-                    <button
-                      class="btn btn-primary"
-                      (click)="openModal(approveModal)"
-                    >
-                      <i class="bi bi-check-square-fill"></i> Aprovar Ocorrência
-                    </button>
-                  </div>
-                  <div class="col-md">
-                    <button
-                      class="btn btn-outline-danger"
-                      (click)="openModal(deleteModal)"
-                    >
-                      <i class="bi bi-trash"></i> Reprovar e Deletar Ocorrência
-                    </button>
-                  </div>
-                </div>
               </div>
             </ng-template>
           </li>
@@ -472,75 +439,6 @@
         {{ uploadProgress.percent }}%
       </div>
     </div>
-  </div>
-</ng-template>
-
-<ng-template #deleteModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">Confirmar Reprovação e Exclusão</h5>
-    <button
-      type="button"
-      class="btn-close"
-      aria-label="Fechar"
-      (click)="modal.close()"
-    ></button>
-  </div>
-  <div class="modal-body text-center">
-    <p class="mt-3">
-      Deseja confirmar a reprovação e excluir a ocorrência
-      <strong>{{ occur.code }}</strong
-      >?
-    </p>
-    <p class="text-muted small">
-      Esta ação não poderá ser desfeita e todas as informações associadas serão
-      perdidas.
-    </p>
-    <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.close()">
-      <i class="bi bi-x-square-fill"></i> Cancelar
-    </button>
-    <button type="button" class="btn btn-danger" (click)="confirmDelete(modal)">
-      <i class="bi bi-trash"></i> Reprovar e Excluir
-    </button>
-  </div>
-</ng-template>
-
-<ng-template #approveModal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">Confirmar Aprovação</h4>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
-  </div>
-  <div class="modal-body text-center">
-    <div class="mb-0">
-      <p class="mt-3">
-        A ocorrência {{ occur.code }} será aprovada e direcionada a análise de
-        qualidade.
-      </p>
-      <p class="text-muted small">
-        Deseja direciona-la para algum analista de qualidade?
-      </p>
-      <app-user-type-head-search
-        [userRole]="['COMMON_QUALITY_INSPECTOR']"
-        placeholder="Responsável Inspeção de Qualidade"
-        modalId="inspectorSearchModal"
-        (outputUserSelected)="onInspectorSelected($event)"
-      />
-      <img src="assets/analysis.svg" alt="Aviso" class="w-25" />
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
-      <i class="bi bi-x-square-fill"></i> Cancelar
-    </button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      (click)="modal.close(); approveOccur()"
-    >
-      <i class="bi bi-check-square-fill"></i> Confirmar
-    </button>
   </div>
 </ng-template>
 

@@ -28,7 +28,7 @@ import {
   NgbTooltipModule,
 } from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin, Observable, of } from "rxjs";
-import { catchError, map, switchMap } from "rxjs/operators";
+import { catchError, finalize, map, switchMap } from "rxjs/operators";
 import { FileResponse } from "../../../../core/model/file/file-response.model";
 import {
   Address,
@@ -46,6 +46,9 @@ import { OccurService } from "../../../../core/service/occur/occur.service";
 import { OccurStatusPipe } from "../../../../pipe/occur-status-pipe.pipe";
 import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
+import { UserSystemPipe } from "../../../../pipe/user-system-pipe";
+import { SessionService } from "../../../../core/service/session/session.service";
+import { Session } from "inspector";
 
 interface FieldConfig {
   min?: number;
@@ -76,6 +79,7 @@ interface UploadProgress {
     UserTypeHeadSearchComponent,
     OccurTypeHeadSearchComponent,
     OccurStatusPipe,
+    UserSystemPipe,
   ],
   templateUrl: "./occur-edit.component.html",
   styleUrl: "./occur-edit.component.scss",
@@ -101,6 +105,7 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
   isDraft = false;
   isAwaitingEdit = false;
   isLoading = true;
+  isOccurOpener: boolean = false;
 
   // IDs para os typeheads
   initialOccurTypeId: number | null = null;
@@ -146,17 +151,19 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     public modalService: NgbModal,
     private occurService: OccurService,
     private fileService: FileService,
+    private sessionService: SessionService,
   ) {}
 
   ngOnInit(): void {
+    this.isOccurOpener =
+      this.occurData?.opener?.id ===
+      Number(this.sessionService.getItem("userId"));
     this.initializeForm();
     this.setupFormListeners();
     this.loadOccurrence();
   }
 
-  ngAfterViewInit(): void {
-    // Sem manipulação direta do DOM
-  }
+  ngAfterViewInit(): void {}
 
   // ==================================================
   // CARREGAMENTO
@@ -386,7 +393,6 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
       this.onInspectorSelected(inspector);
     }
 
-    // Data - CORREÇÃO: formata a data para string no formato dd/MM/yyyy
     if (occur.occurredDate) {
       const formattedDate = this.formatDateToInput(occur.occurredDate);
       this.occurrenceForm.patchValue({ occurrenceDate: formattedDate });
@@ -1203,6 +1209,90 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     this.router.navigate(["/occurs"], {
       queryParams: { action: "ERROR", message },
     });
+  }
+
+  openModal(content: any): void {
+    this.modalService.open(content, { centered: true });
+  }
+
+  confirmDelete(modal: any): void {
+    if (this.occurData) {
+      this.loadingService.show();
+      this.occurService
+        .deleteOccur(this.occurData.id!)
+        .pipe(finalize(() => this.loadingService.hide()))
+        .subscribe({
+          next: () => {
+            modal.close();
+            this.router.navigate(["/occurs/pendings"], {
+              queryParams: {
+                action: "SUCCESS",
+                message: `Ocorrência ${this.occurData?.code} excluída com sucesso.`,
+              },
+            });
+          },
+          error: () => {
+            modal.close();
+            this.router.navigate([], {
+              queryParams: {
+                action: "ERROR",
+                message: `Erro ao excluir ocorrência. Tente novamente mais tarde.`,
+              },
+            });
+          },
+        });
+    }
+  }
+
+  approveOccur(): void {
+    if (this.occurData) {
+      this.loadingService.show();
+
+      this.occurService
+        .updateOccur(this.occurData.id!, this.buildOccurData("AWAITING_REPORT"))
+        .pipe(
+          switchMap((response) => {
+            if (this.attachedFiles.length > 0) {
+              return this.fileService
+                .deleteFiles(this.occurId.toString(), "OCCUR")
+                .pipe(
+                  switchMap(() => {
+                    // Upload dos novos arquivos
+                    const uploads = this.attachedFiles.map((file) =>
+                      this.fileService.createFile(
+                        this.occurId.toString(),
+                        "OCCUR",
+                        file,
+                        file.name,
+                      ),
+                    );
+                    return forkJoin(uploads).pipe(map(() => response));
+                  }),
+                );
+            }
+            return of(response);
+          }),
+          finalize(() => this.loadingService.hide()),
+        )
+        .subscribe({
+          next: () => {
+            this.router.navigate(["/occurs/pendings"], {
+              queryParams: {
+                action: "SUCCESS",
+                message: `Ocorrência ${this.occurData?.code} aprovada e cadastrada com sucesso.`,
+              },
+            });
+          },
+          error: (error) => {
+            this.router.navigate([], {
+              queryParams: {
+                action: "ERROR",
+                message: `Erro ao aprovar a ocorrência. ${error.message || "Tente novamente mais tarde."}`,
+              },
+            });
+          },
+        });
+    }
   }
 
   private showAlert(

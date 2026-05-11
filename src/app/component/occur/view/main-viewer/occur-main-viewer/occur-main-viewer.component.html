@@ -39,13 +39,30 @@
 
     <!-- Informativo Aguardando Aprovação de Canal Externo -->
     @else if (
-      occur.complaint?.channel != "EQUALY" && !occur.hasOpenerAssigned
+      occur.complaint?.channel != "EQUALY" &&
+      !occur.hasOpenerAssigned &&
+      isOpener
     ) {
       <div class="row">
         <div class="col-md alert alert-warning" role="alert">
           <i class="bi bi-exclamation-square-fill me-2"></i>
           Essa ocorrência foi aberta externamente e aguarda uma aprovação. Ela
           será atrelada a você e enviada para análise de qualidade.
+        </div>
+      </div>
+    }
+
+    <!-- Informativo Aguardando Análise de Qualidade Externa -->
+    @else if (
+      occur.complaint?.channel != "EQUALY" &&
+      !occur.hasInspectorAssigned &&
+      isInspector
+    ) {
+      <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+          <i class="bi bi-exclamation-square-fill me-2"></i>
+          Essa ocorrência foi aberta externamente e aguarda uma análise. Ela
+          será atrelada a você ao inspeciona-la
         </div>
       </div>
     }

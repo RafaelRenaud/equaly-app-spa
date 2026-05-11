@@ -108,15 +108,15 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       "COMMON_QUALITY_INSPECTOR",
     );
 
-    if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
-      this.loadAttachments();
-      this.startAutoRefresh();
-    }
-
     if (this.occur?.id) {
+      this.loadAttachments();
       this.loadEditRequests();
       this.loadActivities();
       this.loadRatings();
+    }
+
+    if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
+      this.startAutoRefresh();
     }
   }
 

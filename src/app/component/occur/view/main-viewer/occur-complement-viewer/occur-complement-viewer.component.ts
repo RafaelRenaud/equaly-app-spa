@@ -22,9 +22,6 @@ import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
-import { CreateUpdateOccur } from "../../../../../core/model/occur/occur-create-update.model";
-import { UserTypeHeadSearchComponent } from "../../../../user/search/user-type-head-search/user-type-head-search.component";
-import { UserResponse } from "../../../../../core/model/user/user-response.model";
 
 interface EditRequest {
   id: number;
@@ -53,12 +50,7 @@ interface DaltonRating {
 
 @Component({
   selector: "app-occur-complement-viewer",
-  imports: [
-    CommonModule,
-    NgbNavModule,
-    FormsModule,
-    UserTypeHeadSearchComponent,
-  ],
+  imports: [CommonModule, NgbNavModule, FormsModule],
   templateUrl: "./occur-complement-viewer.component.html",
   styleUrl: "./occur-complement-viewer.component.scss",
   standalone: true,
@@ -85,8 +77,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   inspectionReport: string = "";
   generateNonConformity: boolean = false;
   closeInfo: string = "";
-
-  occurToUpdate: CreateUpdateOccur | null = null;
 
   maxFiles: number = 10;
   uploadProgress = {
@@ -117,10 +107,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     this.hasInspectorRole = this.sessionService.hasRole(
       "COMMON_QUALITY_INSPECTOR",
     );
-
-    if (this.occur) {
-      this.occurToUpdate = this.convertOccurToCreateUpdateOccur(this.occur);
-    }
 
     if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
       this.loadAttachments();
@@ -409,97 +395,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         });
       },
     });
-  }
-
-  openModal(content: any): void {
-    this.modalService.open(content, { centered: true });
-  }
-
-  confirmDelete(modal: any): void {
-    if (this.occur) {
-      this.loadingService.show();
-      this.occurService
-        .deleteOccur(this.occur.id!)
-        .pipe(finalize(() => this.loadingService.hide()))
-        .subscribe({
-          next: () => {
-            modal.close();
-            this.router.navigate(["/occurs/pendings"], {
-              queryParams: {
-                action: "SUCCESS",
-                message: `Ocorrência ${this.occur?.code} excluída com sucesso.`,
-              },
-            });
-          },
-          error: () => {
-            modal.close();
-            this.router.navigate([], {
-              queryParams: {
-                action: "ERROR",
-                message: `Erro ao excluir ocorrência. Tente novamente mais tarde.`,
-              },
-            });
-          },
-        });
-    }
-  }
-
-  approveOccur(): void {
-    if (this.occur) {
-      this.loadingService.show();
-      this.occurToUpdate!.status = "AWAITING_REPORT";
-      this.occurService
-        .updateOccur(this.occur.id!, this.occurToUpdate!)
-        .pipe(finalize(() => this.loadingService.hide()))
-        .subscribe({
-          next: () => {
-            this.router.navigate(["/occurs/pendings"], {
-              queryParams: {
-                action: "SUCCESS",
-                message: `Ocorrência ${this.occur?.code} aprovada e cadastrada com sucesso.`,
-              },
-            });
-          },
-          error: () => {
-            this.router.navigate([], {
-              queryParams: {
-                action: "ERROR",
-                message: `Erro ao aprovar a ocorrência. Tente novamente mais tarde.`,
-              },
-            });
-          },
-        });
-    }
-  }
-
-  onInspectorSelected(inspector: UserResponse | null): void {
-    if (inspector) {
-      this.occurToUpdate!.inspector = inspector;
-    }
-  }
-
-  convertOccurToCreateUpdateOccur(occur: Occur): CreateUpdateOccur {
-    return {
-      occurType: { id: occur.occurType!.id! },
-      priority: occur.priority,
-      status:
-        occur.status === "AWAITING_REPORT" ? "AWAITING_REPORT" : "DRAFT_OPENED",
-      inspector: occur.inspector?.id ? { id: occur.inspector.id } : undefined,
-      occurredDate: occur.occurredDate,
-      invoiceNotes: occur.invoiceNotes,
-      title: occur.title,
-      description: occur.description,
-      complement: occur.complement,
-      complaint: occur.complaint
-        ? {
-            orderId: occur.complaint.orderId,
-            type: occur.complaint.type,
-            isAnonymous: occur.complaint.isAnonymous,
-            complainant: occur.complaint.complainant,
-            request: occur.complaint.request,
-          }
-        : undefined,
-    };
   }
 
   async saveAttachments(): Promise<void> {

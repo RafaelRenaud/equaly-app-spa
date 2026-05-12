@@ -574,8 +574,8 @@
                 } @else {
                   <div class="alert alert-primary">
                     <i class="bi bi-info-square-fill"></i>
-                    Para gerenciar anexos externos, aprove a
-                    ocorrência e realize a a ação em seguida.
+                    Para gerenciar anexos externos, aprove a ocorrência e
+                    realize a a ação em seguida.
                   </div>
                 }
 
@@ -728,7 +728,14 @@
               >
                 <i class="bi bi-trash-fill"></i> Apagar Ocorrência
               </button>
+            }
 
+            @if (
+              (occurData.complaint?.channel === "EQUALY" && isOccurOpener) ||
+              (occurData.complaint?.channel != "EQUALY" &&
+                isOccurOpener &&
+                isAwaitingEdit)
+            ) {
               <button
                 class="btn btn-success"
                 type="button"

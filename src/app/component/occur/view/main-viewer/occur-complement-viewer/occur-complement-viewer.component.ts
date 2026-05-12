@@ -9,7 +9,11 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { NgbModal, NgbNavModule } from "@ng-bootstrap/ng-bootstrap";
+import {
+  NgbModal,
+  NgbNavModule,
+  NgbPaginationModule,
+} from "@ng-bootstrap/ng-bootstrap";
 import { Subscription, interval, forkJoin, of } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
 import { FileAccessResponse } from "../../../../../core/model/file/file-access.model";
@@ -22,14 +26,8 @@ import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
-
-interface EditRequest {
-  id: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  description: string;
-  requestedBy: string;
-  requestedAt: string;
-}
+import { EditRequestService } from "../../../../../core/service/edit-request/edit-request.service";
+import { EditRequest } from "../../../../../core/model/edit-request/edit-request.model";
 
 interface Activity {
   id: number;
@@ -50,7 +48,7 @@ interface DaltonRating {
 
 @Component({
   selector: "app-occur-complement-viewer",
-  imports: [CommonModule, NgbNavModule, FormsModule],
+  imports: [CommonModule, NgbNavModule, FormsModule, NgbPaginationModule],
   templateUrl: "./occur-complement-viewer.component.html",
   styleUrl: "./occur-complement-viewer.component.scss",
   standalone: true,
@@ -78,6 +76,15 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   generateNonConformity: boolean = false;
   closeInfo: string = "";
 
+  editRequestJustification: string = "";
+  isSubmittingEditRequest: boolean = false;
+  selectedEditRequest: EditRequest | null = null;
+
+  editRequestsPage: number = 0;
+  editRequestsPageSize: number = 5;
+  editRequestsTotal: number = 0;
+  isLoadingEditRequests: boolean = false;
+
   maxFiles: number = 10;
   uploadProgress = {
     percent: 0,
@@ -92,6 +99,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     private loadingService: LoadingService,
     private sessionService: SessionService,
     private occurService: OccurService,
+    private editRequestService: EditRequestService,
     private modalService: NgbModal,
     private router: Router,
   ) {}
@@ -134,6 +142,9 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         this.occur?.status !== "DRAFT_OPENED"
       ) {
         this.loadAttachmentsSilently();
+      }
+      if (this.activeTab === "editRequests") {
+        this.loadEditRequestsSilently();
       }
     });
   }
@@ -194,6 +205,69 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           console.error("Erro ao carregar anexos automaticamente");
         },
       });
+  }
+
+  loadEditRequests(): void {
+    if (!this.occur?.id) return;
+
+    this.isLoadingEditRequests = true;
+
+    this.editRequestService
+      .getEditRequests(
+        { subjectId: this.occur.id, subjectType: "OCCUR" },
+        this.editRequestsPage,
+        this.editRequestsPageSize,
+      )
+      .pipe(finalize(() => (this.isLoadingEditRequests = false)))
+      .subscribe({
+        next: (response) => {
+          this.editRequests = response.editRequests || [];
+          this.editRequestsTotal = response.pageable?.totalElements || 0;
+        },
+        error: () => {
+          this.editRequests = [];
+          this.showAlert("ERROR", "Erro ao carregar solicitações de edição.");
+        },
+      });
+  }
+
+  private loadEditRequestsSilently(): void {
+    if (!this.occur?.id) return;
+
+    this.editRequestService
+      .getEditRequests(
+        { subjectId: this.occur.id, subjectType: "OCCUR" },
+        this.editRequestsPage,
+        this.editRequestsPageSize,
+      )
+      .subscribe({
+        next: (response) => {
+          this.editRequests = response.editRequests || [];
+          this.editRequestsTotal = response.pageable?.totalElements || 0;
+        },
+        error: () => {
+          console.error(
+            "Erro ao carregar solicitações de edição automaticamente",
+          );
+        },
+      });
+  }
+
+  onEditRequestsPageChange(page: number): void {
+    this.editRequestsPage = page;
+    this.loadEditRequests();
+  }
+
+  private loadActivities(): void {
+    setTimeout(() => {
+      this.activities = [];
+    }, 500);
+  }
+
+  private loadRatings(): void {
+    setTimeout(() => {
+      this.ratings = [];
+    }, 500);
   }
 
   private showAlert(
@@ -274,24 +348,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           this.showAlert("ERROR", "Erro ao remover arquivo. Tente novamente.");
         },
       });
-  }
-
-  private loadEditRequests(): void {
-    setTimeout(() => {
-      this.editRequests = [];
-    }, 500);
-  }
-
-  private loadActivities(): void {
-    setTimeout(() => {
-      this.activities = [];
-    }, 500);
-  }
-
-  private loadRatings(): void {
-    setTimeout(() => {
-      this.ratings = [];
-    }, 500);
   }
 
   viewFile(file: FileResponse): void {
@@ -473,5 +529,173 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     } finally {
       this.isSavingAttachments = false;
     }
+  }
+
+  openEditRequestModal(content: any): void {
+    if (
+      this.occur.status === "AWAITING_REPORT" &&
+      this.isOccurOpener &&
+      !this.occur.hasInspectorAssigned
+    ) {
+      this.submitEditRequest();
+      return;
+    }
+
+    this.editRequestJustification = "";
+    this.modalService.open(content, { size: "lg", centered: true });
+  }
+
+  submitEditRequest(): void {
+    if (!this.occur?.id) return;
+
+    if (
+      this.occur.status === "AWAITING_REPORT" &&
+      this.isOccurOpener &&
+      !this.occur.hasInspectorAssigned
+    ) {
+      this.loadingService.show();
+      this.isSubmittingEditRequest = true;
+
+      this.editRequestService
+        .createEditRequest(
+          { justification: "WORKFLOW DE BYPASS EXECUTADO COM SUCESSO" },
+          this.occur.id,
+          "OCCUR",
+        )
+        .subscribe({
+          next: () => {
+            this.isSubmittingEditRequest = false;
+            this.loadingService.hide();
+            this.loadEditRequests();
+            this.showAlert(
+              "SUCCESS",
+              "Solicitação de edição enviada com sucesso!",
+            );
+            this.occurService.getOccur(this.occur!.id!).subscribe({
+              next: (updatedOccur) => {
+                this.occur = updatedOccur;
+              },
+            });
+          },
+          error: () => {
+            this.isSubmittingEditRequest = false;
+            this.loadingService.hide();
+            this.showAlert(
+              "ERROR",
+              "Erro ao enviar solicitação de edição. Tente novamente.",
+            );
+          },
+        });
+      return;
+    }
+
+    if (!this.editRequestJustification.trim()) return;
+
+    this.isSubmittingEditRequest = true;
+
+    this.editRequestService
+      .createEditRequest(
+        { justification: this.editRequestJustification },
+        this.occur.id,
+        "OCCUR",
+      )
+      .subscribe({
+        next: () => {
+          this.isSubmittingEditRequest = false;
+          this.modalService.dismissAll();
+          this.loadEditRequests();
+          this.showAlert(
+            "SUCCESS",
+            "Solicitação de edição enviada com sucesso!",
+          );
+        },
+        error: () => {
+          this.isSubmittingEditRequest = false;
+          this.showAlert(
+            "ERROR",
+            "Erro ao enviar solicitação de edição. Tente novamente.",
+          );
+        },
+      });
+  }
+
+  viewEditRequest(editRequest: EditRequest, content: any): void {
+    this.selectedEditRequest = editRequest;
+    this.modalService.open(content, { size: "lg", centered: true });
+  }
+
+  approveEditRequest(editRequest: EditRequest): void {
+    if (!this.occur?.id) return;
+
+    this.loadingService.show();
+
+    this.editRequestService
+      .updateEditRequest(
+        editRequest.id!.toString(),
+        "APPROVE",
+        "OCCUR",
+        this.occur.id,
+      )
+      .subscribe({
+        next: () => {
+          this.loadingService.hide();
+          this.loadEditRequests();
+          this.showAlert(
+            "SUCCESS",
+            "Solicitação de edição aprovada com sucesso!",
+          );
+        },
+        error: () => {
+          this.loadingService.hide();
+          this.showAlert("ERROR", "Erro ao aprovar solicitação de edição.");
+        },
+      });
+  }
+
+  rejectEditRequest(editRequest: EditRequest): void {
+    if (!this.occur?.id) return;
+
+    this.loadingService.show();
+
+    this.editRequestService
+      .updateEditRequest(
+        editRequest.id!.toString(),
+        "DENY",
+        "OCCUR",
+        this.occur.id,
+      )
+      .subscribe({
+        next: () => {
+          this.loadingService.hide();
+          this.loadEditRequests();
+          this.showAlert("SUCCESS", "Solicitação de edição rejeitada.");
+        },
+        error: () => {
+          this.loadingService.hide();
+          this.showAlert("ERROR", "Erro ao rejeitar solicitação de edição.");
+        },
+      });
+  }
+
+  getEditRequestStatusLabel(status: string): string {
+    const statusMap: Record<string, string> = {
+      PENDING: "Pendente",
+      APPROVED: "Aprovada",
+      REJECTED: "Rejeitada",
+    };
+    return statusMap[status] || status;
+  }
+
+  getEditRequestStatusClass(status: string): string {
+    const classMap: Record<string, string> = {
+      PENDING: "bg-warning",
+      APPROVED: "bg-success",
+      REJECTED: "bg-danger",
+    };
+    return classMap[status] || "bg-secondary";
+  }
+
+  get pendingEditRequest(): EditRequest | undefined {
+    return this.editRequests.find((er) => er.status === "PENDING");
   }
 }

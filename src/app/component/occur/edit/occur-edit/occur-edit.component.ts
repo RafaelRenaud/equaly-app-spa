@@ -1,8 +1,5 @@
-// occur-edit.component.ts
-
 import { CommonModule } from "@angular/common";
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -43,12 +40,11 @@ import { AddressService } from "../../../../core/service/address/address.service
 import { FileService } from "../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../core/service/occur/occur.service";
+import { SessionService } from "../../../../core/service/session/session.service";
 import { OccurStatusPipe } from "../../../../pipe/occur-status-pipe.pipe";
+import { UserSystemPipe } from "../../../../pipe/user-system-pipe";
 import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
-import { UserSystemPipe } from "../../../../pipe/user-system-pipe";
-import { SessionService } from "../../../../core/service/session/session.service";
-import { Session } from "inspector";
 
 interface FieldConfig {
   min?: number;
@@ -85,7 +81,7 @@ interface UploadProgress {
   styleUrl: "./occur-edit.component.scss",
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OccurEditComponent implements OnInit, AfterViewInit {
+export class OccurEditComponent implements OnInit {
   @ViewChild("nav") nav!: NgbNav;
   @ViewChild("uploadProgressModal") uploadProgressModal: any;
 
@@ -152,15 +148,13 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     private occurService: OccurService,
     private fileService: FileService,
     private sessionService: SessionService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeForm();
     this.setupFormListeners();
     this.loadOccurrence();
   }
-
-  ngAfterViewInit(): void {}
 
   // ==================================================
   // CARREGAMENTO
@@ -190,7 +184,7 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
           occur.status !== "DRAFT_OPENED" &&
           occur.status !== "AWAITING_EDIT"
         ) {
-          this.redirectWithWarning("Não é possível editar a ocorrência.");
+          this.redirectWithError("Não é possível editar a ocorrência.");
           return;
         }
 
@@ -304,11 +298,10 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
       if (!val) return null;
 
       let date: Date;
-      if (typeof val === "object" && val.year) {
-        date = new Date(val.year, val.month - 1, val.day);
-      } else if (typeof val === "string" && val.includes("/")) {
+      if (typeof val === "string" && val.includes("/")) {
         const [d, m, y] = val.split("/").map(Number);
         date = new Date(y, m - 1, d);
+        if (isNaN(date.getTime())) return { invalidDate: true };
       } else {
         return null;
       }
@@ -358,8 +351,15 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
   }
 
   private formatDateToInput(dateStr: string): string {
+    if (!dateStr) return "";
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}/${year}`;
+  }
+
+  private formatDateToApi(dateStr: string): string {
+    if (!dateStr) return "";
+    const [day, month, year] = dateStr.split("/");
+    return `${year}-${month}-${day}`;
   }
 
   private populateForm(occur: Occur): void {
@@ -486,6 +486,30 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
         }
       }
     }
+  }
+
+  // ==================================================
+  // MÁSCARA DE DATA
+  // ==================================================
+
+  onDateInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, "");
+
+    if (value.length > 8) {
+      value = value.slice(0, 8);
+    }
+
+    if (value.length >= 5) {
+      value = value.slice(0, 2) + "/" + value.slice(2, 4) + "/" + value.slice(4);
+    } else if (value.length >= 3) {
+      value = value.slice(0, 2) + "/" + value.slice(2);
+    }
+
+    input.value = value;
+    this.occurrenceForm.get("occurrenceDate")?.setValue(value);
+    this.occurrenceForm.get("occurrenceDate")?.updateValueAndValidity();
+    this.cdr.detectChanges();
   }
 
   // ==================================================
@@ -884,9 +908,8 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     );
 
     let occurredDate: string | undefined;
-    if (raw.occurrenceDate && typeof raw.occurrenceDate === "string") {
-      const [day, month, year] = raw.occurrenceDate.split("/");
-      occurredDate = `${year}-${month}-${day}`;
+    if (raw.occurrenceDate && typeof raw.occurrenceDate === "string" && raw.occurrenceDate.length === 10) {
+      occurredDate = this.formatDateToApi(raw.occurrenceDate);
     }
 
     let complaint: CreateUpdateComplaint | undefined;
@@ -1090,43 +1113,6 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onDateInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let val = input.value.replace(/\D/g, "");
-    if (val.length >= 2 && val.length < 4)
-      val = val.slice(0, 2) + "/" + val.slice(2);
-    else if (val.length >= 4 && val.length < 6)
-      val = val.slice(0, 2) + "/" + val.slice(2, 4) + "/" + val.slice(4);
-    else if (val.length >= 6)
-      val = val.slice(0, 2) + "/" + val.slice(2, 4) + "/" + val.slice(4, 8);
-    input.value = val;
-
-    if (val.length === 10) {
-      const [d, m, y] = val.split("/").map(Number);
-      const date = new Date(y, m - 1, d);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (isNaN(date.getTime())) {
-        this.occurrenceForm
-          .get("occurrenceDate")
-          ?.setErrors({ invalidDate: true });
-      } else if (date > today) {
-        this.occurrenceForm
-          .get("occurrenceDate")
-          ?.setErrors({ futureDate: true });
-      } else {
-        this.occurrenceForm.get("occurrenceDate")?.setErrors(null);
-        this.occurrenceForm.get("occurrenceDate")?.setValue(val);
-      }
-    } else if (val.length > 0 && val.length < 10) {
-      this.occurrenceForm
-        .get("occurrenceDate")
-        ?.setErrors({ incompleteDate: true });
-    }
-    this.cdr.detectChanges();
-  }
-
   getProgressPercentage(): number {
     return Math.round(this.uploadProgress.current);
   }
@@ -1202,10 +1188,6 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private redirectWithWarning(message: string): void {
-    this.router.navigate([], { queryParams: { action: "WARNING", message } });
-  }
-
   private redirectWithError(message: string): void {
     this.router.navigate(["/occurs"], {
       queryParams: { action: "ERROR", message },
@@ -1258,7 +1240,6 @@ export class OccurEditComponent implements OnInit, AfterViewInit {
                 .deleteFiles(this.occurId.toString(), "OCCUR")
                 .pipe(
                   switchMap(() => {
-                    // Upload dos novos arquivos
                     const uploads = this.attachedFiles.map((file) =>
                       this.fileService.createFile(
                         this.occurId.toString(),

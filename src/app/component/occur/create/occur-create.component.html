@@ -14,7 +14,8 @@
                             <!-- Tipo de Ocorrência -->
                             <div [class.is-invalid]="isFieldInvalid('occurrenceType')">
                                 <app-occur-type-head-search (occurTypeSelected)="onOccurTypeSelected($event)"
-                                    [placeholder]='"Tipo de Ocorrência"' (loadingStateChanged)="onTypeheadLoadingChange()"
+                                    [placeholder]='"Tipo de Ocorrência"'
+                                    (loadingStateChanged)="onTypeheadLoadingChange()"
                                     [formTouched]="occurrenceForm.get('occurrenceType')?.touched || false" />
                             </div>
 
@@ -29,7 +30,7 @@
                                             <option value="MEDIUM">Média</option>
                                             <option value="HIGH">Alta</option>
                                         </select>
-                                        <label for="floatingPriority" class="ps-4">Prioridade</label>
+                                        <label for="floatingPriority">Prioridade</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -37,8 +38,9 @@
                                         <input type="text" class="form-control"
                                             [class.is-invalid]="isFieldInvalid('occurrenceDate')"
                                             id="floatingOccurrenceDate" placeholder="Data do Ocorrido"
-                                            formControlName="occurrenceDate" />
-                                        <label for="floatingOccurrenceDate" class="ps-4">Data do Ocorrido</label>
+                                            formControlName="occurrenceDate" (input)="onDateInput($event)"
+                                            maxlength="10" />
+                                        <label for="floatingOccurrenceDate">Data do Ocorrido</label>
                                     </div>
                                 </div>
                             </div>
@@ -46,8 +48,8 @@
                             <!-- Responsável Inspeção de Qualidade -->
                             <div [class.is-invalid]="isFieldInvalid('qualityInspector')">
                                 <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
-                                    [placeholder]='"Responsável Inspeção de Qualidade"' (loadingStateChanged)="onTypeheadLoadingChange()"
-                                    [modalId]="'inspectorSearchModal'"
+                                    [placeholder]='"Responsável Inspeção de Qualidade"'
+                                    (loadingStateChanged)="onTypeheadLoadingChange()" [modalId]="'inspectorSearchModal'"
                                     (outputUserSelected)="onInspectorSelected($event)" />
                             </div>
 
@@ -57,7 +59,7 @@
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="floatingTitle" placeholder="Título"
                                             [class.is-invalid]="isFieldInvalid('title')" formControlName="title" />
-                                        <label for="floatingTitle" class="ps-4">Título</label>
+                                        <label for="floatingTitle">Título</label>
                                     </div>
                                     @if (shouldShowCounter('title')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('title') }} ({{
@@ -73,7 +75,7 @@
                                         <textarea class="form-control" id="floatingDescription" placeholder="Descrição"
                                             rows="3" [class.is-invalid]="isFieldInvalid('description')"
                                             formControlName="description"></textarea>
-                                        <label for="floatingDescription" class="ps-4">Descrição</label>
+                                        <label for="floatingDescription">Descrição</label>
                                     </div>
                                     @if (shouldShowCounter('description')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('description') }}
@@ -90,7 +92,7 @@
                                         <textarea class="form-control" id="floatingComplement" placeholder="Complemento"
                                             rows="2" [class.is-invalid]="isFieldInvalid('complement')"
                                             formControlName="complement"></textarea>
-                                        <label for="floatingComplement" class="ps-4">Complemento</label>
+                                        <label for="floatingComplement">Complemento</label>
                                     </div>
                                     @if (shouldShowCounter('complement')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complement') }} ({{
@@ -126,7 +128,7 @@
                                                                         id="floatingNf1" placeholder="NF1"
                                                                         [class.is-invalid]="isFieldInvalid('nf1')"
                                                                         formControlName="nf1" />
-                                                                    <label for="floatingNf1" class="ps-4">NF1</label>
+                                                                    <label for="floatingNf1">NF1</label>
                                                                 </div>
                                                                 @if (shouldShowCounter('nf1')) {
                                                                 <small class="text-muted d-block mt-1 ms-1">{{
@@ -143,7 +145,7 @@
                                                                         id="floatingNf2" placeholder="NF2"
                                                                         [class.is-invalid]="isFieldInvalid('nf2')"
                                                                         formControlName="nf2" />
-                                                                    <label for="floatingNf2" class="ps-4">NF2</label>
+                                                                    <label for="floatingNf2">NF2</label>
                                                                 </div>
                                                                 @if (shouldShowCounter('nf2')) {
                                                                 <small class="text-muted d-block mt-1 ms-1">{{
@@ -160,7 +162,7 @@
                                                                         id="floatingNf3" placeholder="NF3"
                                                                         [class.is-invalid]="isFieldInvalid('nf3')"
                                                                         formControlName="nf3" />
-                                                                    <label for="floatingNf3" class="ps-4">NF3</label>
+                                                                    <label for="floatingNf3">NF3</label>
                                                                 </div>
                                                                 @if (shouldShowCounter('nf3')) {
                                                                 <small class="text-muted d-block mt-1 ms-1">{{
@@ -177,7 +179,7 @@
                                                                         id="floatingNf4" placeholder="NF4"
                                                                         [class.is-invalid]="isFieldInvalid('nf4')"
                                                                         formControlName="nf4" />
-                                                                    <label for="floatingNf4" class="ps-4">NF4</label>
+                                                                    <label for="floatingNf4">NF4</label>
                                                                 </div>
                                                                 @if (shouldShowCounter('nf4')) {
                                                                 <small class="text-muted d-block mt-1 ms-1">{{
@@ -194,7 +196,7 @@
                                                                         id="floatingNf5" placeholder="NF5"
                                                                         [class.is-invalid]="isFieldInvalid('nf5')"
                                                                         formControlName="nf5" />
-                                                                    <label for="floatingNf5" class="ps-4">NF5</label>
+                                                                    <label for="floatingNf5">NF5</label>
                                                                 </div>
                                                                 @if (shouldShowCounter('nf5')) {
                                                                 <small class="text-muted d-block mt-1 ms-1">{{
@@ -225,7 +227,7 @@
                                             placeholder="Número do Pedido"
                                             [class.is-invalid]="isFieldInvalid('orderNumber')"
                                             formControlName="orderNumber" />
-                                        <label for="floatingOrderNumber" class="ps-4">Número do Pedido</label>
+                                        <label for="floatingOrderNumber">Número do Pedido</label>
                                     </div>
                                     @if (shouldShowCounter('orderNumber')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('orderNumber') }}
@@ -264,7 +266,7 @@
                                             placeholder="Descrição da Reclamação" rows="3"
                                             [class.is-invalid]="isFieldInvalid('complaintDescription')"
                                             formControlName="complaintDescription"></textarea>
-                                        <label for="floatingComplaintDescription" class="ps-4">Descrição da
+                                        <label for="floatingComplaintDescription">Descrição da
                                             Reclamação</label>
                                     </div>
                                     @if (shouldShowCounter('complaintDescription')) {
@@ -284,7 +286,7 @@
                                             placeholder="Informações Complementares da Reclamação" rows="2"
                                             [class.is-invalid]="isFieldInvalid('complaintComplement')"
                                             formControlName="complaintComplement"></textarea>
-                                        <label for="floatingComplaintComplement" class="ps-4">Informações Complementares
+                                        <label for="floatingComplaintComplement">Informações Complementares
                                             da
                                             Reclamação</label>
                                     </div>
@@ -326,7 +328,8 @@
                             @if (showInternalId) {
                             <div [class.is-invalid]="isFieldInvalid('internalComplainer')">
                                 <app-user-type-head-search [placeholder]='"Buscar Reclamante Interno"'
-                                    [modalId]="'complainantSearchModal'" (loadingStateChanged)="onTypeheadLoadingChange()"
+                                    [modalId]="'complainantSearchModal'"
+                                    (loadingStateChanged)="onTypeheadLoadingChange()"
                                     (outputUserSelected)="onInternalComplinantSelect($event)" />
                             </div>
                             }
@@ -337,7 +340,7 @@
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="floatingComplainerId"
                                             placeholder="ID" formControlName="complainerId" [disabled]="true" />
-                                        <label for="floatingComplainerId" class="ps-4">ID</label>
+                                        <label for="floatingComplainerId">ID</label>
                                     </div>
                                 </div>
                             </div>
@@ -350,7 +353,7 @@
                                         <input type="text" class="form-control" id="floatingComplainerName"
                                             placeholder="Nome" [class.is-invalid]="isFieldInvalid('complainerName')"
                                             formControlName="complainerName" [disabled]="isInternalComplaint()" />
-                                        <label for="floatingComplainerName" class="ps-4">Nome</label>
+                                        <label for="floatingComplainerName">Nome</label>
                                     </div>
                                     @if (shouldShowCounter('complainerName')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerName') }}
@@ -367,7 +370,7 @@
                                         <input type="email" class="form-control" id="floatingComplainerEmail"
                                             placeholder="Email" [class.is-invalid]="isFieldInvalid('complainerEmail')"
                                             formControlName="complainerEmail" />
-                                        <label for="floatingComplainerEmail" class="ps-4">Email</label>
+                                        <label for="floatingComplainerEmail">Email</label>
                                     </div>
                                     @if (shouldShowCounter('complainerEmail')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerEmail')
@@ -381,7 +384,7 @@
                                             placeholder="Telefone"
                                             [class.is-invalid]="isFieldInvalid('complainerPhone')"
                                             formControlName="complainerPhone" />
-                                        <label for="floatingComplainerPhone" class="ps-4">Telefone</label>
+                                        <label for="floatingComplainerPhone">Telefone</label>
                                     </div>
                                     @if (shouldShowCounter('complainerPhone')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerPhone')
@@ -399,7 +402,7 @@
                                             [class.is-invalid]="isFieldInvalid('complainerCep')"
                                             id="floatingComplainerCep" placeholder="CEP" formControlName="complainerCep"
                                             (input)="applyCepMask($event)" (blur)="searchCep()" />
-                                        <label for="floatingComplainerCep" class="ps-4">CEP</label>
+                                        <label for="floatingComplainerCep">CEP</label>
                                         @if (isLoadingCep) {
                                         <div class="position-absolute end-0 top-50 translate-middle-y me-4">
                                             <div class="spinner-border spinner-border-sm text-primary spinner-custom"
@@ -416,7 +419,7 @@
                                             placeholder="Logradouro"
                                             [class.is-invalid]="isFieldInvalid('complainerStreet')"
                                             formControlName="complainerStreet" />
-                                        <label for="floatingComplainerStreet" class="ps-4">Logradouro</label>
+                                        <label for="floatingComplainerStreet">Logradouro</label>
                                     </div>
                                     @if (shouldShowCounter('complainerStreet')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerStreet')
@@ -433,7 +436,7 @@
                                         <input type="text" class="form-control" id="floatingComplainerNumber"
                                             placeholder="Número" [class.is-invalid]="isFieldInvalid('complainerNumber')"
                                             formControlName="complainerNumber" />
-                                        <label for="floatingComplainerNumber" class="ps-4">Número</label>
+                                        <label for="floatingComplainerNumber">Número</label>
                                     </div>
                                     @if (shouldShowCounter('complainerNumber')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('complainerNumber')
@@ -447,7 +450,7 @@
                                             placeholder="Bairro/Distrito"
                                             [class.is-invalid]="isFieldInvalid('complainerDistrict')"
                                             formControlName="complainerDistrict" />
-                                        <label for="floatingComplainerDistrict" class="ps-4">Bairro/Distrito</label>
+                                        <label for="floatingComplainerDistrict">Bairro/Distrito</label>
                                     </div>
                                     @if (shouldShowCounter('complainerDistrict')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{
@@ -462,8 +465,7 @@
                                             placeholder="Complemento"
                                             [class.is-invalid]="isFieldInvalid('complainerAddressComplement')"
                                             formControlName="complainerAddressComplement" />
-                                        <label for="floatingComplainerAddressComplement"
-                                            class="ps-4">Complemento</label>
+                                        <label for="floatingComplainerAddressComplement">Complemento</label>
                                     </div>
                                     @if (shouldShowCounter('complainerAddressComplement')) {
                                     <small class="text-muted d-block mt-1 ms-1">{{
@@ -480,14 +482,14 @@
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="floatingComplainerCity"
                                             placeholder="Cidade" formControlName="complainerCity" [disabled]="true" />
-                                        <label for="floatingComplainerCity" class="ps-4">Cidade</label>
+                                        <label for="floatingComplainerCity">Cidade</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-floating">
                                         <input type="text" class="form-control" id="floatingComplainerState"
                                             placeholder="UF" formControlName="complainerState" [disabled]="true" />
-                                        <label for="floatingComplainerState" class="ps-4">UF</label>
+                                        <label for="floatingComplainerState">UF</label>
                                     </div>
                                 </div>
                             </div>

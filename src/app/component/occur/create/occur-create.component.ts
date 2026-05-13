@@ -1,12 +1,8 @@
-// occur-create.component.ts (atualizado)
-
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule, NgbModal, NgbNav, NgbNavModule, NgbProgressbarModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
-import flatpickr from 'flatpickr';
-import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { CreateUpdateComplaint, CreateUpdateOccur } from '../../../core/model/occur/occur-create-update.model';
@@ -54,7 +50,7 @@ interface UploadProgress {
   styleUrl: './occur-create.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class OccurCreateComponent implements OnInit, AfterViewInit {
+export class OccurCreateComponent implements OnInit {
   @ViewChild('cepInput') cepInput!: ElementRef;
   @ViewChild('nav') nav!: NgbNav;
   @ViewChild('uploadProgressModal') uploadProgressModal: any;
@@ -68,7 +64,6 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   maxFiles = 10;
   isLoadingCep: boolean = false;
   activeTab: string = 'occurrence';
-  private flatpickrInstance: any;
   public isSubmitting: boolean = false;
 
   // Upload progress
@@ -120,10 +115,6 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     this.setupFormListeners();
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.initFlatpickr(), 100);
-  }
-
   // ==================================================
   // MÉTODOS PÚBLICOS PARA O HTML
   // ==================================================
@@ -161,6 +152,36 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.occurrenceForm.get(fieldName);
     return !!control?.invalid && !!control?.touched;
+  }
+
+  // ==================================================
+  // MÁSCARA DE DATA
+  // ==================================================
+
+  onDateInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, "");
+
+    if (value.length > 8) {
+      value = value.slice(0, 8);
+    }
+
+    if (value.length >= 5) {
+      value = value.slice(0, 2) + "/" + value.slice(2, 4) + "/" + value.slice(4);
+    } else if (value.length >= 3) {
+      value = value.slice(0, 2) + "/" + value.slice(2);
+    }
+
+    input.value = value;
+    this.occurrenceForm.get("occurrenceDate")?.setValue(value);
+    this.occurrenceForm.get("occurrenceDate")?.updateValueAndValidity();
+    this.cdr.detectChanges();
+  }
+
+  private formatDateToApi(dateStr: string): string {
+    if (!dateStr || dateStr.length !== 10) return "";
+    const [day, month, year] = dateStr.split("/");
+    return `${year}-${month}-${day}`;
   }
 
   // ==================================================
@@ -360,15 +381,8 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
 
     // Formatar data
     let occurredDate = null;
-    if (raw.occurrenceDate) {
-      if (typeof raw.occurrenceDate === 'object' && raw.occurrenceDate.year) {
-        occurredDate = `${raw.occurrenceDate.year}-${String(raw.occurrenceDate.month).padStart(2, '0')}-${String(raw.occurrenceDate.day).padStart(2, '0')}`;
-      } else if (typeof raw.occurrenceDate === 'string' && raw.occurrenceDate.includes('/')) {
-        const [d, m, y] = raw.occurrenceDate.split('/');
-        occurredDate = `${y}-${m}-${d}`;
-      } else {
-        occurredDate = raw.occurrenceDate;
-      }
+    if (raw.occurrenceDate && typeof raw.occurrenceDate === 'string' && raw.occurrenceDate.length === 10) {
+      occurredDate = this.formatDateToApi(raw.occurrenceDate);
     }
 
     // Construir complaint
@@ -432,45 +446,6 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   }
 
   // ==================================================
-  // FLATPICKR
-  // ==================================================
-
-  private initFlatpickr(): void {
-    const dateInput = document.getElementById('floatingOccurrenceDate') as HTMLInputElement;
-    if (dateInput && !this.flatpickrInstance) {
-      this.flatpickrInstance = flatpickr(dateInput, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        maxDate: 'today',
-        onChange: (selectedDates: Date[], dateStr: string) => {
-          this.occurrenceForm.get('occurrenceDate')?.setValue(dateStr);
-          this.cdr.detectChanges();
-        }
-      });
-    }
-  }
-
-  private reinitFlatpickr(): void {
-    setTimeout(() => {
-      const dateInput = document.getElementById('floatingOccurrenceDate') as HTMLInputElement;
-      if (dateInput) {
-        if (this.flatpickrInstance) this.flatpickrInstance.destroy();
-        this.flatpickrInstance = null;
-        this.initFlatpickr();
-
-        const savedDate = this.occurrenceForm.get('occurrenceDate')?.value;
-        if (savedDate && typeof savedDate === 'object' && savedDate.year) {
-          const day = String(savedDate.day).padStart(2, '0');
-          const month = String(savedDate.month).padStart(2, '0');
-          const year = savedDate.year;
-          dateInput.value = `${day}/${month}/${year}`;
-        }
-      }
-    }, 100);
-  }
-
-  // ==================================================
   // FORMULÁRIO
   // ==================================================
 
@@ -486,7 +461,6 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
 
   private initializeForm(): void {
     this.occurrenceForm = this.fb.group({
-      // Dados da Ocorrência
       occurrenceType: ['', Validators.required],
       priority: ['', Validators.required],
       qualityInspector: [''],
@@ -558,11 +532,10 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
       if (!val) return null;
 
       let date: Date;
-      if (typeof val === 'object' && val.year) {
-        date = new Date(val.year, val.month - 1, val.day);
-      } else if (typeof val === 'string' && val.includes('/')) {
+      if (typeof val === 'string' && val.includes('/')) {
         const [d, m, y] = val.split('/').map(Number);
         date = new Date(y, m - 1, d);
+        if (isNaN(date.getTime())) return { invalidDate: true };
       } else {
         return null;
       }
@@ -726,40 +699,6 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     fields.forEach(f => this.occurrenceForm.get(f)?.setValue(''));
   }
 
-  getFormattedDate(): string {
-    const date = this.occurrenceForm.get('occurrenceDate')?.value;
-    if (!date) return '';
-    if (typeof date === 'string') return date;
-    if (date.year) {
-      return `${String(date.day).padStart(2, '0')}/${String(date.month).padStart(2, '0')}/${date.year}`;
-    }
-    return '';
-  }
-
-  onDateInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let val = input.value.replace(/\D/g, '');
-    if (val.length >= 2 && val.length < 4) val = val.slice(0, 2) + '/' + val.slice(2);
-    else if (val.length >= 4 && val.length < 6) val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4);
-    else if (val.length >= 6) val = val.slice(0, 2) + '/' + val.slice(2, 4) + '/' + val.slice(4, 8);
-    input.value = val;
-
-    if (val.length === 10) {
-      const [d, m, y] = val.split('/').map(Number);
-      const date = new Date(y, m - 1, d);
-      const today = new Date(); today.setHours(0, 0, 0, 0);
-      if (isNaN(date.getTime())) this.occurrenceForm.get('occurrenceDate')?.setErrors({ invalidDate: true });
-      else if (date > today) this.occurrenceForm.get('occurrenceDate')?.setErrors({ futureDate: true });
-      else {
-        this.occurrenceForm.get('occurrenceDate')?.setErrors(null);
-        this.occurrenceForm.get('occurrenceDate')?.setValue({ year: y, month: m, day: d });
-      }
-    } else if (val.length > 0 && val.length < 10) {
-      this.occurrenceForm.get('occurrenceDate')?.setErrors({ incompleteDate: true });
-    }
-    this.cdr.detectChanges();
-  }
-
   isInternalComplaint(): boolean {
     return this.complaintType === 'INTERNAL';
   }
@@ -769,8 +708,9 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
   }
 
   onTabChange(event: any): void {
-    if (event.nextId === 'complainant' && !this.shouldShowComplainantTab()) event.preventDefault();
-    if (event.nextId === 'occurrence') this.reinitFlatpickr();
+    if (event.nextId === 'complainant' && !this.shouldShowComplainantTab()) {
+      event.preventDefault();
+    }
   }
 
   onFileSelected(event: any): void {
@@ -808,7 +748,9 @@ export class OccurCreateComponent implements OnInit, AfterViewInit {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  goBack(): void { this.router.navigate(['/']); }
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
 
   applyCepMask(event: any): void {
     let val = event.target.value.replace(/\D/g, '');

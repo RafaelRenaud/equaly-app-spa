@@ -1,11 +1,11 @@
 import { CommonModule } from "@angular/common";
 import {
   Component,
-  Input,
-  OnInit,
-  OnDestroy,
-  ViewChild,
   ElementRef,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -14,37 +14,21 @@ import {
   NgbNavModule,
   NgbPaginationModule,
 } from "@ng-bootstrap/ng-bootstrap";
-import { Subscription, interval, forkJoin, of } from "rxjs";
+import { Subscription, forkJoin, interval, of } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
+import { AuditResponse } from "../../../../../core/model/audit/audits-response.model";
+import { EditRequest } from "../../../../../core/model/edit-request/edit-request.model";
 import { FileAccessResponse } from "../../../../../core/model/file/file-access.model";
 import { FileResponse } from "../../../../../core/model/file/file-response.model";
 import { FilesResponse } from "../../../../../core/model/file/files-response.model";
 import { CloseOccur } from "../../../../../core/model/occur/occur-close-request.model";
 import { ReportOccur } from "../../../../../core/model/occur/occur-report-request.model";
 import { Occur } from "../../../../../core/model/occur/occur.model";
+import { EditRequestService } from "../../../../../core/service/edit-request/edit-request.service";
 import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
-import { EditRequestService } from "../../../../../core/service/edit-request/edit-request.service";
-import { EditRequest } from "../../../../../core/model/edit-request/edit-request.model";
-
-interface Activity {
-  id: number;
-  type: "CREATE" | "UPDATE" | "ATTACHMENT" | "COMMENT";
-  action: string;
-  description: string;
-  performedBy: string;
-  createdAt: string;
-}
-
-interface DaltonRating {
-  id: number;
-  category: string;
-  score: number;
-  comment: string;
-  evaluatedAt: string;
-}
 
 @Component({
   selector: "app-occur-complement-viewer",
@@ -63,8 +47,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   existingFiles: FileResponse[] = [];
   attachedFiles: File[] = [];
   editRequests: EditRequest[] = [];
-  activities: Activity[] = [];
-  ratings: DaltonRating[] = [];
+  audits: AuditResponse[] = [];
 
   isDaltonEnabled: boolean = false;
   isOccurOpener: boolean = false;
@@ -77,7 +60,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   closeInfo: string = "";
 
   editRequestJustification: string = "";
-  isSubmittingEditRequest: boolean = false;
   selectedEditRequest: EditRequest | null = null;
 
   editRequestsPage: number = 0;
@@ -102,7 +84,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     private editRequestService: EditRequestService,
     private modalService: NgbModal,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.isDaltonEnabled =
@@ -120,7 +102,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       this.loadAttachments();
       this.loadEditRequests();
       this.loadActivities();
-      this.loadRatings();
     }
 
     if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
@@ -260,13 +241,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
   private loadActivities(): void {
     setTimeout(() => {
-      this.activities = [];
-    }, 500);
-  }
-
-  private loadRatings(): void {
-    setTimeout(() => {
-      this.ratings = [];
+      this.audits = [];
     }, 500);
   }
 
@@ -554,7 +529,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       !this.occur.hasInspectorAssigned
     ) {
       this.loadingService.show();
-      this.isSubmittingEditRequest = true;
 
       this.editRequestService
         .createEditRequest(
@@ -564,7 +538,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: () => {
-            this.isSubmittingEditRequest = false;
             this.loadingService.hide();
             this.loadEditRequests();
             this.showAlert(
@@ -578,7 +551,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
             });
           },
           error: () => {
-            this.isSubmittingEditRequest = false;
             this.loadingService.hide();
             this.showAlert(
               "ERROR",
@@ -591,7 +563,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
     if (!this.editRequestJustification.trim()) return;
 
-    this.isSubmittingEditRequest = true;
+    this.loadingService.show();
 
     this.editRequestService
       .createEditRequest(
@@ -601,7 +573,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.isSubmittingEditRequest = false;
+          this.loadingService.hide();
           this.modalService.dismissAll();
           this.loadEditRequests();
           this.showAlert(
@@ -610,7 +582,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           );
         },
         error: () => {
-          this.isSubmittingEditRequest = false;
+          this.loadingService.hide();
           this.showAlert(
             "ERROR",
             "Erro ao enviar solicitação de edição. Tente novamente.",

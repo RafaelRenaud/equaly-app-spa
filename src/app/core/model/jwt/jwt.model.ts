@@ -12,10 +12,12 @@ export interface JWT{
         id: number;
         display_name: string;
         tax_id: string;
+        active: boolean;
     };
     department : {
-        department_id: number;
-        department_name: string;
+        id: number;
+        name: string;
+        active: boolean;
     };
     user : {
         name: string;
@@ -23,6 +25,7 @@ export interface JWT{
         email: string;
         picture: string;
         username: string;
+        active: boolean;
     };
     dalton : {
         enabled: boolean;

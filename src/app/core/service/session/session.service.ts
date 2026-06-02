@@ -56,15 +56,27 @@ export class SessionService {
     this.safeSetItem("companyDisplayName", jwtPayload.company.display_name);
     this.safeSetItem("companyDocument", jwtPayload.company.tax_id);
     this.safeSetItem(
-      "departmentId",
-      jwtPayload.department.department_id.toString()
+      "activeCompany",
+      jwtPayload.company.active.toString()
     );
-    this.safeSetItem("departmentName", jwtPayload.department.department_name);
+    this.safeSetItem(
+      "departmentId",
+      jwtPayload.department.id.toString()
+    );
+    this.safeSetItem(
+      "activeDepartment",
+      jwtPayload.department.active.toString()
+    );
+    this.safeSetItem("departmentName", jwtPayload.department.name);
     this.safeSetItem("username", jwtPayload.user.username);
     this.safeSetItem("nickname", jwtPayload.user.preferred_username);
     this.safeSetItem("email", jwtPayload.user.email);
     this.safeSetItem("name", jwtPayload.user.name);
     this.safeSetItem("userAvatar", jwtPayload.user.picture);
+    this.safeSetItem(
+      "activeUser",
+      jwtPayload.user.active.toString()
+    );
 
     this.safeSetItem("isDaltonEnabled", jwtPayload.dalton.enabled.toString());
   }

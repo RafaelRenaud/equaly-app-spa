@@ -3,6 +3,6 @@ export const environment = {
   api: {
     authentication: "https://iam.equaly.app/authentication/v2",
     administration: "https://management.equaly.app/administration/v1",
-    core: "https://core.equaly.app/operations/v1"
+    core: "https://equaly-app-core.onrender.com/operations/v1"
   },
 };

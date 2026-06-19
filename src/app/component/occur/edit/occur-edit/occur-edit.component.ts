@@ -99,7 +99,6 @@ export class OccurEditComponent implements OnInit {
   occurId = 0;
   occurData!: Occur;
   isDraft = false;
-  isAwaitingEdit = false;
   isLoading = true;
   isOccurOpener: boolean = false;
 
@@ -181,16 +180,13 @@ export class OccurEditComponent implements OnInit {
           Number(this.sessionService.getItem("userId"));
 
         if (
-          occur.status !== "DRAFT_OPENED" &&
-          occur.status !== "AWAITING_EDIT"
+          occur.status !== "DRAFT_OPENED"
         ) {
           this.redirectWithError("Não é possível editar a ocorrência.");
           return;
         }
 
         this.isDraft = occur.status === "DRAFT_OPENED";
-        this.isAwaitingEdit = occur.status === "AWAITING_EDIT";
-
         this.populateForm(occur);
 
         if (!this.isDraft) {

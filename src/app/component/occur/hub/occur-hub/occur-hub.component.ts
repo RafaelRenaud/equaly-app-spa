@@ -114,8 +114,6 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
 
   selectedStatusMap: { [key: string]: boolean } = {
     DRAFT_OPENED: false,
-    PENDING_EDIT_APPROVAL: false,
-    AWAITING_EDIT: false,
     AWAITING_REPORT: false,
     AWAITING_CLOSE: false,
     AWAITING_RATING: false,

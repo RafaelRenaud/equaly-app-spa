@@ -27,7 +27,6 @@ export class OccurPendingComponent implements OnInit {
   public pageSize: number = 10;
 
   public activeTab: string = '';
-  public showOnlyAssignedToMe: boolean = true;
 
   constructor(
     private sessionService: SessionService,
@@ -50,7 +49,7 @@ export class OccurPendingComponent implements OnInit {
       if (this.isDaltonEnabled) {
         this.activeTab = 'chatbot';
       } else {
-        this.activeTab = 'awaitingEdit';
+        this.activeTab = 'awaitingClose';
       }
     } else if (this.isInspector) {
       this.activeTab = 'awaitingInspection';
@@ -82,12 +81,6 @@ export class OccurPendingComponent implements OnInit {
             complaintChannel: 'WHATSAPP'
           };
           break;
-        case 'awaitingEdit':
-          filters = {
-            status: ['AWAITING_EDIT'],
-            openerId: userId
-          };
-          break;
         case 'awaitingClose':
           filters = {
             status: ['AWAITING_CLOSE'],
@@ -99,19 +92,14 @@ export class OccurPendingComponent implements OnInit {
       switch (this.activeTab) {
         case 'awaitingInspection':
           filters = {
-            status: ['AWAITING_REPORT']
-          };
-
-          if (this.showOnlyAssignedToMe) {
-            filters.inspectorId = userId;
-          } else {
-            filters.hasInspectorAssigned = false;
-          }
-          break;
-        case 'awaitingEditApprove':
-          filters = {
-            status: ['PENDING_EDIT_APPROVAL'],
+            status: ['AWAITING_REPORT'],
             inspectorId: userId
+          };
+          break;
+        case 'awaitingGeneralInspection':
+          filters = {
+            status: ['AWAITING_REPORT'],
+            hasInspectorAssigned: false
           };
           break;
       }
@@ -139,7 +127,6 @@ export class OccurPendingComponent implements OnInit {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
     this.page = 0;
-    this.showOnlyAssignedToMe = true;
     this.loadPendencies();
   }
 

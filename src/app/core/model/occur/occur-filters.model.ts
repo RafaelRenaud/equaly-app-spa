@@ -7,8 +7,6 @@ export interface OccurFilters {
   priority?: 'LOW' | 'MEDIUM' | 'HIGH';
   status?: (
   'DRAFT_OPENED' |
-  'PENDING_EDIT_APPROVAL' |
-  'AWAITING_EDIT' |
   'AWAITING_REPORT' |
   'AWAITING_CLOSE' |
   'AWAITING_RATING' |

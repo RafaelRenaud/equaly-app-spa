@@ -8,8 +8,6 @@ export class OccurStatusPipe implements PipeTransform {
 
   private readonly statusMap: Record<string, string> = {
     'DRAFT_OPENED': 'Em Rascunho',
-    'PENDING_EDIT_APPROVAL': 'Aguardando Aprovação de Edição',
-    'AWAITING_EDIT': 'Aguardando Edição',
     'AWAITING_REPORT': 'Aguardando Inspeção de Qualidade',
     'AWAITING_CLOSE': 'Aguardando Encerramento',
     'AWAITING_RATING': 'Aguardando Feedback do Reclamante',

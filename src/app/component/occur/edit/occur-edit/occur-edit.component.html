@@ -514,18 +514,11 @@
           }
 
           @if (
-          (occurData.complaint?.channel === "EQUALY" && isOccurOpener) ||
-          (occurData.complaint?.channel != "EQUALY" &&
-          isOccurOpener &&
-          isAwaitingEdit)
+          (occurData.complaint?.channel === "EQUALY" && isOccurOpener)
           ) {
           <button class="btn btn-success" type="button" (click)="confirmUpdateOccurrence()" [disabled]="isSubmitting">
             <i class="bi bi-save-fill"></i>
-            {{
-            isAwaitingEdit
-            ? "Atualizar Ocorrência"
-            : "Cadastrar Ocorrência"
-            }}
+            Cadastrar Ocorrência
           </button>
           }
         </div>

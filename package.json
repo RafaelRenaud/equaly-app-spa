@@ -1,14 +1,15 @@
 {
   "name": "equaly-app-spa",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "styles": [
     "node_modules/bootstrap/dist/css/bootstrap.min.css",
     "src/styles.scss"
   ],
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve --configuration development",
+    "build": "ng build --configuration production",
+    "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:equaly-app-spa": "node dist/equaly-app-spa/server/server.mjs"

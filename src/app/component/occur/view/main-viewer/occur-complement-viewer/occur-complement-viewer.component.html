@@ -208,12 +208,12 @@
   <li ngbNavItem="activityHistory">
     <button ngbNavLink>Histórico de Atividades</button>
     <ng-template ngbNavContent>
-      <app-audit [subjectId]="occur.id!" [subjectType]="'OCCUR'" [subjectCode]="occur.code" [pageSize]="10">
+      <app-audit [subjectId]="occur.id!" [subjectType]="'OCCUR'" [subjectCode]="occur.code" [pageSize]="5">
       </app-audit>
     </ng-template>
   </li>
 
-  @if (isDaltonEnabled && occur.complaint?.channel === "EQUALY") {
+  @if (isDaltonEnabled) {
   <li ngbNavItem="daltonRatings">
     <button ngbNavLink>Avaliações do Dalton</button>
     <ng-template ngbNavContent>

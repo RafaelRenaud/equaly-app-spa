@@ -10,7 +10,7 @@ export class OccurStatusPipe implements PipeTransform {
     'DRAFT_OPENED': 'Em Rascunho',
     'AWAITING_REPORT': 'Aguardando Inspeção de Qualidade',
     'AWAITING_CLOSE': 'Aguardando Encerramento',
-    'AWAITING_RATING': 'Aguardando Feedback do Reclamante',
+    'AWAITING_RATING': 'Aguardando Avaliação do Reclamante',
     'CLOSED': 'Encerrado'
   };
 

@@ -108,16 +108,12 @@ export class OccurFeedbackComponent implements OnInit {
       next: () => {
         this.isSubmitting = false;
         this.isSuccess = true;
-
-        setTimeout(() => {
-          window.close();
-        }, 2000);
       },
       error: (error) => {
         this.isSubmitting = false;
-        this.message = error.error?.message || 'Erro ao enviar feedback. Tente novamente.';
+        this.message = error.error?.message || 'Erro ao enviar avaliação. Tente novamente.';
         this.messageType = 'error';
-        console.error('Erro ao enviar feedback:', error);
+        console.error('Erro ao enviar avaliação:', error);
       }
     });
   }

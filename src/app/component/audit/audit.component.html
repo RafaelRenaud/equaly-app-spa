@@ -1,67 +1,54 @@
 <!-- audit.component.html -->
 <div class="tab-content-container p-3">
   @if (audits.length === 0) {
-    <div class="alert alert-primary" role="alert">
-      <i class="bi bi-info-square-fill me-2"></i>
-      Nenhuma atividade registrada.
-    </div>
+  <div class="alert alert-primary" role="alert">
+    <i class="bi bi-info-square-fill me-2"></i>
+    Nenhuma atividade registrada.
+  </div>
   } @else {
-    <div class="row">
-      <div class="col-12">
-        @for (audit of audits; track audit.id) {
-          <div class="border rounded p-3 mb-3">
-            <div class="row">
-              <div class="col-12">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <span class="badge" 
-                        [class.bg-primary]="audit.actionType === 'CREATE'"
-                        [class.bg-warning]="audit.actionType === 'UPDATE'" 
-                        [class.bg-danger]="audit.actionType === 'DELETE'"
-                        [class.bg-info]="audit.actionType === 'READ'">
-                    {{ audit.actionType | auditActionTypePipe }}
-                  </span>
-                  <span class="text-muted small">
-                    <i class="bi bi-person me-1"></i>{{ audit.createdBy | systemName }}
-                  </span>
-                  <span class="text-muted small ms-auto">
-                    <i class="bi bi-clock me-1"></i>{{ audit.createdAt | date: "dd/MM/yyyy HH:mm" }}
-                  </span>
-                </div>
-              </div>
+  <div class="row">
+    <div class="col-12">
+      @for (audit of audits; track audit.id) {
+      <div class="border rounded p-3 mb-3">
+        <div class="row">
+          <div class="col-12">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="badge" [class.bg-primary]="audit.actionType === 'CREATE'"
+                [class.bg-warning]="audit.actionType === 'UPDATE'" [class.bg-danger]="audit.actionType === 'DELETE'"
+                [class.bg-info]="audit.actionType === 'READ'">
+                {{ audit.actionType | auditActionTypePipe }}
+              </span>
+              <span class="text-muted small">
+                <i class="bi bi-person me-1"></i>{{ audit.createdBy | systemName }}
+              </span>
+              <span class="text-muted small ms-auto">
+                <i class="bi bi-clock me-1"></i>{{ audit.createdAt | date: "dd/MM/yyyy HH:mm" }}
+              </span>
             </div>
-
-            @if (audit.additionalInformation && audit.additionalInformation.length > 0) {
-              <div>
-                @for (info of audit.additionalInformation; track info.key) {
-                  <div>
-                    <span class="fw-bold small text-muted">{{ getLabel(info.key) }}:</span>
-                    <span class="ms-1 small">{{ formatValue(info.key, info.value) }}</span>
-                  </div>
-                }
-              </div>
-            }
           </div>
+        </div>
+
+        @if (audit.additionalInformation && audit.additionalInformation.length > 0) {
+        <div>
+          @for (info of audit.additionalInformation; track info.key) {
+          <div>
+            <span class="fw-bold small text-muted">{{ getLabel(info.key) }}:</span>
+            <span class="ms-1 small">{{ formatValue(info.key, info.value) }}</span>
+          </div>
+          }
+        </div>
         }
       </div>
+      }
     </div>
+  </div>
 
-    <div class="row mt-3 pt-2 border-top">
-      <div class="col-md-6">
-        <span class="text-muted small">
-          Mostrando {{ (page * pageSize) + 1 }} - {{ Math.min((page + 1) * pageSize, totalElements) }} de {{ totalElements }} registros
-        </span>
-      </div>
-      <div class="col-md-6">
-        <ngb-pagination 
-          [collectionSize]="totalElements" 
-          [pageSize]="pageSize" 
-          [(page)]="page" 
-          [maxSize]="5"
-          [rotate]="true" 
-          (pageChange)="loadPage()" 
-          class="d-flex justify-content-end mb-0">
-        </ngb-pagination>
-      </div>
+  <div class="row mt-3 text-center">
+    <div class="col-md d-flex justify-content-center">
+      <ngb-pagination [collectionSize]="totalElements" [pageSize]="pageSize" [(page)]="page" [maxSize]="5"
+        [rotate]="true" (pageChange)="loadPage()">
+      </ngb-pagination>
     </div>
+  </div>
   }
 </div>

@@ -128,6 +128,16 @@ export class AuditComponent implements OnChanges, OnDestroy {
       return new OccurStatusPipe().transform(value);
     }
 
+    if (key === 'closeStatus' && value === 'CLOSED_WITH_RATING') {
+      return 'Encerrada com Avaliação';
+    } else if (key === 'closeStatus' && value === 'CLOSED_WITHOUT_RATING') {
+      return 'Encerrada sem Avaliação';
+    } else if (key === 'closeStatus' && value === 'NOT_INFORMED') {
+      return 'Não Informado';
+    } else {
+      return value;
+    }
+
     // Formatar status (RNC) - você pode criar um pipe similar para RNC
     if (key === 'status' && value && this.subjectType === 'RNC') {
       // TODO: Criar pipe para status de RNC

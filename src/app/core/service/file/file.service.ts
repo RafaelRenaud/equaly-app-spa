@@ -1,24 +1,22 @@
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { environment } from "../../../../environments/environment";
-import { SessionService } from "../session/session.service";
 import { Observable } from "rxjs";
-import { CreatedFileResponse } from "../../model/file/file-create-response.model";
-import { FilesResponse } from "../../model/file/files-response.model";
-import { FileResponse } from "../../model/file/file-response.model";
+import { environment } from "../../../../environments/environment";
 import {
   FileAccessRequest,
   FileAccessResponse,
 } from "../../model/file/file-access.model";
+import { CreatedFileResponse } from "../../model/file/file-create-response.model";
+import { FileResponse } from "../../model/file/file-response.model";
+import { FilesResponse } from "../../model/file/files-response.model";
+import { SessionService } from "../session/session.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class FileService {
   private http = inject(HttpClient);
-  private readonly endpoint = `${environment.api.core}/files`;
-
-  constructor(private session: SessionService) {}
+  constructor(private session: SessionService) { }
 
   getFiles(
     subjectId: string,
@@ -26,11 +24,13 @@ export class FileService {
     page?: number,
     size?: number,
   ): Observable<FilesResponse> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
+
     let params = new HttpParams();
     if (page !== undefined) params = params.set("page", page.toString());
     if (size !== undefined) params = params.set("size", size.toString());
-    return this.http.get<FilesResponse>(this.endpoint, { headers, params });
+    return this.http.get<FilesResponse>(endpoint, { headers, params });
   }
 
   createFile(
@@ -39,10 +39,11 @@ export class FileService {
     blob: Blob,
     blobName: string,
   ): Observable<CreatedFileResponse> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
     const formData = new FormData();
     formData.append("file", blob, blobName);
-    return this.http.post<CreatedFileResponse>(this.endpoint, formData, {
+    return this.http.post<CreatedFileResponse>(endpoint, formData, {
       headers,
     });
   }
@@ -51,8 +52,9 @@ export class FileService {
     subjectId: string,
     subjectType: "OCCUR" | "RNC",
   ): Observable<void> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
-    return this.http.delete<void>(this.endpoint, { headers });
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
+    return this.http.delete<void>(endpoint, { headers });
   }
 
   deleteFile(
@@ -60,8 +62,9 @@ export class FileService {
     subjectId: string,
     subjectType: "OCCUR" | "RNC",
   ): Observable<void> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
-    return this.http.delete<void>(`${this.endpoint}/${fileId}`, { headers });
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
+    return this.http.delete<void>(`${endpoint}/${fileId}`, { headers });
   }
 
   getFile(
@@ -69,8 +72,9 @@ export class FileService {
     subjectId: string,
     subjectType: "OCCUR" | "RNC",
   ): Observable<FileResponse> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
-    return this.http.get<FileResponse>(`${this.endpoint}/${fileId}`, {
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
+    return this.http.get<FileResponse>(`${endpoint}/${fileId}`, {
       headers,
     });
   }
@@ -81,25 +85,30 @@ export class FileService {
     subjectType: "OCCUR" | "RNC",
     hash: string,
   ): Observable<FileAccessResponse> {
-    const headers = this.getDefaultHeaders(subjectType, subjectId);
+    const headers = this.getDefaultHeaders();
+    const endpoint = this.getEndpointUri(subjectType, subjectId);
     const body: FileAccessRequest = { hash };
     return this.http.post<FileAccessResponse>(
-      `${this.endpoint}/${fileId}/access`,
+      `${endpoint}/${fileId}/access`,
       body,
       { headers },
     );
   }
 
   private getDefaultHeaders(
-    subjectType: "OCCUR" | "RNC",
-    subjectId: string,
   ): HttpHeaders {
     return new HttpHeaders({
       "X-Application-Key": this.session.getItem("clientKey")!,
-      Authorization: this.session.getItem("Authorization")!,
-      "x-equaly-subject-type": subjectType,
-      "x-equaly-subject-id": subjectId,
+      Authorization: this.session.getItem("Authorization")!
     });
+  }
+
+  private getEndpointUri(subjectType: "OCCUR" | "RNC", subjectId: string): string {
+    if (subjectType === "OCCUR") {
+      return `${environment.api.core}/occurs/${subjectId}/files`;
+    } else {
+      return `${environment.api.core}/rnc_forms/${subjectId}/files`;
+    }
   }
 
   compressImage(

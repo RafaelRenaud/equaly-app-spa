@@ -1,3 +1,4 @@
+<!-- occur-complement-viewer.component.html -->
 @if (occur) {
 <div class="surface-container">
   <div class="surface-container-header">
@@ -149,9 +150,9 @@
             placeholder="Descreva sua análise de qualidade..."></textarea>
           <div class="d-flex justify-content-end mt-1">
             <small class="text-muted" [class.text-danger]="
-                        inspectionReport.length < 8 &&
-                        inspectionReport.length > 0
-                      ">
+                            inspectionReport.length < 8 &&
+                            inspectionReport.length > 0
+                          ">
               {{ inspectionReport.length }}/512 caracteres (mínimo 8)
             </small>
           </div>
@@ -166,8 +167,8 @@
         </div>
 
         <button class="btn btn-primary" (click)="openInspectModal(inspectModal)" [disabled]="
-                    inspectionReport.length < 8 || inspectionReport.length > 512
-                  ">
+                        inspectionReport.length < 8 || inspectionReport.length > 512
+                      ">
           <i class="bi bi-check-square-fill me-1"></i> Confirmar
           Inspeção
         </button>
@@ -187,8 +188,8 @@
             placeholder="Descreva as informações de fechamento..."></textarea>
           <div class="d-flex justify-content-end mt-1">
             <small class="text-muted" [class.text-danger]="
-                        closeInfo.length < 8 && closeInfo.length > 0
-                      ">
+                            closeInfo.length < 8 && closeInfo.length > 0
+                          ">
               {{ closeInfo.length }}/512 caracteres (mínimo 8)
             </small>
           </div>
@@ -207,31 +208,8 @@
   <li ngbNavItem="activityHistory">
     <button ngbNavLink>Histórico de Atividades</button>
     <ng-template ngbNavContent>
-      <div class="tab-content-container p-3">
-        @if (audits.length === 0) {
-        <div class="alert alert-primary" role="alert">
-          <i class="bi bi-info-square-fill me-2"></i>
-          Nenhuma atividade registrada.
-        </div>
-        } @else {
-        <div class="timeline">
-          @for (audit of audits; track audit.id) {
-          <div class="timeline-item mb-3">
-            <div class="d-flex">
-              <div class="flex-grow-1">
-                <div class="d-flex justify-content-between">
-                  <strong>{{ audit.actionType }}</strong>
-                  <small class="text-muted">{{
-                    audit.createdAt | date: "dd/MM/yyyy HH:mm"
-                    }}</small>
-                </div>
-              </div>
-            </div>
-          </div>
-          }
-        </div>
-        }
-      </div>
+      <app-audit [subjectId]="occur.id!" [subjectType]="'OCCUR'" [subjectCode]="occur.code" [pageSize]="10">
+      </app-audit>
     </ng-template>
   </li>
 

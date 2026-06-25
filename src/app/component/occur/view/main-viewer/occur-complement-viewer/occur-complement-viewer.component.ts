@@ -1,3 +1,4 @@
+// occur-complement-viewer.component.ts
 import { CommonModule } from "@angular/common";
 import {
   Component,
@@ -16,7 +17,6 @@ import {
 } from "@ng-bootstrap/ng-bootstrap";
 import { Subscription, forkJoin, interval, of } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
-import { AuditResponse } from "../../../../../core/model/audit/audits-response.model";
 import { FileAccessResponse } from "../../../../../core/model/file/file-access.model";
 import { FileResponse } from "../../../../../core/model/file/file-response.model";
 import { FilesResponse } from "../../../../../core/model/file/files-response.model";
@@ -27,10 +27,17 @@ import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
+import { AuditComponent } from "../../../../audit/audit.component";
 
 @Component({
   selector: "app-occur-complement-viewer",
-  imports: [CommonModule, NgbNavModule, FormsModule, NgbPaginationModule],
+  imports: [
+    CommonModule,
+    NgbNavModule,
+    FormsModule,
+    NgbPaginationModule,
+    AuditComponent
+  ],
   templateUrl: "./occur-complement-viewer.component.html",
   styleUrl: "./occur-complement-viewer.component.scss",
   standalone: true,
@@ -44,7 +51,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
   existingFiles: FileResponse[] = [];
   attachedFiles: File[] = [];
-  audits: AuditResponse[] = [];
 
   isDaltonEnabled: boolean = false;
   isOccurOpener: boolean = false;
@@ -88,7 +94,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
     if (this.occur?.id) {
       this.loadAttachments();
-      this.loadActivities();
     }
 
     if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
@@ -170,12 +175,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           console.error("Erro ao carregar anexos automaticamente");
         },
       });
-  }
-
-  private loadActivities(): void {
-    setTimeout(() => {
-      this.audits = [];
-    }, 500);
   }
 
   private showAlert(
@@ -423,7 +422,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         this.showAlert("ERROR", `${failedCount} arquivo(s) não foram salvos.`);
       } else {
         this.attachedFiles = [];
-        await this.loadAttachments();
+        this.loadAttachments();
         this.showAlert(
           "SUCCESS",
           `${compressedFiles.length} anexo(s) adicionado(s) com sucesso!`,

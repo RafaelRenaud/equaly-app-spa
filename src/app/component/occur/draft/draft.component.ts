@@ -1,20 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import flatpickr from 'flatpickr';
 import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { finalize } from 'rxjs';
+import { OccurFilters } from '../../../core/model/occur/occur-filters.model';
 import { Occur } from '../../../core/model/occur/occur.model';
 import { LoadingService } from '../../../core/service/loading/loading.service';
 import { OccurService } from '../../../core/service/occur/occur.service';
 import { SessionService } from '../../../core/service/session/session.service';
-import { OccurFilters } from '../../../core/model/occur/occur-filters.model';
 
 @Component({
   selector: 'app-draft',
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, NgbPaginationModule],
   templateUrl: './draft.component.html',
   styleUrl: './draft.component.scss',
   standalone: true
@@ -24,9 +24,10 @@ export class OccurDraftComponent implements AfterViewInit {
   @ViewChild('deleteModal') deleteModal: any;
 
   public occurs: Occur[] = [];
-  currentPage: number = 0;
+  currentPage: number = 1;
   totalPages: number = 1;
   pageSize: number = 10;
+  collectionSize: number = 0;
 
   // Filtros
   selectedFilter: string = 'NONE';
@@ -90,27 +91,22 @@ export class OccurDraftComponent implements AfterViewInit {
       openerId: Number(this.sessionService.getItem('userId'))
     };
 
-    // Aplica filtro de prioridade (se selecionado)
     if (this.selectedPriority && this.selectedPriority !== '') {
       filters.priority = this.selectedPriority as 'LOW' | 'MEDIUM' | 'HIGH';
     }
 
-    // Aplica filtro de data inicial
     if (this.startDate) {
       const [d, m, y] = this.startDate.split('/');
       filters.startOccurredDate = `${y}-${m}-${d}`;
     }
 
-    // Aplica filtro de data final
     if (this.endDate) {
       const [d, m, y] = this.endDate.split('/');
       filters.endOccurredDate = `${y}-${m}-${d}`;
     }
 
-    // Aplica filtro de busca (ID, CODE ou CONTENT)
     if (this.selectedFilter !== 'NONE' && this.filterValue) {
       if (this.selectedFilter === 'ID') {
-        // Busca por ID usa método específico
         this.occurService.getOccur(Number(this.filterValue)).pipe(
           finalize(() => this.loadingService.hide())
         ).subscribe({
@@ -118,9 +114,11 @@ export class OccurDraftComponent implements AfterViewInit {
             if (response && response.status === 'DRAFT_OPENED' && response.opener?.id === Number(this.sessionService.getItem('userId'))) {
               this.occurs = [response];
               this.totalPages = 1;
+              this.collectionSize = 1;
             } else {
               this.occurs = [];
               this.totalPages = 1;
+              this.collectionSize = 0;
               this.router.navigate([], {
                 queryParams: {
                   action: "WARNING",
@@ -132,6 +130,7 @@ export class OccurDraftComponent implements AfterViewInit {
           error: (error) => {
             this.occurs = [];
             this.totalPages = 1;
+            this.collectionSize = 0;
             this.router.navigate([], {
               queryParams: {
                 action: "WARNING",
@@ -148,12 +147,13 @@ export class OccurDraftComponent implements AfterViewInit {
       }
     }
 
-    this.occurService.getOccurs(filters, this.currentPage, this.pageSize).pipe(
+    this.occurService.getOccurs(filters, this.currentPage - 1, this.pageSize).pipe(
       finalize(() => this.loadingService.hide())
     ).subscribe({
       next: (response) => {
         this.occurs = response.occurs;
         this.totalPages = response.pageable?.totalPages || 1;
+        this.collectionSize = response.pageable?.totalElements || 0;
       },
       error: (error) => {
         this.router.navigate([], {
@@ -167,7 +167,7 @@ export class OccurDraftComponent implements AfterViewInit {
   }
 
   search(): void {
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.loadOccurs();
   }
 
@@ -177,11 +177,11 @@ export class OccurDraftComponent implements AfterViewInit {
     this.selectedPriority = '';
     this.startDate = '';
     this.endDate = '';
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.loadOccurs();
   }
 
-  goToPage(page: number): void {
+  onPageChange(page: number): void {
     this.currentPage = page;
     this.loadOccurs();
   }

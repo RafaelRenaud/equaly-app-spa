@@ -134,8 +134,6 @@ export class AuditComponent implements OnChanges, OnDestroy {
       return 'Encerrada sem Avaliação';
     } else if (key === 'closeStatus' && value === 'NOT_INFORMED') {
       return 'Não Informado';
-    } else {
-      return value;
     }
 
     // Formatar status (RNC) - você pode criar um pipe similar para RNC

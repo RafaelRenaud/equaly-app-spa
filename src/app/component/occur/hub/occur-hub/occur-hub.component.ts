@@ -2,7 +2,7 @@ import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import flatpickr from 'flatpickr';
 import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { OccurFilters } from '../../../../core/model/occur/occur-filters.model';
@@ -17,7 +17,6 @@ import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
 import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 
-// Definindo o tipo para os filtros de data
 type FormFiltersType = {
   occurCode: string;
   priority: string;
@@ -52,7 +51,10 @@ type FormFiltersType = {
     DatePipe,
     RouterModule,
     OccurStatusPipe,
-    NgbAccordionModule, UserTypeHeadSearchComponent, OccurTypeHeadSearchComponent],
+    NgbAccordionModule,
+    NgbPaginationModule,
+    UserTypeHeadSearchComponent,
+    OccurTypeHeadSearchComponent],
   standalone: true
 })
 export class OccurHubComponent implements OnInit, AfterViewInit {
@@ -76,10 +78,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   selectedOccurTypeDisplay: string = '';
 
   // Paginação
-  currentPage: number = 0;
+  currentPage: number = 1;
   pageSize: number = 10;
   totalPages: number = 0;
   totalElements: number = 0;
+  collectionSize: number = 0;
 
   // Filtros do formulário
   formFilters: FormFiltersType = {
@@ -220,15 +223,16 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     }
 
     this.loadingService.show();
-    this.currentPage = 0;
+    this.currentPage = 1;
 
     const searchFilters = this.prepareFilters();
 
-    this.occurService.getOccurs(searchFilters, this.currentPage, this.pageSize).subscribe({
+    this.occurService.getOccurs(searchFilters, this.currentPage - 1, this.pageSize).subscribe({
       next: (response: OccursResponse) => {
         this.occurs = response.occurs;
         this.totalPages = response.pageable.totalPages;
         this.totalElements = response.pageable.totalElements;
+        this.collectionSize = response.pageable.totalElements || 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
@@ -241,6 +245,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         });
         this.occurs = [];
         this.totalPages = 0;
+        this.collectionSize = 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       }
@@ -403,12 +408,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     this.selectedComplainantDisplay = '';
     this.selectedOccurTypeDisplay = '';
     this.idFilter = '';
+    this.currentPage = 1;
 
-    // Limpar os inputs dos typeheads
     this.typeheadComponents.forEach(typehead => typehead.clear());
     this.occurTypeheadComponent.clear();
 
-    // Limpar os valores dos inputs de data
     this.dateInputs.forEach(input => {
       if (input && input.nativeElement) {
         input.nativeElement.value = '';
@@ -419,21 +423,18 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  goToPage(page: number): void {
-    if (page < 0 || page >= this.totalPages) {
-      return;
-    }
-
-    this.loadingService.show();
+  onPageChange(page: number): void {
     this.currentPage = page;
+    this.loadingService.show();
 
     const searchFilters = this.prepareFilters();
 
-    this.occurService.getOccurs(searchFilters, this.currentPage, this.pageSize).subscribe({
+    this.occurService.getOccurs(searchFilters, this.currentPage - 1, this.pageSize).subscribe({
       next: (response: OccursResponse) => {
         this.occurs = response.occurs;
         this.totalPages = response.pageable.totalPages;
         this.totalElements = response.pageable.totalElements;
+        this.collectionSize = response.pageable.totalElements || 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
@@ -462,7 +463,8 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         this.occurs = [occur];
         this.totalPages = 1;
         this.totalElements = 1;
-        this.currentPage = 0;
+        this.collectionSize = 1;
+        this.currentPage = 1;
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
@@ -475,6 +477,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         });
         this.occurs = [];
         this.totalPages = 0;
+        this.collectionSize = 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       }

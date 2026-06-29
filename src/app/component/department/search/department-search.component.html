@@ -1,22 +1,11 @@
 <!-- Input Department Search -->
 <div class="row">
   <div class="col-9">
-    <input
-      disabled
-      class="form-control mt-3"
-      id="departmentSearchInput"
-      placeholder="Nenhum departamento selecionado"
-      [class.is-invalid]="!validDepartmentSelected"
-      #departmentSearchInputRef
-    />
+    <input disabled class="form-control mt-3" id="departmentSearchInput" placeholder="Nenhum departamento selecionado"
+      [class.is-invalid]="!validDepartmentSelected" #departmentSearchInputRef />
   </div>
   <div class="col-3">
-    <button
-      class="btn btn-primary"
-      type="button"
-      data-bs-toggle="modal"
-      data-bs-target="#departmentSearchModal"
-    >
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#departmentSearchModal">
       <i class="bi bi-search-fill"></i>
       Buscar
     </button>
@@ -24,36 +13,21 @@
 </div>
 
 <!-- Modal Pesquisa -->
-<div
-  class="modal modal-lg fade"
-  id="departmentSearchModal"
-  tabindex="-1"
-  role="dialog"
-  aria-labelledby="departmentSearchModalLabel"
-  aria-hidden="true"
->
+<div class="modal modal-lg fade" id="departmentSearchModal" tabindex="-1" role="dialog"
+  aria-labelledby="departmentSearchModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="departmentSearchModalLabel">
           Filtrar por Departamento
         </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row">
           <div class="col-3">
             <div class="form-floating">
-              <select
-                class="form-select form-control"
-                [(ngModel)]="selectedFilter"
-                title="Selecione o filtro"
-              >
+              <select class="form-select form-control" [(ngModel)]="selectedFilter" title="Selecione o filtro">
                 <option value="NONE" selected>Selecione</option>
                 <option value="id">ID</option>
                 <option value="name">Nome</option>
@@ -64,22 +38,13 @@
           </div>
           <div class="col-6">
             <div class="form-floating">
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="searchValue"
-                placeholder="Digite"
-              />
+              <input type="text" class="form-control" [(ngModel)]="searchValue" placeholder="Digite" />
               <label>Busca</label>
             </div>
           </div>
           <div class="col-3">
             <div class="form-floating">
-              <select
-                class="form-select form-control"
-                [(ngModel)]="selectedStatus"
-                title="Selecione o estado"
-              >
+              <select class="form-select form-control" [(ngModel)]="selectedStatus" title="Selecione o estado">
                 <option value="NONE">Ambos</option>
                 <option value="ACTIVE">Ativo</option>
                 <option value="INACTIVE">Inativo</option>
@@ -122,22 +87,15 @@
                 <tbody>
                   @for (department of searchedDepartments; track department.id)
                   {
-                  <tr
-                    style="cursor: pointer"
-                    data-bs-dismiss="modal"
-                    (click)="selectDepartmentFromModal(department)"
-                  >
+                  <tr style="cursor: pointer" data-bs-dismiss="modal" (click)="selectDepartmentFromModal(department)">
                     <td class="align-middle">{{ department.id }}</td>
                     <td class="align-middle">{{ department.name }}</td>
                     <td class="align-middle">{{ department.description }}</td>
                     <td class="align-middle">
-                      <span
-                        class="badge"
-                        [class.bg-success]="department.status === 'ACTIVE'"
-                        [class.bg-danger]="department.status === 'INACTIVE'"
-                      >
+                      <span class="badge" [class.bg-success]="department.status === 'ACTIVE'"
+                        [class.bg-danger]="department.status === 'INACTIVE'">
                         {{
-                          department.status === "ACTIVE" ? "Ativo" : "Inativo"
+                        department.status === "ACTIVE" ? "Ativo" : "Inativo"
                         }}
                       </span>
                     </td>
@@ -148,43 +106,16 @@
             </div>
             } @if (searchedDepartments.length === 0) {
             <div class="surface-banner text-center">
-              <img
-                src="assets/not_found.svg"
-                alt="Não encontrado"
-                class="img-fluid"
-              />
+              <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid" />
               <br />
               <h4>Nada foi encontrado por aqui...</h4>
               <br />
             </div>
             } @if (searchedDepartments.length > 0) {
             <br />
-            <nav>
-              <ul class="pagination justify-content-center">
-                <li class="page-item" [class.disabled]="currentPage === 0">
-                  <button class="page-link" (click)="goToPage(currentPage - 1)">
-                    Anterior
-                  </button>
-                </li>
-
-                @for (page of [].constructor(totalPages); track $index) {
-                <li class="page-item" [class.active]="$index === currentPage">
-                  <button class="page-link" (click)="goToPage($index)">
-                    {{ $index + 1 }}
-                  </button>
-                </li>
-                }
-
-                <li
-                  class="page-item"
-                  [class.disabled]="currentPage === totalPages - 1"
-                >
-                  <button class="page-link" (click)="goToPage(currentPage + 1)">
-                    Próximo
-                  </button>
-                </li>
-              </ul>
-            </nav>
+            <ngb-pagination [collectionSize]="collectionSize" [(page)]="currentPage" [pageSize]="pageSize"
+              [maxSize]="pageSize" [rotate]="true" (pageChange)="onPageChange($event)">
+            </ngb-pagination>
             }
           </div>
         </div>

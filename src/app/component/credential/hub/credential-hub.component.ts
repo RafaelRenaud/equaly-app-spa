@@ -1,19 +1,19 @@
+import { isPlatformBrowser } from "@angular/common";
 import { Component, Inject, PLATFORM_ID } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
-import { CredentialResponse } from "../../../core/model/credential/credential-response.model";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
 import { Modal } from "bootstrap";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { CredentialService } from "../../../core/service/credential/credential.service";
-import { isPlatformBrowser } from "@angular/common";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { error } from "console";
+import { CredentialResponse } from "../../../core/model/credential/credential-response.model";
+import { CredentialService } from "../../../core/service/credential/credential.service";
+import { LoadingService } from "../../../core/service/loading/loading.service";
 import { UserSystemPipe } from "../../../pipe/user-system-pipe";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 
 @Component({
   selector: "credential-hub",
-  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe],
+  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe, NgbPaginationModule],
   templateUrl: "./credential-hub.component.html",
   styleUrl: "./credential-hub.component.scss",
   standalone: true,
@@ -31,9 +31,10 @@ export class CredentialHubComponent {
   selectedCredential: CredentialResponse | null = null;
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 10;
+  collectionSize = 0;
 
   //Modal
   credentialToInactive: CredentialResponse | null = null;
@@ -47,7 +48,7 @@ export class CredentialHubComponent {
     public loadingService: LoadingService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.searchCredentials();
@@ -65,12 +66,13 @@ export class CredentialHubComponent {
 
   searchCredentials(): void {
     this.loadingService.show();
-    
+
     if (this.selectedFilter === "id") {
       this.credentialService.getCredential(+this.searchValue).subscribe({
         next: (response) => {
           this.credentials = Array.of(response);
           this.totalPages = 1;
+          this.collectionSize = 1;
           this.loadingService.hide();
         },
         error: (err) => {
@@ -94,13 +96,14 @@ export class CredentialHubComponent {
           this.searchValue,
           this.selectedStatus,
           this.selectedCompany ? this.selectedCompany.id.toString() : null,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe({
           next: (response) => {
             this.credentials = response.credentials;
             this.totalPages = response.pageable.totalPages;
+            this.collectionSize = response.pageable.totalElements || 0;
             this.notFoundIndicator = this.credentials.length === 0;
             this.loadingService.hide();
           },
@@ -122,16 +125,14 @@ export class CredentialHubComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.selectedCompany = null;
     this.searchCredentials();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchCredentials();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchCredentials();
   }
 
   openConfirmModal(credential: CredentialResponse): void {

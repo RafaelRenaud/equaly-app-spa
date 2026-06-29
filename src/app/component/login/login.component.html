@@ -3,45 +3,25 @@
   @if (flowType === 'COMMON_LOGIN' || flowType === 'COMPANY_LOGIN') {
   <div class="col-md-4 mx-auto surface-container-centered">
     <div class="surface-container-header">
-      <img
-        alt="Logo da Empresa"
-        id="equaly-logo"
-        [src]="
+      <img alt="Logo da Empresa" id="equaly-logo" [src]="
           subflowType === 'COMPANY_CREDENTIALS' && selectedCompany?.logoUri
             ? selectedCompany?.logoUri
             : 'logo_white.png'
-        "
-      />
+        " />
     </div>
 
     @if (flowType === 'COMMON_LOGIN') {
     <div class="text-center surface-container-body" id="common-login">
-      <form
-        [formGroup]="loginForm"
-        (ngSubmit)="submitLogin('COMMON_LOGIN')"
-        novalidate
-      >
+      <form [formGroup]="loginForm" (ngSubmit)="submitLogin('COMMON_LOGIN')" novalidate>
         <div class="form-floating col-md">
-          <input
-            formControlName="login"
-            type="text"
-            id="login"
-            class="form-control"
-            placeholder="Login ou E-mail"
-            [class.is-invalid]="invalidLogin"
-          />
+          <input formControlName="login" type="text" id="login" class="form-control" placeholder="Login ou E-mail"
+            [class.is-invalid]="invalidLogin" />
           <label for="login">Login ou E-Mail</label>
         </div>
 
         <div class="form-floating col-md">
-          <input
-            formControlName="password"
-            type="password"
-            id="password"
-            class="form-control"
-            placeholder="Senha"
-            [class.is-invalid]="invalidLogin"
-          />
+          <input formControlName="password" type="password" id="password" class="form-control" placeholder="Senha"
+            [class.is-invalid]="invalidLogin" />
           <label for="password">Senha</label>
         </div>
 
@@ -51,26 +31,19 @@
         </div>
         }
         <button class="btn btn-primary" type="submit">Entrar</button>
-        <button
-          class="btn btn-outline-primary"
-          (click)="changeView('COMPANY_SEARCH', $event)"
-        >
+        <button class="btn btn-outline-primary" (click)="changeView('COMPANY_SEARCH', $event)">
           Entrar com Empresa
         </button>
       </form>
       <br />
       <div class="text-center">
-        <b
-          ><p>
-            <a
-              alt="Primeiro Acesso ou Recuperar Conta"
-              href="#"
-              (click)="changeView('RECOVERY', $event)"
-            >
+        <b>
+          <p>
+            <a alt="Primeiro Acesso ou Recuperar Conta" href="#" (click)="changeView('RECOVERY', $event)">
               Primeiro Acesso ou Recuperar Conta
             </a>
-          </p></b
-        >
+          </p>
+        </b>
       </div>
     </div>
     } @if (flowType === 'COMPANY_LOGIN') {
@@ -81,21 +54,9 @@
           Para entrar com a empresa, digite o seu documento e selecione a
           empresa específica.
         </p>
-        <form
-          [formGroup]="companySearchForm"
-          (ngSubmit)="searchCompanies()"
-          class="input-group"
-        >
-          <input
-            formControlName="customerDocument"
-            type="text"
-            class="form-control"
-            placeholder="CPF ou RNE"
-          />
-          <button
-            class="bi bi-search btn btn-primary float-left"
-            type="submit"
-          ></button>
+        <form [formGroup]="companySearchForm" (ngSubmit)="searchCompanies()" class="input-group">
+          <input formControlName="customerDocument" type="text" class="form-control" placeholder="CPF ou RNE" />
+          <button class="bi bi-search btn btn-primary float-left" type="submit"></button>
         </form>
       </div>
       } @if (companiesSearched && subflowType === 'COMPANY_LIST') {
@@ -122,36 +83,14 @@
             }
           </tbody>
         </table>
-        <nav>
-          <ul class="pagination justify-content-center">
-            <li class="page-item" [class.disabled]="page === 0">
-              <button class="page-link" (click)="loadPage(page - 1)">
-                Anterior
-              </button>
-            </li>
-
-            @for (p of pages; track p) {
-            <li class="page-item" [class.active]="p === page">
-              <button class="page-link" (click)="loadPage(p)">
-                {{ p + 1 }}
-              </button>
-            </li>
-            }
-
-            <li class="page-item" [class.disabled]="page >= totalPages - 1">
-              <button class="page-link" (click)="loadPage(page + 1)">
-                Próximo
-              </button>
-            </li>
-          </ul>
-        </nav>
+        <ngb-pagination [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" [maxSize]="5"
+          [rotate]="true" (pageChange)="onPageChange($event)">
+        </ngb-pagination>
       </div>
-      } @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST')
+      }
+      @if (subflowType === 'COMPANY_SEARCH' || subflowType === 'COMPANY_LIST')
       {
-      <button
-        class="btn btn-outline-primary"
-        (click)="changeView('COMMON_LOGIN', $event)"
-      >
+      <button class="btn btn-outline-primary" (click)="changeView('COMMON_LOGIN', $event)">
         Voltar
       </button>
       } @if (subflowType === 'COMPANY_CREDENTIALS') {
@@ -177,34 +116,17 @@
             Informações Incorretas, tente novamente.
           </div>
           }
-          <form
-            [formGroup]="companyLoginForm"
-            (ngSubmit)="submitLogin('COMPANY_LOGIN')"
-            class="form-floating"
-          >
-            <input
-              formControlName="password"
-              class="form-control"
-              type="password"
-              id="password"
-              placeholder="Senha"
-              [class.is-invalid]="invalidLogin"
-            />
+          <form [formGroup]="companyLoginForm" (ngSubmit)="submitLogin('COMPANY_LOGIN')" class="form-floating">
+            <input formControlName="password" class="form-control" type="password" id="password" placeholder="Senha"
+              [class.is-invalid]="invalidLogin" />
             <label for="password">Senha</label>
             <button class="btn btn-primary" type="submit">Entrar</button>
-            <button
-              type="button"
-              class="btn btn-outline-primary"
-              (click)="changeView('COMPANY_LIST', $event)"
-            >
+            <button type="button" class="btn btn-outline-primary" (click)="changeView('COMPANY_LIST', $event)">
               Voltar
             </button>
           </form>
         </div>
-        <button
-          class="btn btn-outline-primary"
-          (click)="changeView('COMMON_LOGIN', $event)"
-        >
+        <button class="btn btn-outline-primary" (click)="changeView('COMMON_LOGIN', $event)">
           Entrar com Login
         </button>
       </div>
@@ -230,27 +152,15 @@
         @if (!recoveryCodeSent) {
         <!-- Primeiro campo com form-floating -->
         <div class="form-floating mb-3">
-          <input
-            formControlName="login"
-            type="text"
-            class="form-control"
-            id="recoveryLogin"
-            placeholder="Login"
-            [class.is-invalid]="invalidRecovery"
-          />
+          <input formControlName="login" type="text" class="form-control" id="recoveryLogin" placeholder="Login"
+            [class.is-invalid]="invalidRecovery" />
           <label for="recoveryLogin">Login</label>
         </div>
 
         <!-- Segundo campo com form-floating -->
         <div class="form-floating mb-3">
-          <input
-            formControlName="companyAlias"
-            type="text"
-            class="form-control"
-            id="recoveryCompanyAlias"
-            placeholder="Código da Empresa"
-            [class.is-invalid]="invalidRecovery"
-          />
+          <input formControlName="companyAlias" type="text" class="form-control" id="recoveryCompanyAlias"
+            placeholder="Código da Empresa" [class.is-invalid]="invalidRecovery" />
           <label for="recoveryCompanyAlias">Código da Empresa</label>
         </div>
         } @if (recoveryCodeSent) {
@@ -269,11 +179,7 @@
             Enviar Código de Recuperação
           </button>
           }
-          <button
-            type="button"
-            class="btn btn-outline-primary"
-            (click)="changeView('COMMON_LOGIN', $event)"
-          >
+          <button type="button" class="btn btn-outline-primary" (click)="changeView('COMMON_LOGIN', $event)">
             Voltar
           </button>
         </div>

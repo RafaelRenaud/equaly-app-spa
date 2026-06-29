@@ -5,12 +5,12 @@ import {
   EventEmitter,
   Input,
   Output,
-  ViewChild,
   TemplateRef,
+  ViewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
-import { NgbTypeahead, NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { NgbModal, NgbPaginationModule, NgbTypeahead } from "@ng-bootstrap/ng-bootstrap";
 import {
   catchError,
   debounceTime,
@@ -30,13 +30,13 @@ import { UserService } from "../../../../core/service/user/user.service";
 
 @Component({
   selector: "app-user-type-head-search",
-  imports: [NgbTypeahead, FormsModule],
+  imports: [NgbTypeahead, FormsModule, NgbPaginationModule],
   templateUrl: "./user-type-head-search.component.html",
   styleUrl: "./user-type-head-search.component.scss",
   standalone: true,
 })
 export class UserTypeHeadSearchComponent {
-  @Input() modalId: string = "userSearchModal"; // Mantido para compatibilidade, mas não usado mais
+  @Input() modalId: string = "userSearchModal";
   @Input() userRole: string[] = [];
   @Input() placeholder: string = "Buscar Usuário";
   @Output() outputUserSelected = new EventEmitter<UserResponse | null>();
@@ -53,9 +53,10 @@ export class UserTypeHeadSearchComponent {
   searchedUsers: UserResponse[] = [];
   selectedFilter: string = "name";
   searchValue: string = "";
-  modalCurrentPage: number = 0;
+  modalCurrentPage: number = 1;
   modalTotalPages: number = 0;
   modalPageSize: number = 5;
+  modalCollectionSize: number = 0;
   hasSearched: boolean = false;
 
   private readonly searchByIdSubject = new Subject<string>();
@@ -326,7 +327,7 @@ export class UserTypeHeadSearchComponent {
   // ==================== MÉTODOS DO MODAL ====================
 
   openUserSearchModal(): void {
-    this.modalCurrentPage = 0;
+    this.modalCurrentPage = 1;
     this.searchValue = "";
     this.selectedFilter = "name";
     this.searchedUsers = [];
@@ -338,7 +339,6 @@ export class UserTypeHeadSearchComponent {
       backdrop: "static",
     });
 
-    // Executa a busca automaticamente quando o modal abrir
     setTimeout(() => {
       this.searchUsersModal();
     }, 100);
@@ -359,13 +359,14 @@ export class UserTypeHeadSearchComponent {
         null,
         "ACTIVE",
         this.userRole,
-        this.modalCurrentPage,
+        this.modalCurrentPage - 1,
         this.modalPageSize,
       )
       .subscribe({
         next: (response: UsersResponse) => {
           this.searchedUsers = response.users || [];
           this.modalTotalPages = response.pageable?.totalPages || 0;
+          this.modalCollectionSize = response.pageable?.totalElements || 0;
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
@@ -374,6 +375,7 @@ export class UserTypeHeadSearchComponent {
           this.handleError("Erro ao buscar usuários");
           this.searchedUsers = [];
           this.modalTotalPages = 0;
+          this.modalCollectionSize = 0;
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
@@ -402,24 +404,18 @@ export class UserTypeHeadSearchComponent {
   clearModalFilters(): void {
     this.selectedFilter = "name";
     this.searchValue = "";
-    this.modalCurrentPage = 0;
+    this.modalCurrentPage = 1;
     this.searchedUsers = [];
     this.hasSearched = false;
     this.modalTotalPages = 0;
+    this.modalCollectionSize = 0;
     this.cdr.detectChanges();
     this.searchUsersModal();
   }
 
-  goToModalPage(page: number): void {
-    if (page < 0 || page >= this.modalTotalPages) return;
+  onModalPageChange(page: number): void {
     this.modalCurrentPage = page;
     this.searchUsersModal();
-  }
-
-  getModalPagesArray(): number[] {
-    return Array(this.modalTotalPages)
-      .fill(0)
-      .map((_, i) => i);
   }
 
   clear(): void {

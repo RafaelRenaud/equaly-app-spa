@@ -1,0 +1,99 @@
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Avaliações</h3>
+    </div>
+    <div class="surface-container-body">
+        <br />
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'awaitingRate'"
+                        [class.btn-primary]="activeTab === 'awaitingRate'" (click)="changeTab('awaitingRate')">
+                        Aguardando Avaliação
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'closedWithRating'"
+                        [class.btn-primary]="activeTab === 'closedWithRating'" (click)="changeTab('closedWithRating')">
+                        Encerradas
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'closedWithoutRating'"
+                        [class.btn-primary]="activeTab === 'closedWithoutRating'"
+                        (click)="changeTab('closedWithoutRating')">
+                        Avaliação Expirada
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        @if (occurs.length !== 0) {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Título</th>
+                        <th>Tipo</th>
+                        <th>Data do Ocorrido</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (occur of occurs; track occur.id) {
+                    <tr>
+                        <td>{{ occur.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ occur.code }}</span>
+                        </td>
+                        <td>
+                            @if (occur.priority === "HIGH") {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (occur.priority === "MEDIUM") {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>
+                            {{
+                            occur.title
+                            ? occur.title.length > 80
+                            ? (occur.title | slice: 0 : 80) + "..."
+                            : occur.title
+                            : "Sem título"
+                            }}
+                        </td>
+                        <td>{{ occur.occurType?.name }}</td>
+                        <td>{{ occur.occurredDate | date: "dd/MM/yyyy" }}</td>
+
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary me-1" title="Abrir Ocorrência"
+                                [routerLink]="['/occurs/', occur.id]">
+                                <i class="bi bi-eye-fill"></i>
+                                Abrir
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+
+            <br />
+            <ngb-pagination [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" [maxSize]="pageSize"
+                [rotate]="true" (pageChange)="onPageChange($event)">
+            </ngb-pagination>
+        </div>
+        } @else {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Sem pendencias por aqui</h4>
+            <p class="text-muted">
+                Não há ocorrências pendentes para essa categoria.
+            </p>
+        </div>
+        }
+    </div>
+</div>

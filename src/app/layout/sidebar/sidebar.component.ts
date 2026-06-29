@@ -1,9 +1,9 @@
 import { Component } from "@angular/core";
-import { SessionService } from "../../core/service/session/session.service";
 import { RouterModule } from "@angular/router";
-import { LoginService } from "../../core/service/login/login.service";
-import { LoadingService } from "../../core/service/loading/loading.service";
 import { NgbCollapseModule } from "@ng-bootstrap/ng-bootstrap";
+import { LoadingService } from "../../core/service/loading/loading.service";
+import { LoginService } from "../../core/service/login/login.service";
+import { SessionService } from "../../core/service/session/session.service";
 
 @Component({
   selector: "app-sidebar",
@@ -26,7 +26,7 @@ export class SidebarComponent {
     public sessionService: SessionService,
     private loginService: LoginService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.companyLogo = this.sessionService.getItem("companyLogoUrl");
@@ -39,34 +39,39 @@ export class SidebarComponent {
   // Métodos auxiliares para verificação de permissões
   hasAdminAccess(): boolean {
     return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-           this.sessionService.hasRole('MASTER_ADMIN') ||
-           this.sessionService.hasRole('COMMON_ADMIN');
+      this.sessionService.hasRole('MASTER_ADMIN') ||
+      this.sessionService.hasRole('COMMON_ADMIN');
   }
 
   hasAdminOrManagerAccess(): boolean {
     return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-           this.sessionService.hasRole('MASTER_ADMIN') ||
-           this.sessionService.hasRole('COMMON_ADMIN');
+      this.sessionService.hasRole('MASTER_ADMIN') ||
+      this.sessionService.hasRole('COMMON_ADMIN');
+  }
+
+  hasEventOpenerAccess(): boolean {
+    return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
+      this.sessionService.hasRole('COMMON_EVENT_OPENER');
   }
 
   hasQualityAccess(): boolean {
     return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-           this.sessionService.hasRole('MASTER_ADMIN') ||
-           this.sessionService.hasRole('COMMON_ADMIN') ||
-           this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+      this.sessionService.hasRole('MASTER_ADMIN') ||
+      this.sessionService.hasRole('COMMON_ADMIN') ||
+      this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
   }
 
   hasOperationalAccess(): boolean {
     return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
-           this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
-           this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+      this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
+      this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
   }
 
   hasEventOrInspectorAccess(): boolean {
     return this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
-           this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
   }
 
   logout(event: Event): void {

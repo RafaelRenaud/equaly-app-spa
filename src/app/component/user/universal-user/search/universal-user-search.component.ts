@@ -8,13 +8,14 @@ import {
   ViewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
 import { UniversalUserResponse } from "../../../../core/model/user/universal-user.model";
 import { LoadingService } from "../../../../core/service/loading/loading.service";
 import { UniversalUserService } from "../../../../core/service/user/universal-user.service";
 
 @Component({
   selector: "app-universal-user-search",
-  imports: [FormsModule],
+  imports: [FormsModule, NgbPaginationModule],
   templateUrl: "./universal-user-search.component.html",
   styleUrl: "./universal-user-search.component.scss",
   standalone: true,
@@ -33,9 +34,10 @@ export class UniversalUserSearchComponent {
   searchValue = "";
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 5;
+  collectionSize = 0;
   notFoundIndicator = false;
 
   @ViewChild("universalUserSearchInputRef")
@@ -44,7 +46,7 @@ export class UniversalUserSearchComponent {
   constructor(
     private universalUserService: UniversalUserService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (
@@ -69,12 +71,13 @@ export class UniversalUserSearchComponent {
       .getUsers(
         this.selectedFilter,
         this.searchValue,
-        this.currentPage,
+        this.currentPage - 1,
         this.pageSize
       )
       .subscribe((response) => {
         this.searchedUniversalUsers = response.universalUsers;
         this.totalPages = response.pageable.totalPages;
+        this.collectionSize = response.pageable.totalElements || 0;
         this.notFoundIndicator = this.searchedUniversalUsers.length === 0;
         this.loadingService.hide();
       });
@@ -83,15 +86,13 @@ export class UniversalUserSearchComponent {
   clearFilters(): void {
     this.selectedFilter = "NONE";
     this.searchValue = "";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.searchUniversalUsers();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchUniversalUsers();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchUniversalUsers();
   }
 
   selectUniversalUserFromModal(universalUser: UniversalUserResponse): void {

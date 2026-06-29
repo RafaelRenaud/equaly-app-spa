@@ -318,3 +318,31 @@ ngb-typeahead-window {
 .progress-bar {
   background-color: var(--primary-color) !important;
 }
+
+// Pagination
+.pagination {
+  justify-content: center !important;
+  
+  .page-item {
+    
+    &.active {
+      .page-link {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+        
+        &:hover {
+          background-color: var(--primary-hover) !important;
+          border-color: var(--primary-hover) !important;
+          color: white !important;
+        }
+      }
+    }
+    
+    &.disabled {
+      .page-link {
+        color: var(--text-muted) !important;
+      }
+    }
+  }
+}

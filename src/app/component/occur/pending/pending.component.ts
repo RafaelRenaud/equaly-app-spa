@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
 import { finalize } from 'rxjs';
 import { OccurFilters } from '../../../core/model/occur/occur-filters.model';
 import { Occur } from '../../../core/model/occur/occur.model';
@@ -11,9 +12,10 @@ import { SessionService } from '../../../core/service/session/session.service';
 
 @Component({
   selector: 'app-pending',
-  imports: [RouterModule, CommonModule, FormsModule],
+  imports: [RouterModule, CommonModule, FormsModule, NgbPaginationModule],
   templateUrl: './pending.component.html',
-  styleUrl: './pending.component.scss'
+  styleUrl: './pending.component.scss',
+  standalone: true
 })
 export class OccurPendingComponent implements OnInit {
 
@@ -22,9 +24,10 @@ export class OccurPendingComponent implements OnInit {
   public isDaltonEnabled = false;
 
   public occurs: Occur[] = [];
-  public page: number = 0;
+  public page: number = 1;
   public totalPages: number = 0;
   public pageSize: number = 10;
+  public collectionSize: number = 0;
 
   public activeTab: string = '';
 
@@ -57,7 +60,7 @@ export class OccurPendingComponent implements OnInit {
   }
 
   onAssignedToMeChange(): void {
-    this.page = 0;
+    this.page = 1;
     this.loadPendencies();
   }
 
@@ -105,12 +108,13 @@ export class OccurPendingComponent implements OnInit {
       }
     }
 
-    this.occurService.getOccurs(filters, this.page, this.pageSize)
+    this.occurService.getOccurs(filters, this.page - 1, this.pageSize)
       .pipe(finalize(() => this.loadingService.hide()))
       .subscribe({
         next: (response) => {
           this.occurs = response.occurs;
           this.totalPages = response.pageable?.totalPages || 0;
+          this.collectionSize = response.pageable?.totalElements || 0;
         },
         error: (error) => {
           this.router.navigate([], {
@@ -126,12 +130,11 @@ export class OccurPendingComponent implements OnInit {
   changeTab(tab: string): void {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
-    this.page = 0;
+    this.page = 1;
     this.loadPendencies();
   }
 
-  goToPage(page: number): void {
-    if (page < 0 || page >= this.totalPages) return;
+  onPageChange(page: number): void {
     this.page = page;
     this.loadPendencies();
   }

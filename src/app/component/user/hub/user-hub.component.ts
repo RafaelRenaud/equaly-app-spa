@@ -3,7 +3,8 @@ import { Component, Inject, PLATFORM_ID } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import {
-  NgbAccordionModule
+  NgbAccordionModule,
+  NgbPaginationModule
 } from "@ng-bootstrap/ng-bootstrap";
 import { Modal } from "bootstrap";
 import { map, switchMap } from "rxjs";
@@ -30,7 +31,8 @@ import { UniversalUserSearchComponent } from "../universal-user/search/universal
     DepartmentSearchComponent,
     UniversalUserSearchComponent,
     NgbAccordionModule,
-    UserSystemPipe
+    UserSystemPipe,
+    NgbPaginationModule
   ],
   templateUrl: "./user-hub.component.html",
   styleUrl: "./user-hub.component.scss",
@@ -48,9 +50,10 @@ export class UserHubComponent {
   notFoundIndicator = false;
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 10;
+  collectionSize = 0;
 
   selectedCompany: CompanyResponse | null = null;
   selectedDepartment: DepartmentResponse | null = null;
@@ -101,6 +104,7 @@ export class UserHubComponent {
         next: (response) => {
           this.users = Array.of(response);
           this.totalPages = 1;
+          this.collectionSize = 1;
           this.loadingService.hide();
         },
         error: (err) => {
@@ -127,13 +131,14 @@ export class UserHubComponent {
           this.selectedDepartment ? this.selectedDepartment.id : null,
           this.selectedStatus,
           null,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe({
           next: (response) => {
             this.users = response.users;
             this.totalPages = response.pageable.totalPages;
+            this.collectionSize = response.pageable.totalElements || 0;
             this.notFoundIndicator = this.users.length === 0;
             this.loadingService.hide();
           },
@@ -154,18 +159,16 @@ export class UserHubComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.selectedCompany = null;
     this.selectedDepartment = null;
     this.selectedUniversalUser = null;
     this.searchUsers();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchUsers();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchUsers();
   }
 
   openConfirmModal(user: UserResponse, status: "ACTIVE" | "INACTIVE"): void {

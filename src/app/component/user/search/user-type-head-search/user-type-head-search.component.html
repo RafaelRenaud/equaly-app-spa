@@ -1,50 +1,30 @@
 <div class="row mb-3">
   <div class="col-md d-flex align-items-end gap-2">
     <div class="form-floating flex-grow-1 position-relative">
-      <input
-        #typeaheadInput
-        type="text"
-        class="form-control"
-        [class.is-invalid]="invalidInput"
-        id="floatingUser"
-        [placeholder]="placeholder"
-        [ngbTypeahead]="searchUsers"
-        [inputFormatter]="inputFormatter"
-        [resultFormatter]="resultFormatter"
-        (selectItem)="onSelectItem($event)"
-        (blur)="onInputBlur()"
-        (keydown.enter)="onEnterPressed()"
-        (input)="onInputChange($event)"
-        [(ngModel)]="searchText"
-        [ngModelOptions]="{ standalone: true }"
-      />
+      <input #typeaheadInput type="text" class="form-control" [class.is-invalid]="invalidInput" id="floatingUser"
+        [placeholder]="placeholder" [ngbTypeahead]="searchUsers" [inputFormatter]="inputFormatter"
+        [resultFormatter]="resultFormatter" (selectItem)="onSelectItem($event)" (blur)="onInputBlur()"
+        (keydown.enter)="onEnterPressed()" (input)="onInputChange($event)" [(ngModel)]="searchText"
+        [ngModelOptions]="{ standalone: true }" />
       <label for="floatingUser">{{ placeholder }}</label>
 
       @if (isLoading) {
-        <div class="position-absolute end-0 top-50 translate-middle-y me-4">
-          <div
-            class="spinner-custom spinner-border spinner-border-sm"
-            role="status"
-          >
-            <span class="visually-hidden">Carregando...</span>
-          </div>
+      <div class="position-absolute end-0 top-50 translate-middle-y me-4">
+        <div class="spinner-custom spinner-border spinner-border-sm" role="status">
+          <span class="visually-hidden">Carregando...</span>
         </div>
+      </div>
       }
 
       @if (invalidInput) {
-        <div class="invalid-feedback d-block">
-          <i class="bi bi-exclamation-square-fill"></i>
-          Usuário Procurado inválido, selecione novamente.
-        </div>
+      <div class="invalid-feedback d-block">
+        <i class="bi bi-exclamation-square-fill"></i>
+        Usuário Procurado inválido, selecione novamente.
+      </div>
       }
     </div>
 
-    <button
-      class="btn btn-primary btn-lg"
-      type="button"
-      (click)="openUserSearchModal()"
-      title="Listar Usuários"
-    >
+    <button class="btn btn-primary btn-lg" type="button" (click)="openUserSearchModal()" title="Listar Usuários">
       <i class="bi bi-list-ul"></i>
     </button>
   </div>
@@ -53,22 +33,13 @@
 <ng-template #userSearchModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">Pesquisar Usuário</h5>
-    <button
-      type="button"
-      class="btn-close"
-      (click)="modal.dismiss()"
-      aria-label="Close"
-    ></button>
+    <button type="button" class="btn-close" (click)="modal.dismiss()" aria-label="Close"></button>
   </div>
   <div class="modal-body">
     <div class="row">
       <div class="col-3">
         <div class="form-floating">
-          <select
-            class="form-select form-control"
-            [(ngModel)]="selectedFilter"
-            title="Selecione o filtro"
-          >
+          <select class="form-select form-control" [(ngModel)]="selectedFilter" title="Selecione o filtro">
             <option value="name" selected>Nome</option>
             <option value="email">E-mail</option>
           </select>
@@ -77,13 +48,8 @@
       </div>
       <div class="col-9">
         <div class="form-floating">
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="searchValue"
-            placeholder="Digite"
-            (keydown.enter)="searchUsersModal()"
-          />
+          <input type="text" class="form-control" [(ngModel)]="searchValue" placeholder="Digite"
+            (keydown.enter)="searchUsersModal()" />
           <label>Busca</label>
         </div>
       </div>
@@ -105,83 +71,44 @@
     <div class="row mt-4">
       <div class="col">
         @if (searchedUsers.length > 0) {
-          <div class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nome</th>
-                  <th>E-mail</th>
-                  <th>Departamento</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (user of searchedUsers; track user.id) {
-                  <tr
-                    style="cursor: pointer"
-                    (click)="selectUserFromModal(user, modal)"
-                  >
-                    <td class="align-middle">{{ user.id }}</td>
-                    <td class="align-middle">{{ user.username }}</td>
-                    <td class="align-middle">{{ user.email || "-" }}</td>
-                    <td class="align-middle">
-                      {{ user.department.id + " - " + user.department.name }}
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Departamento</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of searchedUsers; track user.id) {
+              <tr style="cursor: pointer" (click)="selectUserFromModal(user, modal)">
+                <td class="align-middle">{{ user.id }}</td>
+                <td class="align-middle">{{ user.username }}</td>
+                <td class="align-middle">{{ user.email || "-" }}</td>
+                <td class="align-middle">
+                  {{ user.department.id + " - " + user.department.name }}
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         }
         @if (searchedUsers.length === 0 && hasSearched) {
-          <div class="surface-banner text-center">
-            <img
-              src="assets/not_found.svg"
-              alt="Não encontrado"
-              class="img-fluid"
-            />
-            <br />
-            <h4>Nada foi encontrado por aqui...</h4>
-            <br />
-          </div>
+        <div class="surface-banner text-center">
+          <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid" />
+          <br />
+          <h4>Nada foi encontrado por aqui...</h4>
+          <br />
+        </div>
         }
         @if (searchedUsers.length > 0) {
-          <br />
-          <nav>
-            <ul class="pagination justify-content-center">
-              <li class="page-item" [class.disabled]="modalCurrentPage === 0">
-                <button
-                  class="page-link"
-                  (click)="goToModalPage(modalCurrentPage - 1)"
-                >
-                  Anterior
-                </button>
-              </li>
-
-              @for (page of getModalPagesArray(); track $index) {
-                <li
-                  class="page-item"
-                  [class.active]="$index === modalCurrentPage"
-                >
-                  <button class="page-link" (click)="goToModalPage($index)">
-                    {{ $index + 1 }}
-                  </button>
-                </li>
-              }
-
-              <li
-                class="page-item"
-                [class.disabled]="modalCurrentPage === modalTotalPages - 1"
-              >
-                <button
-                  class="page-link"
-                  (click)="goToModalPage(modalCurrentPage + 1)"
-                >
-                  Próximo
-                </button>
-              </li>
-            </ul>
-          </nav>
+        <br />
+        <ngb-pagination [collectionSize]="modalCollectionSize" [(page)]="modalCurrentPage" [pageSize]="modalPageSize"
+          [maxSize]="modalPageSize" [rotate]="true" (pageChange)="onModalPageChange($event)">
+        </ngb-pagination>
         }
       </div>
     </div>

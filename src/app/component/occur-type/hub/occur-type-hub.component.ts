@@ -1,19 +1,20 @@
-import { Component, Inject, PLATFORM_ID } from "@angular/core";
-import { OccurTypeResponse } from "../../../core/model/occurType/occur-type-response.model";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { Modal } from "bootstrap";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Router, RouterModule } from "@angular/router";
-import { SessionService } from "../../../core/service/session/session.service";
-import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
 import { isPlatformBrowser } from "@angular/common";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
+import { Component, Inject, PLATFORM_ID } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
+import { Modal } from "bootstrap";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { OccurTypeResponse } from "../../../core/model/occurType/occur-type-response.model";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { OccurTypeService } from "../../../core/service/occurType/occur-type.service";
+import { SessionService } from "../../../core/service/session/session.service";
 import { UserSystemPipe } from "../../../pipe/user-system-pipe";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 
 @Component({
   selector: "app-occur-type-hub",
-  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe],
+  imports: [FormsModule, RouterModule, CompanySearchComponent, UserSystemPipe, NgbPaginationModule],
   templateUrl: "./occur-type-hub.component.html",
   styleUrl: "./occur-type-hub.component.scss",
   standalone: true,
@@ -25,9 +26,10 @@ export class OccurTypeHubComponent {
   selectedStatus = "NONE";
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 10;
+  collectionSize = 0;
 
   // Dados
   notFoundIndicator = false;
@@ -47,7 +49,7 @@ export class OccurTypeHubComponent {
     public sessionService: SessionService,
     private occurTypeService: OccurTypeService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.searchOccurTypes();
@@ -70,6 +72,7 @@ export class OccurTypeHubComponent {
         next: (response) => {
           this.occurTypes = Array.of(response);
           this.totalPages = 1;
+          this.collectionSize = 1;
           this.loadingService.hide();
         },
         error: (err) => {
@@ -93,13 +96,14 @@ export class OccurTypeHubComponent {
           this.searchValue,
           this.selectedCompany ? this.selectedCompany.id : null,
           this.selectedStatus,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe({
           next: (response) => {
             this.occurTypes = response.occurTypes;
             this.totalPages = response.pageable.totalPages;
+            this.collectionSize = response.pageable.totalElements || 0;
             this.notFoundIndicator = this.occurTypes.length === 0;
             this.loadingService.hide();
           },
@@ -121,16 +125,14 @@ export class OccurTypeHubComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.selectedCompany = null;
     this.searchOccurTypes();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchOccurTypes();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchOccurTypes();
   }
 
   openConfirmModal(

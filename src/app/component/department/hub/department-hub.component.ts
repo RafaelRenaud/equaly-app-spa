@@ -1,19 +1,20 @@
-import { Component, Inject, PLATFORM_ID } from "@angular/core";
-import { CompanySearchComponent } from "../../company/search/company-search.component";
-import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Router, RouterModule } from "@angular/router";
-import { SessionService } from "../../../core/service/session/session.service";
-import { FormsModule } from "@angular/forms";
-import { DepartmentResponse } from "../../../core/model/department/department-response.model";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
-import { Modal } from "bootstrap";
-import { DepartmentService } from "../../../core/service/department/department.service";
 import { isPlatformBrowser } from "@angular/common";
+import { Component, Inject, PLATFORM_ID } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
+import { Modal } from "bootstrap";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
+import { DepartmentResponse } from "../../../core/model/department/department-response.model";
+import { DepartmentService } from "../../../core/service/department/department.service";
+import { LoadingService } from "../../../core/service/loading/loading.service";
+import { SessionService } from "../../../core/service/session/session.service";
 import { UserSystemPipe } from "../../../pipe/user-system-pipe";
+import { CompanySearchComponent } from "../../company/search/company-search.component";
 
 @Component({
   selector: "app-department-hub",
-  imports: [CompanySearchComponent, RouterModule, FormsModule, UserSystemPipe],
+  imports: [CompanySearchComponent, RouterModule, FormsModule, UserSystemPipe, NgbPaginationModule],
   templateUrl: "./department-hub.component.html",
   styleUrl: "./department-hub.component.scss",
   standalone: true,
@@ -25,9 +26,10 @@ export class DepartmentHubComponent {
   selectedStatus = "NONE";
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 10;
+  collectionSize = 0;
 
   // Dados
   notFoundIndicator = false;
@@ -47,7 +49,7 @@ export class DepartmentHubComponent {
     public sessionService: SessionService,
     private departmentService: DepartmentService,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.searchDepartments();
@@ -70,6 +72,7 @@ export class DepartmentHubComponent {
         next: (response) => {
           this.departments = Array.of(response);
           this.totalPages = 1;
+          this.collectionSize = 1;
           this.loadingService.hide();
         },
         error: (err) => {
@@ -93,13 +96,14 @@ export class DepartmentHubComponent {
           this.searchValue,
           this.selectedCompany ? this.selectedCompany.id : null,
           this.selectedStatus,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe({
           next: (response) => {
             this.departments = response.departments;
             this.totalPages = response.pageable.totalPages;
+            this.collectionSize = response.pageable.totalElements || 0;
             this.notFoundIndicator = this.departments.length === 0;
             this.loadingService.hide();
           },
@@ -121,16 +125,14 @@ export class DepartmentHubComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.selectedCompany = null;
     this.searchDepartments();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchDepartments();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchDepartments();
   }
 
   openConfirmModal(

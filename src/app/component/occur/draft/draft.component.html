@@ -95,7 +95,8 @@
                             }
                         </td>
                         <td>
-                            {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' : occur.title) : 'Sem título' }}
+                            {{ occur.title ? (occur.title.length > 80 ? (occur.title | slice:0:80) + '...' :
+                            occur.title) : 'Sem título' }}
                         </td>
                         <td>{{ occur.occurType?.name }}</td>
                         <td class="text-center">{{ occur.occurredDate | date:'dd/MM/yyyy' }}</td>
@@ -116,32 +117,13 @@
         </div>
 
         <!-- Paginação -->
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item" [class.disabled]="currentPage === 0">
-                    <button class="page-link" (click)="goToPage(currentPage - 1)">
-                        <i class="bi bi-chevron-left"></i> Anterior
-                    </button>
-                </li>
-
-                @for (page of [].constructor(totalPages); track $index) {
-                <li class="page-item" [class.active]="$index === currentPage">
-                    <button class="page-link" (click)="goToPage($index)">
-                        {{ $index + 1 }}
-                    </button>
-                </li>
-                }
-
-                <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
-                    <button class="page-link" (click)="goToPage(currentPage + 1)">
-                        Próximo <i class="bi bi-chevron-right"></i>
-                    </button>
-                </li>
-            </ul>
-        </nav>
+        <br />
+        <ngb-pagination [collectionSize]="collectionSize" [(page)]="currentPage" [pageSize]="pageSize"
+            [maxSize]="pageSize" [rotate]="true" (pageChange)="onPageChange($event)">
+        </ngb-pagination>
         } @else {
         <div class="surface-banner text-center py-5">
-            <img src="assets/no_data.svg" alt="Sem rascunhos" class="img-fluid w-25"/>
+            <img src="assets/no_data.svg" alt="Sem rascunhos" class="img-fluid w-25" />
             <br /><br />
             <h4>Nenhum rascunho encontrado</h4>
             <p class="text-muted">Não há rascunhos disponíveis para exibição.</p>
@@ -160,7 +142,8 @@
         <p class="mt-3">
             Tem certeza que deseja excluir o rascunho <strong>{{ occurToDelete?.code }}</strong>?
         </p>
-        <p class="text-muted small">Esta ação não poderá ser desfeita e todas as informações associadas serão perdidas.</p>
+        <p class="text-muted small">Esta ação não poderá ser desfeita e todas as informações associadas serão perdidas.
+        </p>
         <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
     </div>
     <div class="modal-footer">

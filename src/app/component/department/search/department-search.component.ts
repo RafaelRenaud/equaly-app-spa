@@ -8,14 +8,15 @@ import {
   ViewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
+import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { DepartmentResponse } from "../../../core/model/department/department-response.model";
 import { DepartmentService } from "../../../core/service/department/department.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
-import { CompanyResponse } from "../../../core/model/company/company-response.model";
 
 @Component({
   selector: "app-department-search",
-  imports: [FormsModule],
+  imports: [FormsModule, NgbPaginationModule],
   templateUrl: "./department-search.component.html",
   styleUrl: "./department-search.component.scss",
   standalone: true,
@@ -34,9 +35,10 @@ export class DepartmentSearchComponent {
   selectedStatus = "NONE";
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 5;
+  collectionSize = 0;
   notFoundIndicator = false;
 
   @ViewChild("departmentSearchInputRef")
@@ -45,7 +47,7 @@ export class DepartmentSearchComponent {
   constructor(
     private departmentService: DepartmentService,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnChanges(changes: SimpleChanges) {
     if (
@@ -72,12 +74,13 @@ export class DepartmentSearchComponent {
         this.searchValue,
         this.selectedCompany ? this.selectedCompany.id : null,
         this.selectedStatus,
-        this.currentPage,
+        this.currentPage - 1,
         this.pageSize
       )
       .subscribe((response) => {
         this.searchedDepartments = response.departments;
         this.totalPages = response.pageable.totalPages;
+        this.collectionSize = response.pageable.totalElements || 0;
         this.notFoundIndicator = this.searchedDepartments.length === 0;
         this.loadingService.hide();
       });
@@ -87,15 +90,13 @@ export class DepartmentSearchComponent {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.searchDepartments();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchDepartments();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchDepartments();
   }
 
   selectDepartmentFromModal(department: DepartmentResponse): void {

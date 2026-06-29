@@ -18,9 +18,11 @@ import { OccurTypeHubComponent } from "./component/occur-type/hub/occur-type-hub
 import { OccurCreateComponent } from "./component/occur/create/occur-create.component";
 import { OccurDraftComponent } from "./component/occur/draft/draft.component";
 import { OccurEditComponent } from "./component/occur/edit/occur-edit/occur-edit.component";
+import { OccurFeedbackHubComponent } from "./component/occur/feedback/hub/occur-feedback-hub/occur-feedback-hub.component";
 import { OccurFeedbackComponent } from "./component/occur/feedback/occur-feedback/occur-feedback.component";
 import { OccurHubComponent } from "./component/occur/hub/occur-hub/occur-hub.component";
 import { OccurPendingComponent } from "./component/occur/pending/pending.component";
+import { OccurViewerComponent } from "./component/occur/view/occur-viewer/occur-viewer.component";
 import { RecoveryComponent } from "./component/recovery/recovery.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
@@ -29,7 +31,6 @@ import { AuthGuard } from "./core/guard/auth.guard";
 import { LoginGuard } from "./core/guard/login.guard";
 import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
-import { OccurViewerComponent } from "./component/occur/view/occur-viewer/occur-viewer.component";
 
 export const routes: Routes = [
   {
@@ -227,6 +228,16 @@ export const routes: Routes = [
               ],
             },
             component: OccurEditComponent
+          },
+          {
+            path: "feedbacks",
+            data: {
+              roles: [
+                "MASTER_EVENT_OPENER",
+                "COMMON_EVENT_OPENER"
+              ],
+            },
+            component: OccurFeedbackHubComponent
           },
           {
             path: ":id",

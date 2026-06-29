@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
+import { NgbPaginationModule, NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, OperatorFunction, Subject, debounceTime, of, switchMap, tap } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { OccurTypeResponse } from '../../../../core/model/occurType/occur-type-response.model';
@@ -12,7 +12,7 @@ import { SessionService } from '../../../../core/service/session/session.service
 
 @Component({
   selector: 'app-occur-type-head-search',
-  imports: [NgbTypeahead, FormsModule],
+  imports: [NgbTypeahead, FormsModule, NgbPaginationModule],
   templateUrl: './occur-type-head-search.component.html',
   styleUrl: './occur-type-head-search.component.scss',
   standalone: true
@@ -33,9 +33,10 @@ export class OccurTypeHeadSearchComponent {
   searchedOccurTypes: OccurTypeResponse[] = [];
   selectedFilter: string = 'name';
   searchValue: string = '';
-  modalCurrentPage: number = 0;
+  modalCurrentPage: number = 1;
   modalTotalPages: number = 0;
   modalPageSize: number = 5;
+  modalCollectionSize: number = 0;
   hasSearched: boolean = false;
 
   private readonly searchByIdSubject = new Subject<string>();
@@ -262,7 +263,7 @@ export class OccurTypeHeadSearchComponent {
   // ==================== MÉTODOS DO MODAL ====================
 
   openModal(): void {
-    this.modalCurrentPage = 0;
+    this.modalCurrentPage = 1;
     setTimeout(() => this.searchOccurTypesModal(), 100);
   }
 
@@ -278,12 +279,13 @@ export class OccurTypeHeadSearchComponent {
       searchTerm,
       companyId,
       'ACTIVE',
-      this.modalCurrentPage,
+      this.modalCurrentPage - 1,
       this.modalPageSize
     ).subscribe({
       next: (response: OccurTypesResponse) => {
         this.searchedOccurTypes = response.occurTypes || [];
         this.modalTotalPages = response.pageable?.totalPages || 0;
+        this.modalCollectionSize = response.pageable?.totalElements || 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
@@ -292,6 +294,7 @@ export class OccurTypeHeadSearchComponent {
         this.handleError('Erro ao buscar tipos de ocorrência');
         this.searchedOccurTypes = [];
         this.modalTotalPages = 0;
+        this.modalCollectionSize = 0;
         this.loadingService.hide();
         this.cdr.detectChanges();
       }
@@ -315,21 +318,17 @@ export class OccurTypeHeadSearchComponent {
   clearModalFilters(): void {
     this.selectedFilter = 'name';
     this.searchValue = '';
-    this.modalCurrentPage = 0;
+    this.modalCurrentPage = 1;
     this.searchedOccurTypes = [];
     this.hasSearched = false;
     this.modalTotalPages = 0;
+    this.modalCollectionSize = 0;
     this.cdr.detectChanges();
   }
 
-  goToModalPage(page: number): void {
-    if (page < 0 || page >= this.modalTotalPages) return;
+  onModalPageChange(page: number): void {
     this.modalCurrentPage = page;
     this.searchOccurTypesModal();
-  }
-
-  getModalPagesArray(): number[] {
-    return Array(this.modalTotalPages).fill(0).map((_, i) => i);
   }
 
   clear(): void {

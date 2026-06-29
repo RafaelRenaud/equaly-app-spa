@@ -1,26 +1,27 @@
-import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { Component } from "@angular/core";
 import {
-  ReactiveFormsModule,
   FormBuilder,
-  Validators,
   FormGroup,
+  ReactiveFormsModule,
+  Validators,
 } from "@angular/forms";
 import { Router } from "@angular/router";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
 
 import { LoadingService } from "../../core/service/loading/loading.service";
 import { LoginService } from "../../core/service/login/login.service";
-import { SessionService } from "../../core/service/session/session.service";
 import { RecoveryService } from "../../core/service/recovery/recovery.service";
+import { SessionService } from "../../core/service/session/session.service";
 
-import { LoginRequest } from "../../core/model/login/login-request.model";
 import { LoginCompanySearchRequest } from "../../core/model/login/login-company-search-request.model";
-import { SendRecovery } from "../../core/model/recovery/send-recovery.model";
 import { Company } from "../../core/model/login/login-company.model";
+import { LoginRequest } from "../../core/model/login/login-request.model";
+import { SendRecovery } from "../../core/model/recovery/send-recovery.model";
 
 @Component({
   selector: "app-login",
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgbPaginationModule],
   templateUrl: "./login.component.html",
   styleUrls: ["./login.component.scss"],
   standalone: true,
@@ -35,9 +36,10 @@ export class LoginComponent {
   companiesSearched: boolean = false;
 
   companies: Company[] = [];
-  page = 0;
+  page = 1;
   totalPages = 0;
-  pages: number[] = [];
+  collectionSize = 0;
+  pageSize = 10;
 
   loginForm: FormGroup;
   recoveryForm: FormGroup;
@@ -226,12 +228,12 @@ export class LoginComponent {
       .value as LoginCompanySearchRequest;
     this.loadingService.show();
 
-    this.loginService.searchCompanies(companySearchData.customerDocument, null, null,null, this.page, 10).subscribe({
+    this.loginService.searchCompanies(companySearchData.customerDocument, null, null, null, this.page - 1, this.pageSize).subscribe({
       next: (res) => {
         this.companies = res.companies;
-        this.page = res.pageable.number;
+        this.page = res.pageable.number + 1;
         this.totalPages = res.pageable.totalPages;
-        this.pages = Array.from({ length: this.totalPages }, (_, i) => i);
+        this.collectionSize = res.pageable.totalElements || 0;
         this.companiesSearched = true;
         this.flowType = "COMPANY_LOGIN";
         this.subflowType = "COMPANY_LIST";
@@ -245,8 +247,7 @@ export class LoginComponent {
     });
   }
 
-  loadPage(page: number) {
-    if (page < 0 || page >= this.totalPages) return;
+  onPageChange(page: number): void {
     this.page = page;
     this.searchCompanies();
   }

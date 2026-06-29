@@ -1,18 +1,18 @@
+import { isPlatformBrowser } from "@angular/common";
 import { Component, Inject, OnInit, PLATFORM_ID } from "@angular/core";
 import { FormsModule } from "@angular/forms";
+import { Router, RouterModule } from "@angular/router";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
+import { Modal } from "bootstrap";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
-import { Modal } from "bootstrap";
-import { isPlatformBrowser } from "@angular/common";
-import { Router, RouterModule } from "@angular/router";
-import { response } from "express";
 import { UserSystemPipe } from "../../../pipe/user-system-pipe";
 
 @Component({
   selector: "company-hub",
   standalone: true,
-  imports: [FormsModule, RouterModule, UserSystemPipe],
+  imports: [FormsModule, RouterModule, UserSystemPipe, NgbPaginationModule],
   templateUrl: "./company-hub.component.html",
   styleUrl: "./company-hub.component.scss",
 })
@@ -29,9 +29,10 @@ export class CompanyHubComponent implements OnInit {
   selectedCompany: CompanyResponse | null = null;
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 10;
+  collectionSize = 0;
 
   //Modal
   companyToUpdate: CompanyResponse | null = null;
@@ -44,7 +45,7 @@ export class CompanyHubComponent implements OnInit {
     public loadingService: LoadingService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.searchCompanies();
@@ -68,6 +69,7 @@ export class CompanyHubComponent implements OnInit {
         next: (response) => {
           this.companies = Array.of(response);
           this.totalPages = 1;
+          this.collectionSize = 1;
           this.loadingService.hide();
         },
         error: (err) => {
@@ -89,13 +91,14 @@ export class CompanyHubComponent implements OnInit {
           this.selectedFilter,
           this.searchValue,
           this.selectedStatus,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe({
           next: (response) => {
             this.companies = response.companies;
             this.totalPages = response.pageable.totalPages;
+            this.collectionSize = response.pageable.totalElements || 0;
             this.notFoundIndicator = this.companies.length === 0;
             this.loadingService.hide();
           },
@@ -116,15 +119,13 @@ export class CompanyHubComponent implements OnInit {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.searchCompanies();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchCompanies();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchCompanies();
   }
 
   openConfirmModal(

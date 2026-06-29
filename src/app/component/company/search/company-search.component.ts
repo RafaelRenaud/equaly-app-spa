@@ -3,29 +3,29 @@ import {
   ElementRef,
   EventEmitter,
   Input,
-  Output,
-  ViewChild,
-  SimpleChanges,
   OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
 } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { NgbPaginationModule } from "@ng-bootstrap/ng-bootstrap";
 import { CompanyResponse } from "../../../core/model/company/company-response.model";
 import { CompanyService } from "../../../core/service/company/company.service";
 import { LoadingService } from "../../../core/service/loading/loading.service";
-import { FormsModule } from "@angular/forms";
 
 @Component({
   selector: "app-company-search",
-  imports: [FormsModule],
+  imports: [FormsModule, NgbPaginationModule],
   templateUrl: "./company-search.component.html",
   styleUrl: "./company-search.component.scss",
   standalone: true,
 })
 export class CompanySearchComponent implements OnChanges {
-  @Input() selectedCompanyValue: CompanyResponse | null = null; // novo
+  @Input() selectedCompanyValue: CompanyResponse | null = null;
   @Output() selectedCompany = new EventEmitter<CompanyResponse | null>();
 
   searchedCompanies: CompanyResponse[] = [];
-  private timeoutId: any;
   validCompanySelected: boolean = true;
 
   // Filtros do Modal
@@ -34,9 +34,10 @@ export class CompanySearchComponent implements OnChanges {
   selectedStatus = "NONE";
 
   // Paginação
-  currentPage = 0;
+  currentPage = 1;
   totalPages = 0;
   pageSize = 5;
+  collectionSize = 0;
   notFoundIndicator = false;
 
   @ViewChild("companySearchInputRef")
@@ -72,11 +73,13 @@ export class CompanySearchComponent implements OnChanges {
           next: (response) => {
             this.searchedCompanies = Array.of(response);
             this.totalPages = 1;
+            this.collectionSize = 1;
             this.loadingService.hide();
           },
           error: (err) => {
             this.searchedCompanies = [];
             this.totalPages = 0;
+            this.collectionSize = 0;
             this.notFoundIndicator = true;
             this.loadingService.hide();
           }
@@ -87,12 +90,13 @@ export class CompanySearchComponent implements OnChanges {
           this.selectedFilter,
           this.searchValue,
           this.selectedStatus,
-          this.currentPage,
+          this.currentPage - 1,
           this.pageSize
         )
         .subscribe((response) => {
           this.searchedCompanies = response.companies;
           this.totalPages = response.pageable.totalPages;
+          this.collectionSize = response.pageable.totalElements || 0;
           this.notFoundIndicator = this.searchedCompanies.length === 0;
           this.loadingService.hide();
         });
@@ -103,15 +107,13 @@ export class CompanySearchComponent implements OnChanges {
     this.selectedFilter = "NONE";
     this.searchValue = "";
     this.selectedStatus = "NONE";
-    this.currentPage = 0;
+    this.currentPage = 1;
     this.searchCompanies();
   }
 
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.searchCompanies();
-    }
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.searchCompanies();
   }
 
   selectCompanyFromModal(company: CompanyResponse): void {

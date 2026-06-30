@@ -1,4 +1,3 @@
-// occur-complement-viewer.component.ts
 import { CommonModule } from "@angular/common";
 import {
   Component,
@@ -57,6 +56,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   isOccurInspector: boolean = false;
   hasInspectorRole: boolean = false;
   isSavingAttachments: boolean = false;
+  isUploading: boolean = false;
 
   inspectionReport: string = "";
   generateNonConformity: boolean = false;
@@ -138,7 +138,9 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
     this.fileService
       .getFiles(this.occur.id.toString(), "OCCUR", 0, 10)
-      .pipe(finalize(() => this.loadingService.hide()))
+      .pipe(finalize(() => {
+        this.loadingService.hide();
+      }))
       .subscribe({
         next: (response: FilesResponse) => {
           if (response && response.files && Array.isArray(response.files)) {
@@ -373,21 +375,18 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     }
 
     this.isSavingAttachments = true;
-    this.modalService.open(this.uploadProgressModal, {
-      centered: true,
-      backdrop: "static",
-      keyboard: false,
-      size: "md",
-    });
-
+    this.isUploading = true;
     let currentProgress = 0;
+
+    // Guarda os arquivos originais para referência
+    const filesToUpload = [...this.attachedFiles];
 
     try {
       this.uploadProgress.percent = 10;
       this.uploadProgress.message = "Comprimindo imagens...";
 
       const compressedFiles = await Promise.all(
-        this.attachedFiles.map((file) => this.fileService.compressImage(file)),
+        filesToUpload.map((file) => this.fileService.compressImage(file)),
       );
 
       this.uploadProgress.percent = 20;
@@ -396,45 +395,74 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
       const totalFiles = compressedFiles.length;
       let completedFiles = 0;
+      const failedFiles: File[] = [];
 
-      const uploads = compressedFiles.map((file) =>
-        this.fileService
-          .createFile(this.occur!.id!.toString(), "OCCUR", file, file.name)
+      // Mapeia cada upload com seu arquivo original para rastrear falhas
+      const uploads = compressedFiles.map((compressedFile, index) => {
+        const originalFile = filesToUpload[index];
+        return this.fileService
+          .createFile(this.occur!.id!.toString(), "OCCUR", compressedFile, originalFile.name)
           .pipe(
             map(() => {
               completedFiles++;
-              const newPercent =
-                20 + Math.floor((completedFiles / totalFiles) * 80);
+              const newPercent = 20 + Math.floor((completedFiles / totalFiles) * 80);
               if (newPercent > currentProgress) {
                 currentProgress = newPercent;
                 this.uploadProgress.percent = currentProgress;
               }
               return true;
             }),
-            catchError(() => of(false)),
-          ),
-      );
+            catchError((error) => {
+              // Marca o arquivo como falho e retorna false
+              failedFiles.push(originalFile);
+              completedFiles++;
+              const newPercent = 20 + Math.floor((completedFiles / totalFiles) * 80);
+              if (newPercent > currentProgress) {
+                currentProgress = newPercent;
+                this.uploadProgress.percent = currentProgress;
+              }
+              return of(false);
+            }),
+          );
+      });
 
       const results = await forkJoin(uploads).toPromise();
       const failedCount = results?.filter((r) => r === false).length || 0;
 
+      this.isUploading = false;
+
+      // Atualiza a lista de arquivos anexados
+      this.loadAttachments();
+
       if (failedCount > 0) {
-        this.showAlert("ERROR", `${failedCount} arquivo(s) não foram salvos.`);
+        // Mantém apenas os arquivos que falharam na lista de novos
+        this.attachedFiles = failedFiles;
+
+        if (failedCount === filesToUpload.length) {
+          this.showAlert("ERROR", `Todos os ${failedCount} arquivo(s) falharam ao serem salvos. Tente novamente.`);
+        } else {
+          const successCount = filesToUpload.length - failedCount;
+          this.showAlert(
+            "WARNING",
+            `${successCount} arquivo(s) salvos com sucesso, mas ${failedCount} arquivo(s) falharam. Os arquivos com erro permanecem na lista para nova tentativa.`
+          );
+        }
       } else {
+        // Sucesso total: limpa a lista de novos arquivos
         this.attachedFiles = [];
-        this.loadAttachments();
         this.showAlert(
           "SUCCESS",
-          `${compressedFiles.length} anexo(s) adicionado(s) com sucesso!`,
+          `${filesToUpload.length} anexo(s) adicionado(s) com sucesso!`,
         );
       }
-
-      this.modalService.dismissAll();
     } catch (error) {
-      this.modalService.dismissAll();
+      this.isUploading = false;
+      // Em caso de erro catastrófico, mantém todos os arquivos
+      this.attachedFiles = filesToUpload;
       this.showAlert("ERROR", "Erro ao adicionar anexos. Tente novamente.");
     } finally {
       this.isSavingAttachments = false;
+      this.uploadProgress.percent = 0;
     }
   }
 }

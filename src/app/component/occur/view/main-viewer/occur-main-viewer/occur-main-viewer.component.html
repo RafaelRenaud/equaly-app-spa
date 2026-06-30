@@ -1,559 +1,430 @@
 @if (occur) {
 <div class="mt-4">
-  <!-- Informativo Rascunho do Usuário Interno -->
-  @if (
-  occur.status === "DRAFT_OPENED" &&
-  occur.complaint?.channel === "EQUALY" &&
-  isOccurOpener
-  ) {
+  <!-- ==================== ALERTAS CONTEXTUAIS ==================== -->
+  @if (occur.status === "DRAFT_OPENED" && occur.complaint?.channel === "EQUALY" && isOccurOpener) {
   <div class="row">
     <div class="col-md alert alert-primary" role="alert">
       <i class="bi bi-info-square-fill me-2"></i>
-      Para editar, deletar ou submeter rascunhos, acesse o menu "Rascunhos"
-      e procure pela ocorrência.
+      Para editar, deletar ou submeter rascunhos, acesse o menu "Rascunhos" e procure pela ocorrência.
     </div>
   </div>
-  }
-
-  <!-- Informativo Aguardando Aprovação de Canal Externo -->
-  @else if (
-  occur.complaint?.channel != "EQUALY" &&
-  !occur.hasOpenerAssigned &&
-  isOpener
-  ) {
+  } @else if (occur.complaint?.channel != "EQUALY" && !occur.hasOpenerAssigned && isOpener) {
   <div class="row">
     <div class="col-md alert alert-warning" role="alert">
       <i class="bi bi-exclamation-square-fill me-2"></i>
-      Essa ocorrência foi aberta externamente e aguarda uma aprovação. Ela
-      será atrelada a você e enviada para análise de qualidade.
+      Essa ocorrência foi aberta externamente e aguarda uma aprovação. Ela será atrelada a você e enviada para análise
+      de qualidade.
     </div>
   </div>
-  }
-
-  <!-- Informativo Aguardando Análise de Qualidade Externa -->
-  @else if (
-  occur.complaint?.channel != "EQUALY" &&
-  !occur.hasInspectorAssigned &&
-  isInspector
-  ) {
+  } @else if (occur.complaint?.channel != "EQUALY" && !occur.hasInspectorAssigned && isInspector) {
   <div class="row">
     <div class="col-md alert alert-warning" role="alert">
       <i class="bi bi-exclamation-square-fill me-2"></i>
-      Essa ocorrência foi aberta externamente e aguarda uma análise. Ela
-      será atrelada a você ao inspeciona-la
+      Essa ocorrência foi aberta externamente e aguarda uma análise. Ela será atrelada a você ao inspeciona-la
     </div>
   </div>
   }
 
-  <!-- HEADER -->
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">ID</div>
-        <div>{{ occur.id }}</div>
-      </div>
+  <!-- ==================== CARD DE IDENTIFICAÇÃO ==================== -->
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">
+        Ocorrência: {{ occur.code }}
+      </h5>
     </div>
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Código</div>
-        <div>{{ occur.code }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- GRID PRINCIPAL -->
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Empresa</div>
-        <div>{{ occur.company!.id + " - " + occur.company!.name }}</div>
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Canal de Abertura</div>
-        @if (occur.complaint?.channel == "EQUALY") {
-        <div>Sistema Interno</div>
-        } @else if (occur.complaint?.channel == "DALTON") {
-        <div>Dalton</div>
-        } @else if (occur.complaint?.channel == "WHATSAPP") {
-        <div>WhatsApp</div>
-        }
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Prioridade</div>
-        <div class="mt-1">
-          @if (occur.priority === "HIGH") {
-          <span class="badge bg-danger">Alta</span>
-          } @else if (occur.priority === "MEDIUM") {
-          <span class="badge bg-warning text-dark">Média</span>
-          } @else {
-          <span class="badge bg-info">Baixa</span>
-          }
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <small class="text-muted d-block">ID</small>
+          <span class="fw-bold">{{ occur.id }}</span>
         </div>
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Estado</div>
-        <div>{{ occur.status | occurStatus }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TIPO -->
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Tipo de Ocorrência</div>
-      <div>{{ occur.occurType!.id + " - " + occur.occurType!.name }}</div>
-    </div>
-  </div>
-
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Descrição do Tipo</div>
-      <div>{{ occur.occurType!.description }}</div>
-    </div>
-  </div>
-
-  <!-- RESPONSÁVEIS -->
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Aberto por</div>
-        @if (occur.hasOpenerAssigned) {
-        <div>
-          {{ occur.opener!.id + " - " + occur.opener!.username }}
-          <i class="bi bi-info-square-fill" role="button" tabindex="0" [ngbPopover]="openerContent"
-            popoverTitle="Aberto por" triggers="mouseenter:mouseleave" container="body"></i>
+        <div class="col-md-3">
+          <small class="text-muted d-block">Empresa</small>
+          <span>{{ occur.company!.id + " - " + occur.company!.name }}</span>
         </div>
-        } @else {
-        <div>
-          Aguardando Oficialização
-          <i class="bi bi-info-square-fill" placement="top"
-            ngbTooltip="A ocorrência aguarda uma aprovação de um responsável para que esse vire o responsável"
-            role="button" tabindex="0"></i>
-        </div>
-        }
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Responsável Qualidade</div>
-        @if (occur.hasInspectorAssigned) {
-        <div>
-          {{ occur.inspector!.id + " - " + occur.inspector!.username }}
-          <i class="bi bi-info-square-fill" role="button" tabindex="0" [ngbPopover]="inspectorContent"
-            popoverTitle="Responsável Qualidade" triggers="mouseenter:mouseleave" container="body"></i>
-        </div>
-        } @else {
-        <div>Não informado</div>
-        }
-      </div>
-    </div>
-  </div>
-
-  @if (occur.invoiceNotes!.length > 0) {
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small mb-2">Notas Fiscais</div>
-      @for (note of occur.invoiceNotes; track $index) {
-      <div class="mb-1">{{ note }}</div>
-      }
-    </div>
-  </div>
-  }
-
-  <!-- CONTEÚDO -->
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Título</div>
-      <div>{{ occur.title }}</div>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Data do Ocorrido</div>
-        <div>{{ occur.occurredDate | date: "dd/MM/yyyy" }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Descrição</div>
-      <div>{{ occur.description }}</div>
-    </div>
-  </div>
-
-  <div class="mb-4">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Complemento</div>
-      <div>{{ occur.complement ?? "Não informado" }}</div>
-    </div>
-  </div>
-
-  <!-- SEÇÃO -->
-  <h5 class="border-bottom pb-2 mb-3">Dados da Reclamação</h5>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">ID do Pedido</div>
-        <div>{{ occur.complaint!.orderId ?? "Não informado" }}</div>
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Tipo</div>
-        <div>
-          {{ occur.complaint!.type === "INTERNAL" ? "Interna" : "Externa" }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Solicitação</div>
-      <div>{{ occur.complaint!.request!.description }}</div>
-    </div>
-  </div>
-
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Complemento da Solicitação</div>
-      <div>{{ occur.complaint!.request!.complement ?? "Não informado" }}</div>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Reclamante Identificado</div>
-        <div>{{ occur.complaint!.isAnonymous ? "Não" : "Sim" }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RECLAMANTE (CONDICIONAL) -->
-  @if (!occur.complaint?.isAnonymous) {
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Reclamante</div>
-      <div>
-        {{
-        occur.complaint!.complainant!.id
-        ? occur.complaint!.complainant!.id +
-        " - " +
-        occur.complaint!.complainant!.name
-        : occur.complaint!.complainant!.name
-        }}
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Telefone</div>
-        <div>
-          {{ occur.complaint!.complainant!.phone ?? "Não informado" }}
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">E-mail</div>
-        <div>
-          {{ occur.complaint!.complainant!.email ?? "Não informado" }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mb-4">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Endereço</div>
-      <div>
-        @let address = occur.complaint?.complainant?.address;
-
-        <div>
-          {{
-          address?.street
-          ? address?.street + ", " + (address?.number || "S/N")
-          : "Rua Não Informada"
-          }}
-        </div>
-
-        @if (address?.complement) {
-        <div>{{ address?.complement }}</div>
-        }
-
-        <div>
-          @if (address?.district && address?.city && address?.uf) {
-          {{
-          address?.district + ", " + address?.city + " - " + address?.uf
-          }}
-          } @else {
-          Bairro/Cidade/UF Não Informados
-          }
-        </div>
-
-        <div>
-          {{ address?.zipCode || "CEP Não Informado" }}
-        </div>
-      </div>
-    </div>
-  </div>
-  }
-
-  @if (occur.inspectorReport) {
-  <h5 class="border-bottom pb-2 mb-3 mt-4">Dados de Análise</h5>
-
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Análise Inspeção de Qualidade</div>
-      <div>{{ occur.inspectorReport }}</div>
-    </div>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Gerou Não Conformidade</div>
-        <div class="mt-1">
-          <span class="badge" [class.bg-danger]="occur.hasRNCOpened" [class.bg-success]="!occur.hasRNCOpened">
-            {{ occur.hasRNCOpened ? "Sim" : "Não" }}
+        <div class="col-md-2">
+          <small class="text-muted d-block">Prioridade</small>
+          <span class="badge mt-1" [class.bg-danger]="occur.priority === 'HIGH'"
+            [class.bg-warning]="occur.priority === 'MEDIUM'" [class.bg-info]="occur.priority === 'LOW'">
+            {{ occur.priority === 'HIGH' ? 'Alta' : occur.priority === 'MEDIUM' ? 'Média' : 'Baixa' }}
           </span>
         </div>
+        <div class="col-md-2">
+          <small class="text-muted d-block">Estado</small>
+          <span class="mt-1 d-block">{{ occur.status | occurStatus }}</span>
+        </div>
+        <div class="col-md-2">
+          <small class="text-muted d-block">Data do Ocorrido</small>
+          <span>{{ occur.occurredDate | date: "dd/MM/yyyy" }}</span>
+        </div>
       </div>
     </div>
   </div>
 
-  @if (occur.closeReason) {
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Informações de Encerramento</div>
-      <div>{{ occur.closeReason }}</div>
-    </div>
-  </div>
+  <!-- ==================== ACORDION 1: DETALHES PRINCIPAIS ==================== -->
+  <div class="accordion mb-3" id="mainDetailsAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMain"
+          aria-expanded="true" aria-controls="collapseMain">
+          <i class="bi bi-info-circle me-2"></i> Detalhes Principais
+        </button>
+      </h2>
+      <div id="collapseMain" class="accordion-collapse collapse show" data-bs-parent="#mainDetailsAccordion">
+        <div class="accordion-body">
+          <!-- Tipo e Descrição -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Tipo de Ocorrência</small>
+              <span>{{ occur.occurType!.id + " - " + occur.occurType!.name }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Descrição do Tipo</small>
+              <span>{{ occur.occurType!.description }}</span>
+            </div>
+          </div>
 
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Estado de Encerramento</div>
-        <div class="mt-1">
-          @if (occur.closeStatus === "CLOSED_WITH_RATING") {
-          <span>Encerrado com Avaliação</span>
-          } @else if (occur.closeStatus === "CLOSED_WITHOUT_RATING") {
-          <span>Encerrado sem Avaliação</span>
-          } @else {
-          <span>Encerrado aguardando Avaliação</span>
+          <!-- Título -->
+          <div class="row mb-3">
+            <div class="col-12">
+              <small class="text-muted d-block">Título</small>
+              <span class="fw-bold">{{ occur.title }}</span>
+            </div>
+          </div>
+
+          <!-- Descrição e Complemento -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Descrição</small>
+              <span>{{ occur.description }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Complemento</small>
+              <span>{{ occur.complement ?? "Não informado" }}</span>
+            </div>
+          </div>
+
+          <!-- Responsáveis (com informações expandidas) -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="border rounded p-3 bg-light">
+                <small class="text-muted d-block">Aberto por</small>
+                @if (occur.hasOpenerAssigned) {
+                <div class="mt-1">
+                  <span class="fw-bold">{{ occur.opener!.id + " - " + occur.opener!.username }}</span>
+                  <div class="mt-2 small">
+                    <div><i class="bi bi-person me-1"></i> {{ occur.opener!.universalUser?.name }}</div>
+                    <div><i class="bi bi-envelope me-1"></i> {{ occur.opener!.email }}</div>
+                    <div>
+                      <i class="bi bi-circle-fill me-1" [class.text-success]="occur.opener?.status === 'ACTIVE'"
+                        [class.text-danger]="occur.opener?.status !== 'ACTIVE'"></i>
+                      {{ occur.opener?.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                    </div>
+                  </div>
+                </div>
+                } @else {
+                <div class="mt-1">
+                  <span class="text-warning">Aguardando Oficialização</span>
+                  <div class="mt-2 small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    A ocorrência aguarda uma aprovação de um responsável para que esse vire o responsável
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="border rounded p-3 bg-light">
+                <small class="text-muted d-block">Responsável Qualidade</small>
+                @if (occur.hasInspectorAssigned) {
+                <div class="mt-1">
+                  <span class="fw-bold">{{ occur.inspector!.id + " - " + occur.inspector!.username }}</span>
+                  <div class="mt-2 small">
+                    <div><i class="bi bi-person me-1"></i> {{ occur.inspector!.universalUser?.name }}</div>
+                    <div><i class="bi bi-envelope me-1"></i> {{ occur.inspector!.email }}</div>
+                    <div>
+                      <i class="bi bi-circle-fill me-1" [class.text-success]="occur.inspector?.status === 'ACTIVE'"
+                        [class.text-danger]="occur.inspector?.status !== 'ACTIVE'"></i>
+                      {{ occur.inspector?.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                    </div>
+                  </div>
+                </div>
+                } @else {
+                <div class="mt-1 text-muted">Não informado</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Notas Fiscais -->
+          @if (occur.invoiceNotes!.length > 0) {
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="border rounded p-3 bg-light">
+                <small class="text-muted d-block mb-2">Notas Fiscais</small>
+                @for (note of occur.invoiceNotes; track $index) {
+                <div class="mb-1">{{ note }}</div>
+                }
+              </div>
+            </div>
+          </div>
           }
         </div>
       </div>
     </div>
   </div>
 
-  @if (occur.closeStatus === "CLOSED_WITH_RATING") {
-  <div class="mb-3">
-    <div class="p-3 border rounded">
-      <div class="text-secondary small">Avaliação do Cliente</div>
-      <div>{{ occur.rate?.comment }}</div>
-    </div>
-  </div>
+  <!-- ==================== ACORDION 2: DADOS DA RECLAMAÇÃO ==================== -->
+  <div class="accordion mb-3" id="complaintAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseComplaint" aria-expanded="false" aria-controls="collapseComplaint">
+          <i class="bi bi-chat-dots me-2"></i> Dados da Reclamação
+        </button>
+      </h2>
+      <div id="collapseComplaint" class="accordion-collapse collapse" data-bs-parent="#complaintAccordion">
+        <div class="accordion-body">
+          <!-- ID do Pedido e Tipo -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">ID do Pedido</small>
+              <span>{{ occur.complaint!.orderId ?? "Não informado" }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Tipo</small>
+              <span>{{ occur.complaint!.type === "INTERNAL" ? "Interna" : "Externa" }}</span>
+            </div>
+          </div>
 
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Comentado em</div>
-        <div>
-          {{ occur.rate?.sentAt | date: "dd/MM/yyyy HH:mm:ss" }}
+          <!-- Solicitação -->
+          <div class="row mb-3">
+            <div class="col-12">
+              <small class="text-muted d-block">Solicitação</small>
+              <span>{{ occur.complaint!.request!.description }}</span>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-12">
+              <small class="text-muted d-block">Complemento da Solicitação</small>
+              <span>{{ occur.complaint!.request!.complement ?? "Não informado" }}</span>
+            </div>
+          </div>
+
+          <!-- Reclamante -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Reclamante Identificado</small>
+              <span>{{ occur.complaint!.isAnonymous ? "Não" : "Sim" }}</span>
+            </div>
+          </div>
+
+          @if (!occur.complaint?.isAnonymous) {
+          <!-- Dados do Reclamante -->
+          <div class="border-top pt-3 mt-3">
+            <h6 class="mb-3"><i class="bi bi-person-badge me-2"></i>Dados do Reclamante</h6>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <small class="text-muted d-block">Nome</small>
+                <span>
+                  {{ occur.complaint!.complainant!.id
+                  ? occur.complaint!.complainant!.id + " - " + occur.complaint!.complainant!.name
+                  : occur.complaint!.complainant!.name }}
+                </span>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <small class="text-muted d-block">Telefone</small>
+                <span>{{ occur.complaint!.complainant!.phone ?? "Não informado" }}</span>
+              </div>
+              <div class="col-md-6">
+                <small class="text-muted d-block">E-mail</small>
+                <span>{{ occur.complaint!.complainant!.email ?? "Não informado" }}</span>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <small class="text-muted d-block">Endereço</small>
+                <div class="mt-1">
+                  @let address = occur.complaint?.complainant?.address;
+                  <div>{{ address?.street ? address?.street + ", " + (address?.number || "S/N") : "Rua Não Informada" }}
+                  </div>
+                  @if (address?.complement) { <div>{{ address?.complement }}</div> }
+                  <div>
+                    @if (address?.district && address?.city && address?.uf) {
+                    {{ address?.district + ", " + address?.city + " - " + address?.uf }}
+                    } @else {
+                    Bairro/Cidade/UF Não Informados
+                    }
+                  </div>
+                  <div>{{ address?.zipCode || "CEP Não Informado" }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          }
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Nota</div>
-        <div>
-          <span>{{ occur.rate?.score }}</span>
+  <!-- ==================== ACORDION 3: ANÁLISE E ENCERRAMENTO ==================== -->
+  @if (occur.inspectorReport) {
+  <div class="accordion mb-3" id="analysisAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseAnalysis" aria-expanded="false" aria-controls="collapseAnalysis">
+          <i class="bi bi-clipboard-check me-2"></i> Análise e Encerramento
+        </button>
+      </h2>
+      <div id="collapseAnalysis" class="accordion-collapse collapse" data-bs-parent="#analysisAccordion">
+        <div class="accordion-body">
+          <!-- Análise -->
+          <div class="row mb-3">
+            <div class="col-12">
+              <small class="text-muted d-block">Análise Inspeção de Qualidade</small>
+              <span>{{ occur.inspectorReport }}</span>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Gerou Não Conformidade</small>
+              <div class="mt-1">
+                <span class="badge" [class.bg-danger]="occur.hasRNCOpened" [class.bg-success]="!occur.hasRNCOpened">
+                  {{ occur.hasRNCOpened ? "Sim" : "Não" }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Encerramento -->
+          @if (occur.closeReason) {
+          <div class="border-top pt-3 mt-3">
+            <h6 class="mb-3"><i class="bi bi-check-circle me-2"></i>Informações de Encerramento</h6>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <small class="text-muted d-block">Motivo</small>
+                <span>{{ occur.closeReason }}</span>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <small class="text-muted d-block">Estado de Encerramento</small>
+                <div class="mt-1">
+                  @if (occur.closeStatus === "CLOSED_WITH_RATING") {
+                  <span class="badge bg-success">Encerrado com Avaliação</span>
+                  } @else if (occur.closeStatus === "CLOSED_WITHOUT_RATING") {
+                  <span class="badge bg-secondary">Encerrado sem Avaliação</span>
+                  } @else {
+                  <span class="badge bg-warning">Encerrado aguardando Avaliação</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Avaliação do Cliente -->
+            @if (occur.closeStatus === "CLOSED_WITH_RATING") {
+            <div class="border-top pt-3 mt-3">
+              <h6 class="mb-3"><i class="bi bi-star me-2"></i>Avaliação do Cliente</h6>
+
+              <div class="row mb-3">
+                <div class="col-12">
+                  <small class="text-muted d-block">Comentário</small>
+                  <span>{{ occur.rate?.comment }}</span>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <small class="text-muted d-block">Nota</small>
+                  <span class="h5">{{ occur.rate?.score }}</span>
+                </div>
+                <div class="col-md-6">
+                  <small class="text-muted d-block">Comentado em</small>
+                  <span>{{ occur.rate?.sentAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
         </div>
       </div>
     </div>
   </div>
   }
-  }
-  }
 
-  <h5 class="border-bottom pb-2 mb-3 mt-4">Dados de Auditoria</h5>
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Criado em</div>
-        <div>
-          @if (occur.audit?.createdAt) {
-          {{ occur.audit!.createdAt | date: "dd/MM/yyyy HH:mm:ss" }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
+  <!-- ==================== ACORDION 4: AUDITORIA ==================== -->
+  <div class="accordion mb-3" id="auditAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseAudit" aria-expanded="false" aria-controls="collapseAudit">
+          <i class="bi bi-clock-history me-2"></i> Dados de Auditoria
+        </button>
+      </h2>
+      <div id="collapseAudit" class="accordion-collapse collapse" data-bs-parent="#auditAccordion">
+        <div class="accordion-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Criado em</small>
+              <span>{{ occur.audit?.createdAt ? (occur.audit!.createdAt | date: "dd/MM/yyyy HH:mm:ss") : "Não se aplica"
+                }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Criado por</small>
+              <span>{{ occur.audit?.createdBy ? (occur.audit!.createdBy! | systemName) : "Não se aplica" }}</span>
+            </div>
+          </div>
 
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Criado por</div>
-        <div>
-          @if (occur.audit?.createdBy) {
-          {{ occur.audit!.createdBy! | systemName }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Enviado em</div>
-        <div>
-          @if (occur.audit?.officializedAt) {
-          {{ occur.audit!.officializedAt | date: "dd/MM/yyyy HH:mm:ss" }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Enviado em</small>
+              <span>{{ occur.audit?.officializedAt ? (occur.audit!.officializedAt | date: "dd/MM/yyyy HH:mm:ss") : "Não
+                se aplica" }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Enviado por</small>
+              <span>{{ occur.audit?.officializedBy ? occur.audit!.officializedBy : "Não se aplica" }}</span>
+            </div>
+          </div>
 
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Enviado por</div>
-        <div>
-          @if (occur.audit?.officializedBy) {
-          {{ occur.audit!.officializedBy }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Última Atualização em</div>
-        <div>
-          @if (occur.audit?.updatedAt) {
-          {{ occur.audit!.updatedAt | date: "dd/MM/yyyy HH:mm:ss" }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Última Atualização em</small>
+              <span>{{ occur.audit?.updatedAt ? (occur.audit!.updatedAt | date: "dd/MM/yyyy HH:mm:ss") : "Não se aplica"
+                }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Última Atualização por</small>
+              <span>{{ occur.audit?.updatedBy ? occur.audit!.updatedBy : "Não se aplica" }}</span>
+            </div>
+          </div>
 
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Última Atualização por</div>
-        <div>
-          @if (occur.audit?.updatedBy) {
-          {{ occur.audit!.updatedBy }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row mb-3">
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Encerrado em</div>
-        <div>
-          @if (occur.audit?.closedAt) {
-          {{ occur.audit!.closedAt | date: "dd/MM/yyyy HH:mm:ss" }}
-          } @else {
-          Não se aplica
-          }
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md">
-      <div class="p-3 border rounded">
-        <div class="text-secondary small">Encerrado por</div>
-        <div>
-          @if (occur.audit?.closedBy) {
-          {{ occur.audit!.closedBy }}
-          } @else {
-          Não se aplica
-          }
+          <div class="row">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Encerrado em</small>
+              <span>{{ occur.audit?.closedAt ? (occur.audit!.closedAt | date: "dd/MM/yyyy HH:mm:ss") : "Não se aplica"
+                }}</span>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Encerrado por</small>
+              <span>{{ occur.audit?.closedBy ? occur.audit!.closedBy : "Não se aplica" }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Templates do Popover -->
-<ng-template #openerContent>
-  <div>
-    <div>
-      <strong>Pessoa:</strong>
-      {{
-      occur
-      .opener!.universalUser?.id?.toString()
-      ?.concat(" - ")
-      ?.concat(occur.opener!.universalUser?.name!)
-      }}
-    </div>
-    <div><strong>Email:</strong> {{ occur.opener!.email }}</div>
-    <div>
-      <strong>Status: </strong>
-      @if (occur.opener?.status === "ACTIVE") {
-      <span class="badge bg-success">Ativo</span>
-      } @else {
-      <span class="badge bg-danger">Inativo</span>
-      }
-    </div>
-  </div>
-</ng-template>
-
-<ng-template #inspectorContent>
-  <div>
-    <div>
-      <strong>Pessoa:</strong>
-      {{
-      occur
-      .inspector!.universalUser?.id?.toString()
-      ?.concat(" - ")
-      ?.concat(occur.inspector!.universalUser?.name!)
-      }}
-    </div>
-    <div><strong>Email:</strong> {{ occur.inspector!.email }}</div>
-    <div>
-      <strong>Status: </strong>
-      @if (occur.inspector?.status === "ACTIVE") {
-      <span class="badge bg-success">Ativo</span>
-      } @else {
-      <span class="badge bg-danger">Inativo</span>
-      }
-    </div>
-  </div>
-</ng-template>
 }

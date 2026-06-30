@@ -1,15 +1,21 @@
-<!-- occur-complement-viewer.component.html -->
 @if (occur) {
 <div class="surface-container">
   <div class="surface-container-header">
     <h3 class="text-white pt-3 pb-2">Opções da Ocorrência</h3>
   </div>
   <div class="surface-container-body">
-    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-4" [destroyOnHide]="false">
+    <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3" [destroyOnHide]="false">
+      <!-- TAB: ANEXOS COM CONTAGEM -->
       <li ngbNavItem="attachments">
-        <button ngbNavLink>Anexos</button>
+        <button ngbNavLink>
+          Anexos
+          @if (existingFiles.length > 0) {
+          <span class="badge bg-secondary ms-1">{{ existingFiles.length }}</span>
+          }
+        </button>
         <ng-template ngbNavContent>
           <div class="tab-content-container p-3">
+            <!-- Alertas -->
             @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
             <div class="row mb-3">
               <div class="col-md">
@@ -22,43 +28,8 @@
             </div>
             }
 
-            @if (existingFiles.length > 0) {
-            <div class="row mb-4">
-              <div class="col-md">
-                <label class="form-label fw-bold">Arquivos Anexados ({{ existingFiles.length }}/10)</label>
-                <div class="border rounded p-3">
-                  @for (file of existingFiles; track file.id) {
-                  <div class="row mb-2">
-                    <div class="col-md">
-                      <div class="p-2 border rounded d-flex justify-content-between align-items-center">
-                        <div>
-                          <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
-                          <strong>{{ file.name }}</strong>
-                          <small class="text-muted ms-2">{{
-                            formatFileSize(file.size || 0)
-                            }}</small>
-                        </div>
-                        <div>
-                          <button class="btn btn-primary btn-sm me-2" (click)="viewFile(file)">
-                            <i class="bi bi-eye-fill me-1"></i> Visualizar
-                          </button>
-                          @if (
-                          occur.status === "AWAITING_REPORT" &&
-                          isOccurOpener
-                          ) {
-                          <button class="btn btn-danger btn-sm" (click)="removeExistingFile(file)">
-                            <i class="bi bi-trash-fill me-1"></i> Remover
-                          </button>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  }
-                </div>
-              </div>
-            </div>
-            } @else {
+            <!-- Mensagem de Nenhum Anexo (antes da toolbar) -->
+            @if (existingFiles.length === 0 && attachedFiles.length === 0 && !isSavingAttachments) {
             <div class="row mb-3">
               <div class="col-md">
                 <div class="alert alert-primary" role="alert">
@@ -69,166 +40,217 @@
             </div>
             }
 
+            <!-- Toolbar de Ações -->
             <div class="row mb-3">
-              @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
-              @if (existingFiles.length + attachedFiles.length < 10) { <div class="col-md-auto mb-2 mb-md-0">
-                <button class="btn btn-primary" (click)="fileInput.click()">
-                  <i class="bi bi-upload me-1"></i> Adicionar Arquivo
-                </button>
+              <div class="col-md">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  @if (!isSavingAttachments) {
+                  @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
+                  @if (existingFiles.length + attachedFiles.length < 10) { <button class="btn btn-primary"
+                    (click)="fileInput.click()">
+                    <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                    </button>
+                    }
+                    @if (attachedFiles.length > 0) {
+                    <button class="btn btn-success" (click)="saveAttachments()" [disabled]="isSavingAttachments">
+                      <i class="bi bi-save-fill me-1"></i>
+                      Salvar Alterações
+                    </button>
+                    }
+                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
+                      (change)="onFileSelected($event)" />
+                    }
+                    <button class="btn btn-outline-primary" (click)="refreshAttachments()" title="Atualizar lista">
+                      <i class="bi bi-arrow-repeat me-1"></i> Atualizar
+                    </button>
+                    }
+                </div>
+              </div>
             </div>
-            }
-            @if (attachedFiles.length > 0) {
-            <div class="col-md-auto mb-2 mb-md-0">
-              <button class="btn btn-success" (click)="saveAttachments()" [disabled]="isSavingAttachments">
-                <i class="bi bi-save-fill me-1"></i>
-                {{
-                isSavingAttachments
-                ? "Salvando..."
-                : "Salvar Alterações"
-                }}
-              </button>
-            </div>
-            }
-            <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
-              (change)="onFileSelected($event)" />
-            }
-            <div class="col-md-auto">
-              <button class="btn btn-outline-primary" (click)="refreshAttachments()" title="Atualizar lista">
-                <i class="bi bi-arrow-repeat"></i> Atualizar
-              </button>
-            </div>
-          </div>
 
-          @if (
-          occur.status === "AWAITING_REPORT" &&
-          isOccurOpener &&
-          attachedFiles.length > 0
-          ) {
-          <div class="row mb-4">
-            <div class="col-md">
-              <label class="form-label fw-bold">Novos Arquivos ({{ attachedFiles.length }})</label>
-              <div class="border rounded p-3">
-                @for (file of attachedFiles; track $index) {
-                <div class="row mb-2">
-                  <div class="col-md">
-                    <div class="p-2 border rounded d-flex justify-content-between align-items-center">
-                      <div>
-                        <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
-                        <strong>{{ file.name }}</strong>
-                        <small class="text-muted ms-2">{{
-                          formatFileSize(file.size)
-                          }}</small>
-                      </div>
-                      <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)">
+            <!-- Barra de Progresso Inline (sem fundo) -->
+            @if (isUploading) {
+            <div class="row mb-3">
+              <div class="col-md">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>{{ uploadProgress.message }}</span>
+                  <span>{{ uploadProgress.percent }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    [style.width.%]="uploadProgress.percent" [attr.aria-valuenow]="uploadProgress.percent"
+                    aria-valuemin="0" aria-valuemax="100">
+                  </div>
+                </div>
+              </div>
+            </div>
+            }
+
+            <!-- Lista de Arquivos Existentes -->
+            @if (existingFiles.length > 0) {
+            <div class="row mb-3">
+              <div class="col-md">
+                <label class="form-label fw-bold">Arquivos Anexados ({{ existingFiles.length }}/10)</label>
+                <div class="border rounded p-2">
+                  @for (file of existingFiles; track file.id) {
+                  <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                    <div class="col-md-6">
+                      <i class="bi bi-file-earmark text-secondary me-2"></i>
+                      <strong>{{ file.name }}</strong>
+                      <small class="text-muted ms-2">{{ formatFileSize(file.size || 0) }}</small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                      <button class="btn btn-primary btn-sm me-1" (click)="viewFile(file)"
+                        aria-label="Visualizar arquivo" [disabled]="isSavingAttachments">
+                        <i class="bi bi-eye-fill me-1"></i> Visualizar
+                      </button>
+                      @if (occur.status === "AWAITING_REPORT" && isOccurOpener) {
+                      <button class="btn btn-danger btn-sm" (click)="removeExistingFile(file)"
+                        aria-label="Remover arquivo" [disabled]="isSavingAttachments">
+                        <i class="bi bi-trash-fill me-1"></i> Remover
+                      </button>
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+
+            <!-- Lista de Novos Arquivos (estilo padronizado) -->
+            @if (occur.status === "AWAITING_REPORT" && isOccurOpener && attachedFiles.length > 0) {
+            <div class="row mb-3">
+              <div class="col-md">
+                <label class="form-label fw-bold">
+                  <i class="bi bi-file-earmark-plus me-1"></i>
+                  Novos Arquivos ({{ attachedFiles.length }})
+                </label>
+                <div class="border rounded p-2">
+                  @for (file of attachedFiles; track $index) {
+                  <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                    <div class="col-md-8">
+                      <i class="bi bi-file-earmark text-secondary me-2"></i>
+                      <strong>{{ file.name }}</strong>
+                      <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                      <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)"
+                        aria-label="Remover arquivo novo" [disabled]="isSavingAttachments">
                         <i class="bi bi-trash-fill me-1"></i> Remover
                       </button>
                     </div>
                   </div>
+                  }
                 </div>
-                }
               </div>
             </div>
+            }
           </div>
-          }
+        </ng-template>
+      </li>
+
+      <!-- TAB: INSPECIONAR -->
+      @if (
+      (occur.status === "AWAITING_REPORT" && isOccurInspector) ||
+      (occur.status === "AWAITING_REPORT" && !occur.hasInspectorAssigned && hasInspectorRole)
+      ) {
+      <li ngbNavItem="inspectOccur">
+        <button ngbNavLink>Inspecionar Ocorrência</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-container p-3">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Análise de Qualidade</label>
+              <textarea class="form-control" rows="5" [(ngModel)]="inspectionReport" maxlength="512"
+                placeholder="Descreva sua análise de qualidade..."
+                [class.is-invalid]="inspectionReport.length < 8 && inspectionReport.length > 0"
+                [class.is-valid]="inspectionReport.length >= 8"></textarea>
+              <div class="d-flex justify-content-between mt-1">
+                <small class="text-muted">Mínimo 8 caracteres</small>
+                <small [class.text-danger]="inspectionReport.length < 8 && inspectionReport.length > 0"
+                  [class.text-success]="inspectionReport.length >= 8">
+                  {{ inspectionReport.length }}/512 caracteres
+                </small>
+              </div>
+            </div>
+
+            <div class="form-check mb-3 py-2">
+              <input type="checkbox" class="form-check-input" id="generateNonConformity"
+                [(ngModel)]="generateNonConformity" />
+              <label class="form-check-label" for="generateNonConformity">
+                Gerar Não-Conformidade
+              </label>
+            </div>
+
+            <button class="btn btn-primary" (click)="openInspectModal(inspectModal)"
+              [disabled]="inspectionReport.length < 8 || inspectionReport.length > 512" aria-label="Confirmar inspeção">
+              <i class="bi bi-check-square-fill me-1"></i> Confirmar Inspeção
+            </button>
+          </div>
+        </ng-template>
+      </li>
+      }
+
+      <!-- TAB: ENCERRAR -->
+      @if (occur.status === "AWAITING_CLOSE" && isOccurOpener) {
+      <li ngbNavItem="closeOccur">
+        <button ngbNavLink>Encerrar Ocorrência</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-container p-3">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Informações de Fechamento</label>
+              <textarea class="form-control" rows="5" [(ngModel)]="closeInfo" maxlength="512"
+                placeholder="Descreva as informações de fechamento..."
+                [class.is-invalid]="closeInfo.length < 8 && closeInfo.length > 0"
+                [class.is-valid]="closeInfo.length >= 8"></textarea>
+              <div class="d-flex justify-content-between mt-1">
+                <small class="text-muted">Mínimo 8 caracteres</small>
+                <small [class.text-danger]="closeInfo.length < 8 && closeInfo.length > 0"
+                  [class.text-success]="closeInfo.length >= 8">
+                  {{ closeInfo.length }}/512 caracteres
+                </small>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" (click)="openCloseModal(closeModal)"
+              [disabled]="closeInfo.length < 8 || closeInfo.length > 512" aria-label="Confirmar encerramento">
+              <i class="bi bi-check-square-fill me-1"></i> Confirmar Encerramento
+            </button>
+          </div>
+        </ng-template>
+      </li>
+      }
+
+      <!-- TAB: HISTÓRICO -->
+      <li ngbNavItem="activityHistory">
+        <button ngbNavLink>Histórico de Atividades</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-container p-3">
+            <app-audit [subjectId]="occur.id!" [subjectType]="'OCCUR'" [subjectCode]="occur.code" [pageSize]="5">
+            </app-audit>
+          </div>
+        </ng-template>
+      </li>
+
+      <!-- TAB: DALTON (mantida) -->
+      @if (isDaltonEnabled) {
+      <li ngbNavItem="daltonRatings">
+        <button ngbNavLink>Avaliações do Dalton</button>
+        <ng-template ngbNavContent>
+          <div class="tab-content-container p-3">
+            <!-- Conteúdo mantido vazio conforme original -->
+          </div>
+        </ng-template>
+      </li>
+      }
+    </ul>
+
+    <div [ngbNavOutlet]="nav" class="mt-2"></div>
   </div>
-  </ng-template>
-  </li>
-
-  @if (
-  (occur.status === "AWAITING_REPORT" && isOccurInspector) ||
-  (occur.status === "AWAITING_REPORT" &&
-  !occur.hasInspectorAssigned &&
-  hasInspectorRole)
-  ) {
-  <li ngbNavItem="inspectOccur">
-    <button ngbNavLink>Inspecionar Ocorrência</button>
-    <ng-template ngbNavContent>
-      <div class="tab-content-container p-3">
-        <div class="mb-3">
-          <label class="form-label fw-bold">Análise de Qualidade</label>
-          <textarea class="form-control" rows="5" [(ngModel)]="inspectionReport" maxlength="512"
-            placeholder="Descreva sua análise de qualidade..."></textarea>
-          <div class="d-flex justify-content-end mt-1">
-            <small class="text-muted" [class.text-danger]="
-                            inspectionReport.length < 8 &&
-                            inspectionReport.length > 0
-                          ">
-              {{ inspectionReport.length }}/512 caracteres (mínimo 8)
-            </small>
-          </div>
-        </div>
-
-        <div class="form-check mb-3">
-          <input type="checkbox" class="form-check-input" id="generateNonConformity"
-            [(ngModel)]="generateNonConformity" />
-          <label class="form-check-label" for="generateNonConformity">
-            Gerar Não-Conformidade
-          </label>
-        </div>
-
-        <button class="btn btn-primary" (click)="openInspectModal(inspectModal)" [disabled]="
-                        inspectionReport.length < 8 || inspectionReport.length > 512
-                      ">
-          <i class="bi bi-check-square-fill me-1"></i> Confirmar
-          Inspeção
-        </button>
-      </div>
-    </ng-template>
-  </li>
-  }
-
-  @if (occur.status === "AWAITING_CLOSE" && isOccurOpener) {
-  <li ngbNavItem="closeOccur">
-    <button ngbNavLink>Encerrar Ocorrência</button>
-    <ng-template ngbNavContent>
-      <div class="tab-content-container p-3">
-        <div class="mb-3">
-          <label class="form-label fw-bold">Informações de Fechamento</label>
-          <textarea class="form-control" rows="5" [(ngModel)]="closeInfo" maxlength="512"
-            placeholder="Descreva as informações de fechamento..."></textarea>
-          <div class="d-flex justify-content-end mt-1">
-            <small class="text-muted" [class.text-danger]="
-                            closeInfo.length < 8 && closeInfo.length > 0
-                          ">
-              {{ closeInfo.length }}/512 caracteres (mínimo 8)
-            </small>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" (click)="openCloseModal(closeModal)"
-          [disabled]="closeInfo.length < 8 || closeInfo.length > 512">
-          <i class="bi bi-check-square-fill me-1"></i> Confirmar
-          Encerramento
-        </button>
-      </div>
-    </ng-template>
-  </li>
-  }
-
-  <li ngbNavItem="activityHistory">
-    <button ngbNavLink>Histórico de Atividades</button>
-    <ng-template ngbNavContent>
-      <app-audit [subjectId]="occur.id!" [subjectType]="'OCCUR'" [subjectCode]="occur.code" [pageSize]="5">
-      </app-audit>
-    </ng-template>
-  </li>
-
-  @if (isDaltonEnabled) {
-  <li ngbNavItem="daltonRatings">
-    <button ngbNavLink>Avaliações do Dalton</button>
-    <ng-template ngbNavContent>
-      <div class="tab-content-container p-3">
-      </div>
-    </ng-template>
-  </li>
-  }
-  </ul>
-
-  <div [ngbNavOutlet]="nav" class="mt-3"></div>
-</div>
 </div>
 }
 
+<!-- MODAL: PROGRESSO DE UPLOAD (mantido para fallback) -->
 <ng-template #uploadProgressModal let-modal>
   <div class="modal-header">
     <h5 class="modal-title">{{ uploadProgress.message }}</h5>
@@ -236,21 +258,22 @@
   <div class="modal-body">
     <div class="progress">
       <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-        [style.width.%]="uploadProgress.percent">
+        [style.width.%]="uploadProgress.percent" [attr.aria-valuenow]="uploadProgress.percent" aria-valuemin="0"
+        aria-valuemax="100">
         {{ uploadProgress.percent }}%
       </div>
     </div>
   </div>
 </ng-template>
 
+<!-- MODAL: CONFIRMAÇÃO INSPEÇÃO -->
 <ng-template #inspectModal let-modal>
   <div class="modal-header">
     <h4 class="modal-title">Confirmar Inspeção</h4>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    <button type="button" class="btn-close" (click)="modal.dismiss()" aria-label="Fechar"></button>
   </div>
   <div class="modal-body text-center">
-    <p class="mb-0">
-      @if (generateNonConformity) {
+    @if (generateNonConformity) {
     <p class="mt-3">
       A ocorrência {{ occur.code }} terá análise encerrada e uma não
       conformidade será gerada.
@@ -265,41 +288,43 @@
     <p class="text-muted small">Deseja seguir com a ação?</p>
     <img src="assets/analysis.svg" alt="Aviso" class="w-25" />
     }
-    </p>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()" aria-label="Cancelar">
       <i class="bi bi-x-square-fill"></i> Cancelar
     </button>
-    <button type="button" class="btn btn-primary" (click)="modal.close(); confirmInspection()">
+    <button type="button" class="btn btn-primary" (click)="modal.close(); confirmInspection()" aria-label="Confirmar">
       <i class="bi bi-check-square-fill"></i> Confirmar
     </button>
   </div>
 </ng-template>
 
+<!-- MODAL: CONFIRMAÇÃO ENCERRAMENTO -->
 <ng-template #closeModal let-modal>
   <div class="modal-header">
     <h4 class="modal-title">Confirmar Encerramento</h4>
-    <button type="button" class="btn-close" (click)="modal.dismiss()"></button>
+    <button type="button" class="btn-close" (click)="modal.dismiss()" aria-label="Fechar"></button>
   </div>
   <div class="modal-body text-center">
-    <p class="mb-0">
-      @if (occur.complaint?.isAnonymous) {
+    @if (occur.complaint?.isAnonymous) {
+    <p class="mt-3">
       Deseja prosseguir com o encerramento da ocorrência {{ occur.code }}?
-      } @else {
+    </p>
+    } @else {
+    <p class="mt-3">
       A ocorrência será internamente encerrada e aguardará o retorno do
       cliente por 30 dias, ele será notificado por e-mail, e recomendamos o
       contato direto pelos canais de atendimento da empresa.
-      }
     </p>
+    }
     <p class="text-muted small">Deseja prosseguir com o fechamento?</p>
     <img src="assets/answer.svg" alt="Aviso" class="w-25" />
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()" aria-label="Cancelar">
       <i class="bi bi-x-square-fill"></i> Cancelar
     </button>
-    <button type="button" class="btn btn-primary" (click)="modal.close(); confirmClose()">
+    <button type="button" class="btn btn-primary" (click)="modal.close(); confirmClose()" aria-label="Confirmar">
       <i class="bi bi-check-square-fill"></i> Confirmar
     </button>
   </div>

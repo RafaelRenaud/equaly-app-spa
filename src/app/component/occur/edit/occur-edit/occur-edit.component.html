@@ -86,7 +86,7 @@
                       <option value="MEDIUM">Média</option>
                       <option value="HIGH">Alta</option>
                     </select>
-                    <label for="floatingPriority">Prioridade</label>
+                    <label>Prioridade</label>
                   </div>
                 </div>
                 <div class="col-md-6">
@@ -94,7 +94,7 @@
                     <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('occurrenceDate')"
                       id="floatingOccurrenceDate" placeholder="Data do Ocorrido" formControlName="occurrenceDate"
                       (input)="onDateInput($event)" maxlength="10" />
-                    <label for="floatingOccurrenceDate">Data do Ocorrido</label>
+                    <label>Data do Ocorrido</label>
                   </div>
                 </div>
               </div>
@@ -176,9 +176,13 @@
                               <div class="col-md-12">
                                 <div class="form-floating">
                                   <input type="text" class="form-control" [id]="'floatingNf' + i"
-                                    [formControlName]="'nf' + i" />
+                                    [class.is-invalid]="isFieldInvalid('nf' + i)" [formControlName]="'nf' + i" />
                                   <label [for]="'floatingNf' + i">NF{{ i }}</label>
                                 </div>
+                                @if (shouldShowCounter('nf' + i)) {
+                                <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText('nf' + i) }} ({{
+                                  getFieldLength('nf' + i) }}/{{ getFieldConfig('nf' + i)?.max }})</small>
+                                }
                               </div>
                             </div>
                             }
@@ -205,6 +209,11 @@
                       formControlName="orderNumber" />
                     <label>Número do Pedido</label>
                   </div>
+                  @if (shouldShowCounter("orderNumber")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("orderNumber") }} ({{
+                    getFieldLength("orderNumber")
+                    }}/{{ getFieldConfig("orderNumber")?.max }})</small>
+                  }
                 </div>
                 <div class="col-md-6">
                   <div class="border rounded p-3 h-100" [class.is-invalid]="isFieldInvalid('complaintType')">
@@ -229,6 +238,11 @@
                         " formControlName="complaintDescription"></textarea>
                     <label>Descrição da Reclamação</label>
                   </div>
+                  @if (shouldShowCounter("complaintDescription")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complaintDescription") }} ({{
+                    getFieldLength("complaintDescription")
+                    }}/{{ getFieldConfig("complaintDescription")?.max }})</small>
+                  }
                 </div>
               </div>
 
@@ -240,6 +254,11 @@
                         " formControlName="complaintComplement"></textarea>
                     <label>Informações Complementares</label>
                   </div>
+                  @if (shouldShowCounter("complaintComplement")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complaintComplement") }} ({{
+                    getFieldLength("complaintComplement")
+                    }}/{{ getFieldConfig("complaintComplement")?.max }})</small>
+                  }
                 </div>
               </div>
 
@@ -290,6 +309,11 @@
                       formControlName="complainerName" [disabled]="isInternalComplaint()" />
                     <label>Nome</label>
                   </div>
+                  @if (shouldShowCounter("complainerName")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerName") }} ({{
+                    getFieldLength("complainerName")
+                    }}/{{ getFieldConfig("complainerName")?.max }})</small>
+                  }
                 </div>
               </div>
 
@@ -300,6 +324,11 @@
                       formControlName="complainerEmail" />
                     <label>Email</label>
                   </div>
+                  @if (shouldShowCounter("complainerEmail")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerEmail") }} ({{
+                    getFieldLength("complainerEmail")
+                    }}/{{ getFieldConfig("complainerEmail")?.max }})</small>
+                  }
                 </div>
                 <div class="col-md-6">
                   <div class="form-floating">
@@ -307,12 +336,17 @@
                       formControlName="complainerPhone" />
                     <label>Telefone</label>
                   </div>
+                  @if (shouldShowCounter("complainerPhone")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerPhone") }} ({{
+                    getFieldLength("complainerPhone")
+                    }}/{{ getFieldConfig("complainerPhone")?.max }})</small>
+                  }
                 </div>
               </div>
 
               <div class="row mb-3">
                 <div class="col-md-6">
-                  <div class="form-floating">
+                  <div class="form-floating position-relative">
                     <input type="text" class="form-control" [class.is-invalid]="isFieldInvalid('complainerCep')"
                       formControlName="complainerCep" (input)="applyCepMask($event)" (blur)="searchCep()" />
                     <label>CEP</label>
@@ -332,6 +366,11 @@
                           " formControlName="complainerStreet" />
                     <label>Logradouro</label>
                   </div>
+                  @if (shouldShowCounter("complainerStreet")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerStreet") }} ({{
+                    getFieldLength("complainerStreet")
+                    }}/{{ getFieldConfig("complainerStreet")?.max }})</small>
+                  }
                 </div>
               </div>
 
@@ -343,6 +382,11 @@
                           " formControlName="complainerNumber" />
                     <label>Número</label>
                   </div>
+                  @if (shouldShowCounter("complainerNumber")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerNumber") }} ({{
+                    getFieldLength("complainerNumber")
+                    }}/{{ getFieldConfig("complainerNumber")?.max }})</small>
+                  }
                 </div>
                 <div class="col-md-4">
                   <div class="form-floating">
@@ -351,6 +395,11 @@
                           " formControlName="complainerDistrict" />
                     <label>Bairro</label>
                   </div>
+                  @if (shouldShowCounter("complainerDistrict")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerDistrict") }} ({{
+                    getFieldLength("complainerDistrict")
+                    }}/{{ getFieldConfig("complainerDistrict")?.max }})</small>
+                  }
                 </div>
                 <div class="col-md-4">
                   <div class="form-floating">
@@ -359,6 +408,11 @@
                           " formControlName="complainerAddressComplement" />
                     <label>Complemento</label>
                   </div>
+                  @if (shouldShowCounter("complainerAddressComplement")) {
+                  <small class="text-muted d-block mt-1 ms-1">{{ getFieldHelpText("complainerAddressComplement") }} ({{
+                    getFieldLength("complainerAddressComplement")
+                    }}/{{ getFieldConfig("complainerAddressComplement")?.max }})</small>
+                  }
                 </div>
               </div>
 
@@ -381,54 +435,69 @@
         </li>
         }
 
-        <!-- Tab Anexos -->
+        <!-- TAB: ANEXOS (PADRÃO VISUAL UNIFICADO) -->
         <li ngbNavItem="attachments">
-          <button ngbNavLink>Anexos</button>
+          <button ngbNavLink>
+            Anexos
+            @if (existingFiles.length > 0 || attachedFiles.length > 0) {
+            <span class="badge bg-secondary ms-1">{{ existingFiles.length + attachedFiles.length }}</span>
+            }
+          </button>
           <ng-template ngbNavContent>
-            <div class="tab-content-container">
+            <div class="tab-content-container p-3">
+              <!-- Alertas Informativos -->
               @if (occurData.complaint?.channel === "EQUALY") {
-              <div class="alert alert-primary">
-                <i class="bi bi-info-square-fill"></i>
-                É possível anexar até 10 arquivos. Formatos suportados: PDF,
-                JPG, PNG, HEIC, XML.
+              <div class="row mb-3">
+                <div class="col-md">
+                  <div class="alert alert-primary">
+                    <i class="bi bi-info-square-fill me-2"></i>
+                    É possível anexar até 10 arquivos no total. Formatos
+                    suportados: PDF, JPG, PNG, HEIC, XML.
+                  </div>
+                </div>
               </div>
+
+              @if (isDraft && attachedFiles.length > 0) {
+              <div class="row mb-3">
+                <div class="col-md">
+                  <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Arquivos não são salvos em rascunhos. Eles serão enviados
+                    apenas ao cadastrar a ocorrência.
+                  </div>
+                </div>
+              </div>
+              }
               } @else {
-              <div class="alert alert-primary">
-                <i class="bi bi-info-square-fill"></i>
-                Para gerenciar anexos externos, submeta a ocorrência e
-                realize a a ação em seguida.
+              <div class="row mb-3">
+                <div class="col-md">
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-square-fill me-2"></i>
+                    Para gerenciar anexos externos, submeta a ocorrência e
+                    realize a ação em seguida.
+                  </div>
+                </div>
               </div>
               }
 
-              @if (
-              isDraft &&
-              attachedFiles.length > 0 &&
-              occurData.complaint?.channel === "EQUALY"
-              ) {
-              <div class="alert alert-warning">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                Arquivos não são salvos em rascunhos. Eles serão enviados
-                apenas ao cadastrar a ocorrência.
-              </div>
-              }
-
-              @if (!isDraft && existingFiles.length) {
-              <div class="row mb-4">
-                <div class="col-md-12">
-                  <h6 class="mb-3">Arquivos Atuais</h6>
-                  <div class="border rounded p-3">
+              <!-- Lista de Arquivos Existentes -->
+              @if (!isDraft && existingFiles.length > 0) {
+              <div class="row mb-3">
+                <div class="col-md">
+                  <label class="form-label fw-bold">Arquivos Anexados ({{ existingFiles.length }}/10)</label>
+                  <div class="border rounded p-2">
                     @for (file of existingFiles; track file.id) {
-                    <div class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center">
-                      <div>
-                        <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                    <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                      <div class="col-md-8">
+                        <i class="bi bi-file-earmark text-secondary me-2"></i>
                         <strong>{{ file.name }}</strong>
-                        <small class="text-muted ms-2">{{
-                          formatFileSize(file.size || 0)
-                          }}</small>
+                        <small class="text-muted ms-2">{{ formatFileSize(file.size || 0) }}</small>
                       </div>
-                      <button class="btn btn-primary btn-sm" (click)="viewFile(file)">
-                        <i class="bi bi-eye-fill"></i> Visualizar
-                      </button>
+                      <div class="col-md-4 text-md-end">
+                        <button class="btn btn-primary btn-sm" (click)="viewFile(file)" aria-label="Visualizar arquivo">
+                          <i class="bi bi-eye-fill me-1"></i> Visualizar
+                        </button>
+                      </div>
                     </div>
                     }
                   </div>
@@ -436,38 +505,59 @@
               </div>
               }
 
+              <!-- Toolbar de Ações (apenas para canais EQUALY) -->
               @if (occurData.complaint?.channel === "EQUALY") {
               <div class="row mb-3">
-                <div class="col-md-12">
-                  <button class="btn btn-primary" (click)="fileInput.click()">
-                    <i class="bi bi-upload"></i> Adicionar Arquivo
-                  </button>
-                  <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
-                    (change)="onFileSelected($event)" />
+                <div class="col-md">
+                  <div class="d-flex flex-wrap gap-2 align-items-center">
+                    @if (existingFiles.length + attachedFiles.length < 10) { <button class="btn btn-primary"
+                      (click)="fileInput.click()">
+                      <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                      </button>
+                      }
+                      <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple hidden
+                        (change)="onFileSelected($event)" />
+                  </div>
                 </div>
               </div>
               }
 
-              @if (attachedFiles.length) {
-              <div class="row mb-4">
-                <div class="col-md-12">
-                  <h6 class="mb-3">Novos Arquivos</h6>
-                  <div class="border rounded p-3">
+              <!-- Lista de Novos Arquivos -->
+              @if (attachedFiles.length > 0) {
+              <div class="row mb-3">
+                <div class="col-md">
+                  <label class="form-label fw-bold">
+                    <i class="bi bi-file-earmark-plus me-1"></i>
+                    Novos Arquivos ({{ attachedFiles.length }})
+                  </label>
+                  <div class="border rounded p-2">
                     @for (file of attachedFiles; track $index) {
-                    <div class="mb-2 p-2 border rounded d-flex justify-content-between align-items-center">
-                      <div>
-                        <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
+                    <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                      <div class="col-md-8">
+                        <i class="bi bi-file-earmark text-secondary me-2"></i>
                         <strong>{{ file.name }}</strong>
-                        <small class="text-muted ms-2">{{
-                          formatFileSize(file.size)
-                          }}</small>
+                        <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
                       </div>
-                      <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)">
-                        <i class="bi bi-trash-fill"></i>
-                        Remover
-                      </button>
+                      <div class="col-md-4 text-md-end">
+                        <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)"
+                          aria-label="Remover arquivo novo">
+                          <i class="bi bi-trash-fill me-1"></i> Remover
+                        </button>
+                      </div>
                     </div>
                     }
+                  </div>
+                </div>
+              </div>
+              }
+
+              <!-- Mensagem de Nenhum Anexo -->
+              @if (existingFiles.length === 0 && attachedFiles.length === 0) {
+              <div class="row mb-3">
+                <div class="col-md">
+                  <div class="alert alert-primary" role="alert">
+                    <i class="bi bi-info-square-fill me-2"></i>
+                    Nenhum anexo disponível para esta ocorrência.
                   </div>
                 </div>
               </div>
@@ -514,7 +604,8 @@
           }
 
           @if (
-          (occurData.complaint?.channel === "EQUALY" && isOccurOpener)
+          (occurData.complaint?.channel === "EQUALY" && isOccurOpener) ||
+          (isDraft && occurData.complaint?.channel === "EQUALY" && isOccurOpener)
           ) {
           <button class="btn btn-success" type="button" (click)="confirmUpdateOccurrence()" [disabled]="isSubmitting">
             <i class="bi bi-save-fill"></i>
@@ -623,25 +714,20 @@
   </div>
 </ng-template>
 
-<ng-template #uploadProgressModal let-modal>
+<ng-template #uploadProgressModal>
   <div class="modal-header">
     <h5 class="modal-title">Atualizando Ocorrência</h5>
-    <button type="button" class="btn-close" (click)="modal.dismissAll()" [disabled]="true"></button>
   </div>
   <div class="modal-body">
     <p class="text-center mb-3">{{ uploadProgress.message }}</p>
-    <div class="progress" style="height: 25px">
-      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="
-          uploadProgress.total > 0
-            ? (uploadProgress.current / uploadProgress.total) * 100
-            : uploadProgress.current
-        ">
-        {{
-        uploadProgress.total > 0
-        ? uploadProgress.current + "/" + uploadProgress.total
-        : getProgressPercentage() + "%"
-        }}
+    <div class="progress" style="height: 25px;">
+      <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+        [style.width.%]="uploadProgress.total > 0 ? (uploadProgress.current / uploadProgress.total) * 100 : 100">
+        {{ uploadProgress.total > 0 ? uploadProgress.current + '/' + uploadProgress.total : 'Aguarde...' }}
       </div>
+    </div>
+    <div class="text-center mt-3">
+      <small class="text-muted">Aguarde, não atualize ou feche esta página...</small>
     </div>
   </div>
 </ng-template>

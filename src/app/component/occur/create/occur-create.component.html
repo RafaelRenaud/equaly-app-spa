@@ -498,63 +498,84 @@
                 </li>
                 }
 
+                <!-- TAB: ANEXOS (PADRÃO VISUAL UNIFICADO) -->
                 <li ngbNavItem="attachments">
-                    <button ngbNavLink>Anexos</button>
+                    <button ngbNavLink>
+                        Anexos
+                        @if (attachedFiles.length > 0) {
+                        <span class="badge bg-secondary ms-1">{{ attachedFiles.length }}</span>
+                        }
+                    </button>
                     <ng-template ngbNavContent>
-                        <div class="tab-content-container">
+                        <div class="tab-content-container p-3">
+                            <!-- Alertas Informativos -->
                             <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <div class="alert alert-primary" role="alert">
-                                        <i class="bi bi-info-square-fill"></i>
-                                        É possível anexar até 10 arquivos. Formatos suportados: PDF, JPG, PNG, HEIC,
-                                        XML.
+                                <div class="col-md">
+                                    <div class="alert alert-primary">
+                                        <i class="bi bi-info-square-fill me-2"></i>
+                                        É possível anexar até 10 arquivos no total. Formatos
+                                        suportados: PDF, JPG, PNG, HEIC, XML.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row mb-3">
-                                <div class="col-md-12">
+                                <div class="col-md">
                                     <div class="alert alert-warning">
-                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
                                         Arquivos não são salvos em rascunhos. Eles serão enviados apenas ao finalizar a
                                         ocorrência.
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Toolbar de Ações -->
                             <div class="row mb-3">
-                                <div class="col-md-12">
-                                    <button class="btn btn-primary" (click)="fileInput.click()">
-                                        <i class="bi bi-upload"></i>
-                                        Adicionar Arquivo
-                                    </button>
-                                    <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple
-                                        hidden (change)="onFileSelected($event)" />
+                                <div class="col-md">
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        @if (attachedFiles.length < 10) { <button class="btn btn-primary"
+                                            (click)="fileInput.click()">
+                                            <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                                            </button>
+                                            }
+                                            <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml"
+                                                multiple hidden (change)="onFileSelected($event)" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Lista de arquivos anexados -->
+                            <!-- Lista de Arquivos Anexados (padrão visual unificado) -->
                             @if (attachedFiles.length > 0) {
-                            <div class="row mb-4">
-                                <div class="col-md-12">
-                                    <div class="border rounded p-3">
-                                        <h6 class="mb-3">Arquivos Anexados ({{ attachedFiles.length }}/10)</h6>
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <label class="form-label fw-bold">Arquivos Anexados ({{ attachedFiles.length
+                                        }}/10)</label>
+                                    <div class="border rounded p-2">
                                         @for (file of attachedFiles; track $index) {
-                                        <div
-                                            class="mb-2 p-2 border rounded d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-file-earmark fs-4 text-secondary me-3"></i>
-                                                <div>
-                                                    <div class="fw-bold">{{ file.name }}</div>
-                                                    <small class="text-muted">{{ formatFileSize(file.size) }}</small>
-                                                </div>
+                                        <div class="row g-0 align-items-center py-1 border-bottom"
+                                            [class.border-0]="$last">
+                                            <div class="col-md-8">
+                                                <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                                <strong>{{ file.name }}</strong>
+                                                <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
                                             </div>
-                                            <button class="btn btn-danger btn-sm" title="Remover"
-                                                (click)="removeFile($index)">
-                                                <i class="bi bi-trash-fill"></i>
-                                            </button>
+                                            <div class="col-md-4 text-md-end">
+                                                <button class="btn btn-danger btn-sm" (click)="removeFile($index)"
+                                                    aria-label="Remover arquivo">
+                                                    <i class="bi bi-trash-fill me-1"></i> Remover
+                                                </button>
+                                            </div>
                                         </div>
                                         }
+                                    </div>
+                                </div>
+                            </div>
+                            } @else {
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <div class="alert alert-primary" role="alert">
+                                        <i class="bi bi-info-square-fill me-2"></i>
+                                        Nenhum anexo adicionado.
                                     </div>
                                 </div>
                             </div>
@@ -615,11 +636,9 @@
 </ng-template>
 
 <!-- Modal de Progresso de Upload -->
-<ng-template #uploadProgressModal let-modal>
+<ng-template #uploadProgressModal>
     <div class="modal-header">
         <h5 class="modal-title">Enviando Ocorrência</h5>
-        <button type="button" class="btn-close" aria-label="Fechar" (click)="modal.dismissAll()"
-            [disabled]="true"></button>
     </div>
     <div class="modal-body">
         <p class="text-center mb-3">{{ uploadProgress.message }}</p>
@@ -630,7 +649,7 @@
             </div>
         </div>
         <div class="text-center mt-3">
-            <small class="text-muted">Aguarde, não feche esta página...</small>
+            <small class="text-muted">Aguarde, não atualize ou feche esta página...</small>
         </div>
     </div>
 </ng-template>

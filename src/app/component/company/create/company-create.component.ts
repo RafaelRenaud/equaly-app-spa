@@ -266,11 +266,6 @@ export class CompanyCreateComponent {
   imageCropped(event: ImageCroppedEvent) {
     this.croppedImage = this.sanitizer.bypassSecurityTrustUrl(event.objectUrl!);
     this.croppedBlob = event.blob!;
-    console.log(
-      "Tamanho do blob recortado:",
-      this.croppedBlob.size / 1024,
-      "KB"
-    );
     this.logoIsSelected = true;
   }
 

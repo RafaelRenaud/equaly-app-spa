@@ -14,7 +14,7 @@ import {
   NgbNavModule,
   NgbPaginationModule,
 } from "@ng-bootstrap/ng-bootstrap";
-import { Subscription, forkJoin, interval, of } from "rxjs";
+import { Subscription, forkJoin, of } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
 import { FileAccessResponse } from "../../../../../core/model/file/file-access.model";
 import { FileResponse } from "../../../../../core/model/file/file-response.model";
@@ -24,6 +24,7 @@ import { ReportOccur } from "../../../../../core/model/occur/occur-report-reques
 import { Occur } from "../../../../../core/model/occur/occur.model";
 import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
+import { OccurAutoRefreshService } from "../../../../../core/service/occur/occur-auto-refresh.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
 import { AuditComponent } from "../../../../audit/audit.component";
@@ -45,6 +46,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   @Input({ required: true }) occur!: Occur;
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild("uploadProgressModal") uploadProgressModal: any;
+  @ViewChild(AuditComponent) auditComponent!: AuditComponent;
 
   activeTab: string = "attachments";
 
@@ -68,8 +70,8 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     message: "Enviando arquivos...",
   };
 
-  private refreshTimerSubscription?: Subscription;
-  private readonly REFRESH_INTERVAL_MS = 120000;
+  private subscriptions: Subscription[] = [];
+  private isFirstLoad: boolean = true;
 
   constructor(
     private fileService: FileService,
@@ -78,7 +80,9 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     private occurService: OccurService,
     private modalService: NgbModal,
     private router: Router,
-  ) { }
+    private autoRefresh: OccurAutoRefreshService,
+  ) {
+  }
 
   ngOnInit(): void {
     this.isDaltonEnabled =
@@ -96,34 +100,22 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       this.loadAttachments();
     }
 
-    if (this.occur?.id && this.occur.status !== "DRAFT_OPENED") {
-      this.startAutoRefresh();
-    }
+    // Inscreve-se no refresh para recarregar arquivos
+    this.subscriptions.push(
+      this.autoRefresh.refresh$.subscribe(() => {
+        if (this.activeTab === "attachments" && this.occur?.status !== "DRAFT_OPENED") {
+          this.loadAttachmentsSilently();
+        }
+        // Recarrega o histórico também
+        if (this.auditComponent && typeof this.auditComponent.loadAudits === 'function') {
+          this.auditComponent.loadAudits();
+        }
+      })
+    );
   }
 
   ngOnDestroy(): void {
-    this.stopAutoRefresh();
-  }
-
-  private startAutoRefresh(): void {
-    this.stopAutoRefresh();
-    this.refreshTimerSubscription = interval(
-      this.REFRESH_INTERVAL_MS,
-    ).subscribe(() => {
-      if (
-        this.activeTab === "attachments" &&
-        this.occur?.status !== "DRAFT_OPENED"
-      ) {
-        this.loadAttachmentsSilently();
-      }
-    });
-  }
-
-  private stopAutoRefresh(): void {
-    if (this.refreshTimerSubscription) {
-      this.refreshTimerSubscription.unsubscribe();
-      this.refreshTimerSubscription = undefined;
-    }
+    this.subscriptions.forEach(s => s.unsubscribe());
   }
 
   refreshAttachments(): void {
@@ -160,7 +152,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   private loadAttachmentsSilently(): void {
     if (!this.occur?.id) return;
 
-    // Mostra o loading
     this.loadingService.show();
 
     this.fileService
@@ -386,7 +377,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     this.isUploading = true;
     let currentProgress = 0;
 
-    // Guarda os arquivos originais para referência
     const filesToUpload = [...this.attachedFiles];
 
     try {
@@ -405,7 +395,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       let completedFiles = 0;
       const failedFiles: File[] = [];
 
-      // Mapeia cada upload com seu arquivo original para rastrear falhas
       const uploads = compressedFiles.map((compressedFile, index) => {
         const originalFile = filesToUpload[index];
         return this.fileService
@@ -421,7 +410,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
               return true;
             }),
             catchError((error) => {
-              // Marca o arquivo como falho e retorna false
               failedFiles.push(originalFile);
               completedFiles++;
               const newPercent = 20 + Math.floor((completedFiles / totalFiles) * 80);
@@ -439,11 +427,9 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
       this.isUploading = false;
 
-      // Atualiza a lista de arquivos anexados
       this.loadAttachments();
 
       if (failedCount > 0) {
-        // Mantém apenas os arquivos que falharam na lista de novos
         this.attachedFiles = failedFiles;
 
         if (failedCount === filesToUpload.length) {
@@ -456,7 +442,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           );
         }
       } else {
-        // Sucesso total: limpa a lista de novos arquivos
         this.attachedFiles = [];
         this.showAlert(
           "SUCCESS",
@@ -465,7 +450,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.isUploading = false;
-      // Em caso de erro catastrófico, mantém todos os arquivos
       this.attachedFiles = filesToUpload;
       this.showAlert("ERROR", "Erro ao adicionar anexos. Tente novamente.");
     } finally {

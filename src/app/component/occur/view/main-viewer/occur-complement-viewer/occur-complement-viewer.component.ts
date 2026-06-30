@@ -160,8 +160,16 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   private loadAttachmentsSilently(): void {
     if (!this.occur?.id) return;
 
+    // Mostra o loading
+    this.loadingService.show();
+
     this.fileService
       .getFiles(this.occur.id.toString(), "OCCUR", 0, 10)
+      .pipe(
+        finalize(() => {
+          this.loadingService.hide();
+        })
+      )
       .subscribe({
         next: (response: FilesResponse) => {
           const newFiles =

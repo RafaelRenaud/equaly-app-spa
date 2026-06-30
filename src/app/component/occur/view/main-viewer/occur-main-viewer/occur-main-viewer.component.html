@@ -274,19 +274,18 @@
     </div>
   </div>
 
-  <!-- ==================== ACORDION 3: ANÁLISE E ENCERRAMENTO ==================== -->
+  <!-- ==================== ACORDION 3: ANÁLISE DE QUALIDADE ==================== -->
   @if (occur.inspectorReport) {
   <div class="accordion mb-3" id="analysisAccordion">
     <div class="accordion-item">
       <h2 class="accordion-header">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
           data-bs-target="#collapseAnalysis" aria-expanded="false" aria-controls="collapseAnalysis">
-          <i class="bi bi-clipboard-check me-2"></i> Análise e Encerramento
+          <i class="bi bi-clipboard-check me-2"></i> Análise de Qualidade
         </button>
       </h2>
       <div id="collapseAnalysis" class="accordion-collapse collapse" data-bs-parent="#analysisAccordion">
         <div class="accordion-body">
-          <!-- Análise -->
           <div class="row mb-3">
             <div class="col-12">
               <small class="text-muted d-block">Análise Inspeção de Qualidade</small>
@@ -304,58 +303,68 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
 
-          <!-- Encerramento -->
-          @if (occur.closeReason) {
+  <!-- ==================== ACORDION 4: INFORMAÇÕES DE FECHAMENTO ==================== -->
+  @if (occur.closeReason) {
+  <div class="accordion mb-3" id="closeInfoAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapseCloseInfo" aria-expanded="false" aria-controls="collapseCloseInfo">
+          <i class="bi bi-check-circle me-2"></i> Informações de Fechamento
+        </button>
+      </h2>
+      <div id="collapseCloseInfo" class="accordion-collapse collapse" data-bs-parent="#closeInfoAccordion">
+        <div class="accordion-body">
+          <div class="row mb-3">
+            <div class="col-12">
+              <small class="text-muted d-block">Motivo</small>
+              <span>{{ occur.closeReason }}</span>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <small class="text-muted d-block">Estado de Encerramento</small>
+              <div class="mt-1">
+                @if (occur.closeStatus === "CLOSED_WITH_RATING") {
+                <span>Encerrado com Avaliação</span>
+                } @else if (occur.closeStatus === "CLOSED_WITHOUT_RATING") {
+                <span>Encerrado sem Avaliação</span>
+                } @else {
+                <span>Encerrado aguardando Avaliação</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Avaliação do Cliente -->
+          @if (occur.closeStatus === "CLOSED_WITH_RATING") {
           <div class="border-top pt-3 mt-3">
-            <h6 class="mb-3"><i class="bi bi-check-circle me-2"></i>Informações de Encerramento</h6>
+            <h6 class="mb-3"><i class="bi bi-star me-2"></i>Avaliação do Cliente</h6>
 
             <div class="row mb-3">
               <div class="col-12">
-                <small class="text-muted d-block">Motivo</small>
-                <span>{{ occur.closeReason }}</span>
+                <small class="text-muted d-block">Comentário</small>
+                <span>{{ occur.rate?.comment }}</span>
               </div>
             </div>
 
-            <div class="row mb-3">
+            <div class="row">
               <div class="col-md-6">
-                <small class="text-muted d-block">Estado de Encerramento</small>
-                <div class="mt-1">
-                  @if (occur.closeStatus === "CLOSED_WITH_RATING") {
-                  <span class="badge bg-success">Encerrado com Avaliação</span>
-                  } @else if (occur.closeStatus === "CLOSED_WITHOUT_RATING") {
-                  <span class="badge bg-secondary">Encerrado sem Avaliação</span>
-                  } @else {
-                  <span class="badge bg-warning">Encerrado aguardando Avaliação</span>
-                  }
-                </div>
+                <small class="text-muted d-block">Nota</small>
+                <span class="h5">{{ occur.rate?.score }}</span>
+              </div>
+              <div class="col-md-6">
+                <small class="text-muted d-block">Comentado em</small>
+                <span>{{ occur.rate?.sentAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
               </div>
             </div>
-
-            <!-- Avaliação do Cliente -->
-            @if (occur.closeStatus === "CLOSED_WITH_RATING") {
-            <div class="border-top pt-3 mt-3">
-              <h6 class="mb-3"><i class="bi bi-star me-2"></i>Avaliação do Cliente</h6>
-
-              <div class="row mb-3">
-                <div class="col-12">
-                  <small class="text-muted d-block">Comentário</small>
-                  <span>{{ occur.rate?.comment }}</span>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <small class="text-muted d-block">Nota</small>
-                  <span class="h5">{{ occur.rate?.score }}</span>
-                </div>
-                <div class="col-md-6">
-                  <small class="text-muted d-block">Comentado em</small>
-                  <span>{{ occur.rate?.sentAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
-                </div>
-              </div>
-            </div>
-            }
           </div>
           }
         </div>
@@ -364,7 +373,7 @@
   </div>
   }
 
-  <!-- ==================== ACORDION 4: AUDITORIA ==================== -->
+  <!-- ==================== ACORDION 5: AUDITORIA ==================== -->
   <div class="accordion mb-3" id="auditAccordion">
     <div class="accordion-item">
       <h2 class="accordion-header">

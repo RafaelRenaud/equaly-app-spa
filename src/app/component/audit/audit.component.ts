@@ -38,6 +38,8 @@ export class AuditComponent implements OnChanges, OnDestroy {
     'fileName': 'Nome do Arquivo',
     'fileType': 'Tipo de Arquivo',
     'inspector': 'Inspetor de Qualidade',
+    'inspectorId': 'ID do Inspetor de Qualidade',
+    'inspectorName': 'Nome do Inspetor de Qualidade',
     'inspectorReport': 'Relatório da Inspeção',
     'hasRNCOpened': 'RNC Aberta',
     'closeReason': 'Informações de Encerramento',

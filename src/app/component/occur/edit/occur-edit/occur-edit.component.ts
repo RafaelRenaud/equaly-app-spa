@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnInit,
   ViewChild,
 } from "@angular/core";
@@ -84,6 +85,7 @@ interface UploadProgress {
 export class OccurEditComponent implements OnInit {
   @ViewChild("nav") nav!: NgbNav;
   @ViewChild("uploadProgressModal") uploadProgressModal: any;
+  @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
 
   occurrenceForm!: FormGroup;
   complaintType: "INTERNAL" | "EXTERNAL" | null = null;
@@ -156,6 +158,78 @@ export class OccurEditComponent implements OnInit {
   }
 
   // ==================================================
+  // MÉTODOS PÚBLICOS PARA O HTML
+  // ==================================================
+
+  getFieldLength(fieldName: string): number {
+    const control = this.occurrenceForm.get(fieldName);
+    const value = control?.value;
+    if (typeof value === "string") return value.length;
+    if (value && typeof value === "object") return 0;
+    return 0;
+  }
+
+  getFieldConfig(fieldName: string): FieldConfig | undefined {
+    return this.fieldConfigs[fieldName as keyof typeof this.fieldConfigs];
+  }
+
+  getFieldHelpText(fieldName: string): string {
+    const config = this.getFieldConfig(fieldName);
+    if (!config) return "";
+
+    const parts: string[] = [];
+    if (config.min && config.max) {
+      parts.push(`Mínimo ${config.min} | Máximo ${config.max} caracteres`);
+    } else if (config.min) {
+      parts.push(`Mínimo ${config.min} caracteres`);
+    } else if (config.max) {
+      parts.push(`Máximo ${config.max} caracteres`);
+    }
+    if (config.email) {
+      parts.push("Formato de e-mail válido");
+    }
+    return parts.join(" | ");
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const control = this.occurrenceForm.get(fieldName);
+    return !!control?.invalid && !!control?.touched;
+  }
+
+  shouldShowCounter(fieldName: string): boolean {
+    const control = this.occurrenceForm.get(fieldName);
+    const value = control?.value;
+
+    const hasValue = value && value.toString().trim().length > 0;
+    const isFocused = document.activeElement?.id === this.getFieldId(fieldName);
+    return hasValue || isFocused;
+  }
+
+  getFieldId(fieldName: string): string {
+    const idMap: Record<string, string> = {
+      title: 'floatingTitle',
+      description: 'floatingDescription',
+      complement: 'floatingComplement',
+      complaintDescription: 'floatingComplaintDescription',
+      complaintComplement: 'floatingComplaintComplement',
+      orderNumber: 'floatingOrderNumber',
+      nf1: 'floatingNf1',
+      nf2: 'floatingNf2',
+      nf3: 'floatingNf3',
+      nf4: 'floatingNf4',
+      nf5: 'floatingNf5',
+      complainerName: 'floatingComplainerName',
+      complainerPhone: 'floatingComplainerPhone',
+      complainerEmail: 'floatingComplainerEmail',
+      complainerStreet: 'floatingComplainerStreet',
+      complainerNumber: 'floatingComplainerNumber',
+      complainerDistrict: 'floatingComplainerDistrict',
+      complainerAddressComplement: 'floatingComplainerAddressComplement'
+    };
+    return idMap[fieldName] || `field-${fieldName}`;
+  }
+
+  // ==================================================
   // CARREGAMENTO
   // ==================================================
 
@@ -179,9 +253,7 @@ export class OccurEditComponent implements OnInit {
           this.occurData?.opener?.id ===
           Number(this.sessionService.getItem("userId"));
 
-        if (
-          occur.status !== "DRAFT_OPENED"
-        ) {
+        if (occur.status !== "DRAFT_OPENED") {
           this.redirectWithError("Não é possível editar a ocorrência.");
           return;
         }
@@ -211,7 +283,7 @@ export class OccurEditComponent implements OnInit {
           this.existingFiles = response.files || [];
           this.cdr.detectChanges();
         },
-        error: (error) =>
+        error: () =>
           this.showAlert(
             "ERROR",
             "Erro ao carregar arquivos, tenta novamente mais tarde",
@@ -234,28 +306,30 @@ export class OccurEditComponent implements OnInit {
   }
 
   private initializeForm(): void {
+    const fc = this.fieldConfigs;
+
     this.occurrenceForm = this.fb.group({
       occurrenceType: ["", Validators.required],
       priority: ["", Validators.required],
       qualityInspector: [""],
       occurrenceDate: [null, [Validators.required, this.futureDateValidator()]],
-      nf1: ["", this.getValidators(this.fieldConfigs.nf1)],
-      nf2: ["", this.getValidators(this.fieldConfigs.nf2)],
-      nf3: ["", this.getValidators(this.fieldConfigs.nf3)],
-      nf4: ["", this.getValidators(this.fieldConfigs.nf4)],
-      nf5: ["", this.getValidators(this.fieldConfigs.nf5)],
-      title: ["", this.getValidators(this.fieldConfigs.title)],
-      description: ["", this.getValidators(this.fieldConfigs.description)],
-      complement: ["", this.getValidators(this.fieldConfigs.complement)],
-      orderNumber: ["", this.getValidators(this.fieldConfigs.orderNumber)],
+      nf1: ["", this.getValidators(fc.nf1)],
+      nf2: ["", this.getValidators(fc.nf2)],
+      nf3: ["", this.getValidators(fc.nf3)],
+      nf4: ["", this.getValidators(fc.nf4)],
+      nf5: ["", this.getValidators(fc.nf5)],
+      title: ["", this.getValidators(fc.title)],
+      description: ["", this.getValidators(fc.description)],
+      complement: ["", this.getValidators(fc.complement)],
+      orderNumber: ["", this.getValidators(fc.orderNumber)],
       complaintType: ["", Validators.required],
       complaintDescription: [
         "",
-        this.getValidators(this.fieldConfigs.complaintDescription),
+        this.getValidators(fc.complaintDescription),
       ],
       complaintComplement: [
         "",
-        this.getValidators(this.fieldConfigs.complaintComplement),
+        this.getValidators(fc.complaintComplement),
       ],
       anonymousComplainer: [false],
       internalComplainer: [""],
@@ -266,23 +340,23 @@ export class OccurEditComponent implements OnInit {
       complainerCep: ["", Validators.pattern(/^\d{5}-\d{3}$/)],
       complainerStreet: [
         "",
-        this.getValidators(this.fieldConfigs.complainerStreet),
+        this.getValidators(fc.complainerStreet),
       ],
       complainerNumber: [
         "",
-        this.getValidators(this.fieldConfigs.complainerNumber),
+        this.getValidators(fc.complainerNumber),
       ],
       complainerDistrict: [
         "",
-        this.getValidators(this.fieldConfigs.complainerDistrict),
+        this.getValidators(fc.complainerDistrict),
       ],
       complainerAddressComplement: [
         "",
-        this.getValidators(this.fieldConfigs.complainerAddressComplement),
+        this.getValidators(fc.complainerAddressComplement),
       ],
       complainerCity: [
         { value: "", disabled: true },
-        this.getValidators(this.fieldConfigs.complainerCity),
+        this.getValidators(fc.complainerCity),
       ],
       complainerState: [{ value: "", disabled: true }],
     });
@@ -559,44 +633,6 @@ export class OccurEditComponent implements OnInit {
   // VALIDAÇÕES PÚBLICAS
   // ==================================================
 
-  getFieldLength(fieldName: string): number {
-    const value = this.occurrenceForm.get(fieldName)?.value;
-    return typeof value === "string" ? value.length : 0;
-  }
-
-  getFieldConfig(fieldName: string): FieldConfig | undefined {
-    return this.fieldConfigs[fieldName as keyof typeof this.fieldConfigs];
-  }
-
-  getFieldHelpText(fieldName: string): string {
-    const config = this.getFieldConfig(fieldName);
-    if (!config) return "";
-
-    const parts: string[] = [];
-    if (config.min !== undefined && config.max !== undefined) {
-      parts.push(`Mínimo ${config.min} | Máximo ${config.max} caracteres`);
-    } else if (config.min !== undefined) {
-      parts.push(`Mínimo ${config.min} caracteres`);
-    } else if (config.max !== undefined) {
-      parts.push(`Máximo ${config.max} caracteres`);
-    }
-    if (config.email) {
-      parts.push("Formato de e-mail válido");
-    }
-    return parts.join(" | ");
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const control = this.occurrenceForm.get(fieldName);
-    return !!control?.invalid && !!control?.touched;
-  }
-
-  shouldShowCounter(fieldName: string): boolean {
-    const control = this.occurrenceForm.get(fieldName);
-    const value = control?.value;
-    return !!(value && value.toString().trim().length > 0);
-  }
-
   shouldValidateComplainant(): boolean {
     return (
       this.showComplainerSection &&
@@ -788,6 +824,7 @@ export class OccurEditComponent implements OnInit {
   private updateComplainantValidators(): void {
     const shouldValidate = this.shouldValidateComplainant();
     const isInternal = this.complaintType === "INTERNAL";
+    const fc = this.fieldConfigs;
 
     const nameCtrl = this.occurrenceForm.get("complainerName");
     const phoneCtrl = this.occurrenceForm.get("complainerPhone");
@@ -798,24 +835,24 @@ export class OccurEditComponent implements OnInit {
       if (isInternal) {
         nameCtrl?.clearValidators();
         phoneCtrl?.setValidators(
-          this.getValidators(this.fieldConfigs.complainerPhone),
+          this.getValidators(fc.complainerPhone),
         );
         emailCtrl?.setValidators(
-          this.getValidators(this.fieldConfigs.complainerEmail),
+          this.getValidators(fc.complainerEmail),
         );
         cepCtrl?.clearValidators();
       } else {
         nameCtrl?.setValidators([
           Validators.required,
-          ...this.getValidators(this.fieldConfigs.complainerName),
+          ...this.getValidators(fc.complainerName),
         ]);
         phoneCtrl?.setValidators([
           Validators.required,
-          ...this.getValidators(this.fieldConfigs.complainerPhone),
+          ...this.getValidators(fc.complainerPhone),
         ]);
         emailCtrl?.setValidators([
           Validators.required,
-          ...this.getValidators(this.fieldConfigs.complainerEmail),
+          ...this.getValidators(fc.complainerEmail),
         ]);
         cepCtrl?.setValidators([
           Validators.required,
@@ -904,7 +941,11 @@ export class OccurEditComponent implements OnInit {
     );
 
     let occurredDate: string | undefined;
-    if (raw.occurrenceDate && typeof raw.occurrenceDate === "string" && raw.occurrenceDate.length === 10) {
+    if (
+      raw.occurrenceDate &&
+      typeof raw.occurrenceDate === "string" &&
+      raw.occurrenceDate.length === 10
+    ) {
       occurredDate = this.formatDateToApi(raw.occurrenceDate);
     }
 
@@ -996,6 +1037,7 @@ export class OccurEditComponent implements OnInit {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+
       if (this.attachedFiles.length >= this.maxFiles) {
         this.showAlert(
           "WARNING",
@@ -1004,19 +1046,13 @@ export class OccurEditComponent implements OnInit {
         break;
       }
 
-      const allowed = [
-        "application/pdf",
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/heic",
-        "application/xml",
-        "text/xml",
-      ];
-      if (!allowed.includes(file.type)) {
+      const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.heic', '.xml'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension)) {
         this.showAlert(
           "WARNING",
-          `Tipo de arquivo não permitido: ${file.name}`,
+          `Tipo de arquivo não permitido: ${file.name}. Formatos suportados: PDF, JPG, PNG, HEIC, XML.`,
         );
         continue;
       }

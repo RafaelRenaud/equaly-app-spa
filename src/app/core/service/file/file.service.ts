@@ -18,6 +18,35 @@ export class FileService {
   private http = inject(HttpClient);
   constructor(private session: SessionService) { }
 
+  /**
+   * Sanitiza o nome do arquivo removendo caracteres especiais e espaços
+   * que podem causar problemas no upload para Azure Blob Storage.
+   * Substitui qualquer caractere não alfanumérico (exceto . e -) por "_"
+   */
+  private sanitizeFileName(fileName: string): string {
+    if (!fileName) return fileName;
+    
+    // Separa o nome da extensão
+    const lastDotIndex = fileName.lastIndexOf('.');
+    const name = lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
+    const extension = lastDotIndex > 0 ? fileName.substring(lastDotIndex) : '';
+    
+    // Sanitiza o nome: substitui caracteres especiais e espaços por "_"
+    // Permite letras, números, hífen e underline
+    const sanitizedName = name.replace(/[^a-zA-Z0-9\-_]/g, '_');
+    
+    // Remove underscores duplicados
+    const finalName = sanitizedName.replace(/_+/g, '_');
+    
+    // Remove underscores no início ou fim
+    const trimmedName = finalName.replace(/^_+|_+$/g, '');
+    
+    // Se o nome ficou vazio, usa um fallback
+    const result = trimmedName || 'file';
+    
+    return result + extension;
+  }
+
   getFiles(
     subjectId: string,
     subjectType: "OCCUR" | "RNC",
@@ -42,7 +71,11 @@ export class FileService {
     const headers = this.getDefaultHeaders();
     const endpoint = this.getEndpointUri(subjectType, subjectId);
     const formData = new FormData();
-    formData.append("file", blob, blobName);
+    
+    // Sanitiza o nome do arquivo antes de enviar
+    const sanitizedName = this.sanitizeFileName(blobName);
+    formData.append("file", blob, sanitizedName);
+    
     return this.http.post<CreatedFileResponse>(endpoint, formData, {
       headers,
     });
@@ -95,8 +128,7 @@ export class FileService {
     );
   }
 
-  private getDefaultHeaders(
-  ): HttpHeaders {
+  private getDefaultHeaders(): HttpHeaders {
     return new HttpHeaders({
       "X-Application-Key": this.session.getItem("clientKey")!,
       Authorization: this.session.getItem("Authorization")!

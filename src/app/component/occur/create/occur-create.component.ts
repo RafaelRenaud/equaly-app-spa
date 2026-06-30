@@ -54,6 +54,7 @@ export class OccurCreateComponent implements OnInit {
   @ViewChild('cepInput') cepInput!: ElementRef;
   @ViewChild('nav') nav!: NgbNav;
   @ViewChild('uploadProgressModal') uploadProgressModal: any;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   occurrenceForm!: FormGroup;
   complaintType: 'INTERNAL' | 'EXTERNAL' | null = null;
@@ -152,6 +153,39 @@ export class OccurCreateComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.occurrenceForm.get(fieldName);
     return !!control?.invalid && !!control?.touched;
+  }
+
+  shouldShowCounter(fieldName: string): boolean {
+    const control = this.occurrenceForm.get(fieldName);
+    const value = control?.value;
+
+    const hasValue = value && value.toString().trim().length > 0;
+    const isFocused = document.activeElement?.id === this.getFieldId(fieldName);
+    return hasValue || isFocused;
+  }
+
+  getFieldId(fieldName: string): string {
+    const idMap: Record<string, string> = {
+      title: 'floatingTitle',
+      description: 'floatingDescription',
+      complement: 'floatingComplement',
+      complaintDescription: 'floatingComplaintDescription',
+      complaintComplement: 'floatingComplaintComplement',
+      orderNumber: 'floatingOrderNumber',
+      nf1: 'floatingNf1',
+      nf2: 'floatingNf2',
+      nf3: 'floatingNf3',
+      nf4: 'floatingNf4',
+      nf5: 'floatingNf5',
+      complainerName: 'floatingComplainerName',
+      complainerPhone: 'floatingComplainerPhone',
+      complainerEmail: 'floatingComplainerEmail',
+      complainerStreet: 'floatingComplainerStreet',
+      complainerNumber: 'floatingComplainerNumber',
+      complainerDistrict: 'floatingComplainerDistrict',
+      complainerAddressComplement: 'floatingComplainerAddressComplement'
+    };
+    return idMap[fieldName] || `field-${fieldName}`;
   }
 
   // ==================================================
@@ -493,39 +527,6 @@ export class OccurCreateComponent implements OnInit {
     });
   }
 
-  shouldShowCounter(fieldName: string): boolean {
-    const control = this.occurrenceForm.get(fieldName);
-    const value = control?.value;
-
-    const hasValue = value && value.toString().trim().length > 0;
-    const isFocused = document.activeElement?.id === this.getFieldId(fieldName);
-    return hasValue || isFocused;
-  }
-
-  getFieldId(fieldName: string): string {
-    const idMap: Record<string, string> = {
-      title: 'floatingTitle',
-      description: 'floatingDescription',
-      complement: 'floatingComplement',
-      complaintDescription: 'floatingComplaintDescription',
-      complaintComplement: 'floatingComplaintComplement',
-      orderNumber: 'floatingOrderNumber',
-      nf1: 'floatingNf1',
-      nf2: 'floatingNf2',
-      nf3: 'floatingNf3',
-      nf4: 'floatingNf4',
-      nf5: 'floatingNf5',
-      complainerName: 'floatingComplainerName',
-      complainerPhone: 'floatingComplainerPhone',
-      complainerEmail: 'floatingComplainerEmail',
-      complainerStreet: 'floatingComplainerStreet',
-      complainerNumber: 'floatingComplainerNumber',
-      complainerDistrict: 'floatingComplainerDistrict',
-      complainerAddressComplement: 'floatingComplainerAddressComplement'
-    };
-    return idMap[fieldName] || `field-${fieldName}`;
-  }
-
   private futureDateValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const val = control.value;
@@ -713,25 +714,37 @@ export class OccurCreateComponent implements OnInit {
     }
   }
 
+  // ==================================================
+  // ANEXOS (PADRÃO VISUAL UNIFICADO)
+  // ==================================================
+
   onFileSelected(event: any): void {
     const files: FileList = event.target.files;
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+
       if (this.attachedFiles.length >= this.maxFiles) {
         this.showAlert('WARNING', `Limite de ${this.maxFiles} arquivos atingido`);
         break;
       }
-      const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'application/xml', 'text/xml'];
-      if (!allowed.includes(file.type)) {
-        this.showAlert('WARNING', `Tipo de arquivo não permitido: ${file.name}`);
+
+      const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.heic', '.xml'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+
+      if (!allowedExtensions.includes(fileExtension)) {
+        this.showAlert('WARNING', `Tipo de arquivo não permitido: ${file.name}. Formatos suportados: PDF, JPG, PNG, HEIC, XML.`);
         continue;
       }
+
       if (file.size > 10 * 1024 * 1024) {
         this.showAlert('WARNING', `Arquivo muito grande: ${file.name} (máximo 10MB)`);
         continue;
       }
+
       this.attachedFiles.push(file);
     }
+
     event.target.value = '';
     this.cdr.detectChanges();
   }
@@ -743,14 +756,23 @@ export class OccurCreateComponent implements OnInit {
 
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
-    const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  // ==================================================
+  // NAVEGAÇÃO
+  // ==================================================
+
   goBack(): void {
     this.router.navigate(['/']);
   }
+
+  // ==================================================
+  // CEP
+  // ==================================================
 
   applyCepMask(event: any): void {
     let val = event.target.value.replace(/\D/g, '');
@@ -804,6 +826,10 @@ export class OccurCreateComponent implements OnInit {
       }
     });
   }
+
+  // ==================================================
+  // TYPEHEADS
+  // ==================================================
 
   onOccurTypeSelected(occurType: OccurTypeResponse | null): void {
     if (occurType) {

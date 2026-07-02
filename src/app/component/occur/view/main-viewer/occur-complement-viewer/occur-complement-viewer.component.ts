@@ -22,12 +22,14 @@ import { FilesResponse } from "../../../../../core/model/file/files-response.mod
 import { CloseOccur } from "../../../../../core/model/occur/occur-close-request.model";
 import { ReportOccur } from "../../../../../core/model/occur/occur-report-request.model";
 import { Occur } from "../../../../../core/model/occur/occur.model";
+import { UserResponse } from "../../../../../core/model/user/user-response.model";
 import { FileService } from "../../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../../core/service/loading/loading.service";
 import { OccurAutoRefreshService } from "../../../../../core/service/occur/occur-auto-refresh.service";
 import { OccurService } from "../../../../../core/service/occur/occur.service";
 import { SessionService } from "../../../../../core/service/session/session.service";
 import { AuditComponent } from "../../../../audit/audit.component";
+import { UserTypeHeadSearchComponent } from "../../../../user/search/user-type-head-search/user-type-head-search.component";
 
 @Component({
   selector: "app-occur-complement-viewer",
@@ -36,7 +38,8 @@ import { AuditComponent } from "../../../../audit/audit.component";
     NgbNavModule,
     FormsModule,
     NgbPaginationModule,
-    AuditComponent
+    AuditComponent,
+    UserTypeHeadSearchComponent
   ],
   templateUrl: "./occur-complement-viewer.component.html",
   styleUrl: "./occur-complement-viewer.component.scss",
@@ -47,11 +50,14 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild("uploadProgressModal") uploadProgressModal: any;
   @ViewChild(AuditComponent) auditComponent!: AuditComponent;
+  @ViewChild("rncTypeHead") rncTypeHead!: UserTypeHeadSearchComponent;
 
   activeTab: string = "attachments";
 
   existingFiles: FileResponse[] = [];
   attachedFiles: File[] = [];
+
+  private typingTimeout: any;
 
   isDaltonEnabled: boolean = false;
   isOccurOpener: boolean = false;
@@ -64,6 +70,10 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   generateNonConformity: boolean = false;
   closeInfo: string = "";
 
+  rncPriority: 'LOW' | 'MEDIUM' | 'HIGH' = this.occur?.priority || 'MEDIUM';
+  rncReporter: UserResponse | null = null;
+  isRncPriorityModalOpen: boolean = false;
+
   maxFiles: number = 10;
   uploadProgress = {
     percent: 0,
@@ -71,7 +81,6 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   };
 
   private subscriptions: Subscription[] = [];
-  private isFirstLoad: boolean = true;
 
   constructor(
     private fileService: FileService,
@@ -96,17 +105,17 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       "COMMON_QUALITY_INSPECTOR",
     );
 
+    this.rncPriority = this.occur?.priority || 'MEDIUM';
+
     if (this.occur?.id) {
       this.loadAttachments();
     }
 
-    // Inscreve-se no refresh para recarregar arquivos
     this.subscriptions.push(
       this.autoRefresh.refresh$.subscribe(() => {
         if (this.activeTab === "attachments" && this.occur?.status !== "DRAFT_OPENED") {
           this.loadAttachmentsSilently();
         }
-        // Recarrega o histórico também
         if (this.auditComponent && typeof this.auditComponent.loadAudits === 'function') {
           this.auditComponent.loadAudits();
         }
@@ -116,6 +125,25 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(s => s.unsubscribe());
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+  }
+
+  onTypingStart(): void {
+    this.autoRefresh.setInteractionActive(true);
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+  }
+
+  onTypingEnd(): void {
+    if (this.typingTimeout) {
+      clearTimeout(this.typingTimeout);
+    }
+    this.typingTimeout = setTimeout(() => {
+      this.autoRefresh.setInteractionActive(false);
+    }, 2000);
   }
 
   refreshAttachments(): void {
@@ -289,17 +317,51 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   }
 
   openInspectModal(content: any): void {
-    this.modalService.open(content, { size: "lg", centered: true });
+    this.autoRefresh.setModalOpen(true);
+
+    if (this.generateNonConformity) {
+      this.openRncModal(content);
+    } else {
+      this.modalService.open(content, {
+        size: "lg",
+        centered: true,
+        backdrop: 'static'
+      });
+    }
   }
 
-  confirmInspection(): void {
+  private openRncModal(content: any): void {
+    this.rncReporter = null;
+    if (this.rncTypeHead) {
+      this.rncTypeHead.clear();
+    }
+
+    this.isRncPriorityModalOpen = true;
+    this.modalService.open(content, {
+      size: "lg",
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  confirmInspectionWithRnc(): void {
     if (!this.occur?.id) return;
+
+    if (!this.rncReporter) {
+      this.showAlert("WARNING", "Por favor, selecione um responsável para a Não-Conformidade.");
+      return;
+    }
 
     this.loadingService.show();
 
     const reportData: ReportOccur = {
       inspectorReport: this.inspectionReport,
-      hasRNCOpened: this.generateNonConformity,
+      rnc: {
+        priority: this.rncPriority,
+        reporter: {
+          id: this.rncReporter.id
+        }
+      }
     };
 
     this.occurService
@@ -307,6 +369,50 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.loadingService.hide();
+          this.onModalClose();
+          this.isRncPriorityModalOpen = false;
+          this.router.navigate(["/occurs"], {
+            queryParams: {
+              action: "SUCCESS",
+              message: `Inspeção da ocorrência ${this.occur?.code} realizada com sucesso! RNC criada com responsável ${this.rncReporter?.username}.`,
+            },
+          });
+        },
+        error: () => {
+          this.loadingService.hide();
+          this.onModalClose();
+          this.isRncPriorityModalOpen = false;
+          this.router.navigate([], {
+            queryParams: {
+              action: "ERROR",
+              message: `Erro ao inspecionar ocorrência. Tente novamente.`,
+            },
+          });
+        },
+      });
+  }
+
+  confirmInspection(): void {
+    if (!this.occur?.id) return;
+
+    if (this.generateNonConformity) {
+      this.confirmInspectionWithRnc();
+      return;
+    }
+
+    this.loadingService.show();
+
+    const reportData: ReportOccur = {
+      inspectorReport: this.inspectionReport,
+      rnc: null as any
+    };
+
+    this.occurService
+      .reportOccurInspection(this.occur.id, reportData)
+      .subscribe({
+        next: () => {
+          this.loadingService.hide();
+          this.onModalClose();
           this.router.navigate(["/occurs"], {
             queryParams: {
               action: "SUCCESS",
@@ -316,6 +422,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loadingService.hide();
+          this.onModalClose();
           this.router.navigate([], {
             queryParams: {
               action: "ERROR",
@@ -327,7 +434,17 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
   }
 
   openCloseModal(content: any): void {
-    this.modalService.open(content, { size: "lg", centered: true });
+    this.autoRefresh.setModalOpen(true);
+    this.modalService.open(content, {
+      size: "lg",
+      centered: true,
+      backdrop: 'static'
+    });
+  }
+
+  onModalClose(): void {
+    this.autoRefresh.setModalOpen(false);
+    this.isRncPriorityModalOpen = false;
   }
 
   confirmClose(): void {
@@ -342,6 +459,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
     this.occurService.closeOccur(this.occur.id, closeData).subscribe({
       next: () => {
         this.loadingService.hide();
+        this.onModalClose();
         this.router.navigate(["/occurs"], {
           queryParams: {
             action: "SUCCESS",
@@ -351,6 +469,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loadingService.hide();
+        this.onModalClose();
         this.router.navigate([], {
           queryParams: {
             action: "ERROR",
@@ -359,6 +478,10 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
         });
       },
     });
+  }
+
+  onRncReporterSelected(user: UserResponse | null): void {
+    this.rncReporter = user;
   }
 
   async saveAttachments(): Promise<void> {

@@ -3,5 +3,11 @@
  */
 export interface ReportOccur {
   inspectorReport: string;
-  hasRNCOpened: boolean;
+  rnc: {
+    //Priority pode ser LOW, MEDIUM, HIGH
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    reporter: {
+      id: number;
+    }
+  };
 }

@@ -374,7 +374,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           this.router.navigate(["/occurs"], {
             queryParams: {
               action: "SUCCESS",
-              message: `Inspeção da ocorrência ${this.occur?.code} realizada com sucesso! RNC criada com responsável ${this.rncReporter?.username}.`,
+              message: `Inspeção da ocorrência ${this.occur?.code} realizada com sucesso.`,
             },
           });
         },

@@ -90,7 +90,7 @@ i.btn-primary {
     border-color: var(--secondary-color) !important;
   }
 
-  &:disabled{
+  &:disabled {
     background-color: var(--secondary-color) !important;
     border-color: var(--secondary-color) !important;
   }
@@ -110,6 +110,12 @@ i.btn-outline-primary {
   &:active {
     background-color: var(--primary-hover) !important;
     border-color: var(--primary-hover) !important;
+  }
+
+  &:disabled {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
+    color: white !important;
   }
 }
 
@@ -322,15 +328,15 @@ ngb-typeahead-window {
 // Pagination
 .pagination {
   justify-content: center !important;
-  
+
   .page-item {
-    
+
     &.active {
       .page-link {
         background-color: var(--primary-color) !important;
         border-color: var(--primary-color) !important;
         color: white !important;
-        
+
         &:hover {
           background-color: var(--primary-hover) !important;
           border-color: var(--primary-hover) !important;
@@ -338,7 +344,7 @@ ngb-typeahead-window {
         }
       }
     }
-    
+
     &.disabled {
       .page-link {
         color: var(--text-muted) !important;

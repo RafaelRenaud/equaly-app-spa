@@ -27,33 +27,58 @@
 
   <!-- ==================== CARD DE IDENTIFICAÇÃO ==================== -->
   <div class="card mb-4">
-    <div class="card-header bg-light">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
       <h5 class="mb-0">
         Ocorrência: {{ occur.code }}
       </h5>
+      <div class="d-flex gap-2 flex-wrap">
+        <!-- Botão Recarregar -->
+        <button class="btn btn-outline-primary btn-sm" (click)="reloadOccur()"
+          [disabled]="isReloading || isExporting || isSendingEmail" title="Recarregar ocorrência">
+          <i class="bi bi-arrow-clockwise"></i> Recarregar
+        </button>
+
+        <!-- Botão Exportar PDF -->
+        <button class="btn btn-primary btn-sm" (click)="exportPdf()"
+          [disabled]="isExporting || isReloading || isSendingEmail" title="Visualizar PDF">
+          <i class="bi bi-file-earmark-pdf"></i> Visualizar PDF
+        </button>
+
+        <!-- Botão Enviar por E-Mail -->
+        <button class="btn btn-secondary btn-sm" (click)="sendPdfByEmail()"
+          [disabled]="isSendingEmail || isReloading || isExporting" title="Enviar PDF por E-Mail">
+          <i class="bi bi-envelope"></i> Enviar por E-Mail
+        </button>
+      </div>
     </div>
     <div class="card-body">
-      <div class="row">
-        <div class="col-md-3">
+      <div class="row mb-3">
+        <div class="col-md-4">
           <small class="text-muted d-block">ID</small>
           <span class="fw-bold">{{ occur.id }}</span>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
           <small class="text-muted d-block">Empresa</small>
           <span>{{ occur.company!.id + " - " + occur.company!.name }}</span>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-4">
+          <small class="text-muted d-block">Canal de Abertura</small>
+          <span>{{ occur.complaint?.channel! | systemName}}</span>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <small class="text-muted d-block">Estado</small>
+          <span class="mt-1 d-block">{{ occur.status | occurStatus }}</span>
+        </div>
+        <div class="col-md-4">
           <small class="text-muted d-block">Prioridade</small>
           <span class="badge mt-1" [class.bg-danger]="occur.priority === 'HIGH'"
             [class.bg-warning]="occur.priority === 'MEDIUM'" [class.bg-info]="occur.priority === 'LOW'">
             {{ occur.priority === 'HIGH' ? 'Alta' : occur.priority === 'MEDIUM' ? 'Média' : 'Baixa' }}
           </span>
         </div>
-        <div class="col-md-2">
-          <small class="text-muted d-block">Estado</small>
-          <span class="mt-1 d-block">{{ occur.status | occurStatus }}</span>
-        </div>
-        <div class="col-md-2">
+        <div class="col-md-4">
           <small class="text-muted d-block">Data do Ocorrido</small>
           <span>{{ occur.occurredDate | date: "dd/MM/yyyy" }}</span>
         </div>
@@ -404,7 +429,8 @@
             </div>
             <div class="col-md-6">
               <small class="text-muted d-block">Enviado por</small>
-              <span>{{ occur.audit?.officializedBy ? occur.audit!.officializedBy : "Não se aplica" }}</span>
+              <span>{{ occur.audit?.officializedBy ? (occur.audit!.officializedBy! | systemName) : "Não se aplica"
+                }}</span>
             </div>
           </div>
 
@@ -416,7 +442,7 @@
             </div>
             <div class="col-md-6">
               <small class="text-muted d-block">Última Atualização por</small>
-              <span>{{ occur.audit?.updatedBy ? occur.audit!.updatedBy : "Não se aplica" }}</span>
+              <span>{{ occur.audit?.updatedBy ? (occur.audit!.updatedBy! | systemName) : "Não se aplica" }}</span>
             </div>
           </div>
 
@@ -428,7 +454,7 @@
             </div>
             <div class="col-md-6">
               <small class="text-muted d-block">Encerrado por</small>
-              <span>{{ occur.audit?.closedBy ? occur.audit!.closedBy : "Não se aplica" }}</span>
+              <span>{{ occur.audit?.closedBy ? (occur.audit!.closedBy! | systemName) : "Não se aplica" }}</span>
             </div>
           </div>
         </div>

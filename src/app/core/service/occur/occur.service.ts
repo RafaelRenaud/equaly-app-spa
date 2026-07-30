@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { DocumentResponse } from '../../model/document/document-response.model';
 import { CloseOccur } from '../../model/occur/occur-close-request.model';
 import { CreatedOccurResponse } from '../../model/occur/occur-create-response.model';
 import { CreateUpdateOccur } from '../../model/occur/occur-create-update.model';
@@ -138,6 +139,21 @@ export class OccurService {
     const url = `${this.endpoint}/${occurId}/rating`;
 
     return this.http.patch<Occur>(url, rating, { headers });
+  }
+
+  /**
+ * POST /occurs/{occur_id}/documents
+ * Generate Occur PDF File by ID
+ */
+  generateOccurPdf(occurId: number, sendEmail: boolean = false): Observable<DocumentResponse> {
+    const headers = this.getDefaultHeaders();
+    const url = `${this.endpoint}/${occurId}/documents`;
+
+    const body = {
+      emailIndicator: sendEmail
+    };
+
+    return this.http.post<DocumentResponse>(url, body, { headers });
   }
 
   /**

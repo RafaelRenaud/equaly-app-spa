@@ -18,12 +18,24 @@ export class SessionService {
 
   private safeSetItem(key: string, value: string) {
     if (this.isBrowser) {
-      sessionStorage.setItem(key, value);
+      localStorage.setItem(key, value);
     }
   }
 
   private safeGetItem(key: string): string | null {
-    return this.isBrowser ? sessionStorage.getItem(key) : null;
+    return this.isBrowser ? localStorage.getItem(key) : null;
+  }
+
+  private safeRemoveItem(key: string) {
+    if (this.isBrowser) {
+      localStorage.removeItem(key);
+    }
+  }
+
+  clearSession() {
+    if (this.isBrowser) {
+      localStorage.clear();
+    }
   }
 
   updateSessionAvatar(url: string) {
@@ -88,16 +100,11 @@ export class SessionService {
   hasRole(role: string): boolean {
     const rawRoles = this.safeGetItem("userRoles");
     const roles = rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];
-    if (roles.includes(role)) {
-      return true;
-    } else {
-      return false;
-    }
+    return roles.includes(role);
   }
 
   getRoles(): string[] {
     const rawRoles = this.safeGetItem("userRoles");
-    const roles = rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];
-    return roles;
+    return rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];
   }
 }

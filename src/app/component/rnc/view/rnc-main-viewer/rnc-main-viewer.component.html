@@ -1,0 +1,510 @@
+<!-- rnc-main-viewer.component.html -->
+
+@if (rnc) {
+<div class="mt-4">
+    <!-- ==================== CARD DE IDENTIFICAÇÃO DA RNC ==================== -->
+    <div class="card mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                Código: {{ rnc.code }}
+            </h5>
+            <div class="d-flex gap-2 flex-wrap">
+                <!-- Botão Recarregar -->
+                <button class="btn btn-outline-primary btn-sm" (click)="reloadRnc()"
+                    [disabled]="isReloading || isExporting || isSendingEmail" title="Recarregar RNC">
+                    <i class="bi bi-arrow-clockwise"></i> Recarregar
+                </button>
+
+                <!-- Botão Exportar PDF -->
+                <button class="btn btn-primary btn-sm" (click)="exportPdf()"
+                    [disabled]="isExporting || isReloading || isSendingEmail" title="Visualizar PDF">
+                    <i class="bi bi-file-earmark-pdf"></i> Visualizar PDF
+                </button>
+
+                <!-- Botão Enviar por E-Mail -->
+                <button class="btn btn-secondary btn-sm" (click)="sendPdfByEmail()"
+                    [disabled]="isSendingEmail || isReloading || isExporting" title="Enviar PDF por E-Mail">
+                    <i class="bi bi-envelope"></i> Enviar por E-Mail
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Linha 1: ID, Empresa, Prioridade -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <small class="text-muted d-block">ID</small>
+                    <span class="fw-bold">{{ rnc.id }}</span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Empresa</small>
+                    <span>{{ rnc.company!.id + " - " + rnc.company!.name }}</span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Ocorrência</small>
+                    <span>{{ rnc.occur.code }}</span>
+                </div>
+            </div>
+
+            <!-- Linha 2: Estado, Tem Formulário, Ocorrência -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Estado</small>
+                    <span class="mt-1 d-block">
+                        @switch (rnc.status) {
+                        @case ('OPENED') { <span>Aberta</span> }
+                        @case ('WORK_IN_PROGRESS') { <span>Em Andamento</span> }
+                        @case ('CLOSED') { <span>Encerrada</span> }
+                        @default { <span>{{ rnc.status }}</span> }
+                        }
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Prioridade</small>
+                    <span class="badge mt-1" [class.bg-danger]="rnc.priority === 'HIGH'"
+                        [class.bg-warning]="rnc.priority === 'MEDIUM'" [class.bg-info]="rnc.priority === 'LOW'">
+                        {{ rnc.priority === 'HIGH' ? 'Alta' : rnc.priority === 'MEDIUM' ? 'Média' : 'Baixa' }}
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted d-block">Tem Formulário Associado</small>
+                    <span>{{ rnc.hasFormAssigned ? 'Sim' : 'Não' }}</span>
+                </div>
+            </div>
+
+            <!-- ==================== RESPONSÁVEIS (mesmo padrão da ocorrência) ==================== -->
+            <div class="row">
+                <!-- Responsável de Qualidade (Inspector) -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light">
+                        <small class="text-muted d-block">Responsável Qualidade</small>
+                        @if (rnc.inspector) {
+                        <div class="mt-1">
+                            <span class="fw-bold">{{ rnc.inspector.id + " - " + rnc.inspector.username }}</span>
+                            <div class="mt-2 small">
+                                <div><i class="bi bi-person me-1"></i> {{ rnc.inspector.universalUser?.name }}</div>
+                                <div><i class="bi bi-envelope me-1"></i> {{ rnc.inspector.email }}</div>
+                                <div>
+                                    <i class="bi bi-circle-fill me-1"
+                                        [class.text-success]="rnc.inspector.status === 'ACTIVE'"
+                                        [class.text-danger]="rnc.inspector.status !== 'ACTIVE'"></i>
+                                    {{ rnc.inspector.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                                </div>
+                            </div>
+                        </div>
+                        } @else {
+                        <div class="mt-1 text-muted">Não informado</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Responsável (Reporter) -->
+                <div class="col-md-6">
+                    <div class="border rounded p-3 bg-light">
+                        <small class="text-muted d-block">Responsável Preenchimento</small>
+                        @if (rnc.reporter) {
+                        <div class="mt-1">
+                            <span class="fw-bold">{{ rnc.reporter.id + " - " + rnc.reporter.username }}</span>
+                            <div class="mt-2 small">
+                                <div><i class="bi bi-person me-1"></i> {{ rnc.reporter.universalUser?.name }}</div>
+                                <div><i class="bi bi-envelope me-1"></i> {{ rnc.reporter.email }}</div>
+                                <div>
+                                    <i class="bi bi-circle-fill me-1"
+                                        [class.text-success]="rnc.reporter.status === 'ACTIVE'"
+                                        [class.text-danger]="rnc.reporter.status !== 'ACTIVE'"></i>
+                                    {{ rnc.reporter.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                                </div>
+                            </div>
+                        </div>
+                        } @else {
+                        <div class="mt-1 text-muted">Não informado</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== AUDITORIA DA RNC ==================== -->
+            @if (rnc.audit) {
+            <div class="accordion mt-4" id="auditAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseAudit" aria-expanded="false" aria-controls="collapseAudit">
+                            <i class="bi bi-clock-history me-2"></i> Dados de Auditoria
+                        </button>
+                    </h2>
+                    <div id="collapseAudit" class="accordion-collapse collapse" data-bs-parent="#auditAccordion">
+                        <div class="accordion-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Criado em</small>
+                                    <span>{{ rnc.audit.createdAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Criado por</small>
+                                    <span>{{ rnc.audit.createdBy }}</span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Última Atualização em</small>
+                                    <span>{{ rnc.audit.updatedAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Última Atualização por</small>
+                                    <span>{{ rnc.audit.updatedBy }}</span>
+                                </div>
+                            </div>
+
+                            @if (rnc.audit.closedAt) {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Encerrado em</small>
+                                    <span>{{ rnc.audit.closedAt | date: "dd/MM/yyyy HH:mm:ss" }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted d-block">Encerrado por</small>
+                                    <span>{{ rnc.audit.closedBy }}</span>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- ==================== DADOS DA OCORRÊNCIA ==================== -->
+    <div class="accordion mb-4" id="occurAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOccur" aria-expanded="false" aria-controls="collapseOccur">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    Dados da Ocorrência
+                </button>
+            </h2>
+            <div id="collapseOccur" #occurCollapse class="accordion-collapse collapse" data-bs-parent="#occurAccordion">
+                <div class="accordion-body">
+                    @if (occur) {
+                    <app-occur-main-viewer [occur]="occur"></app-occur-main-viewer>
+                    } @else {
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-square-fill me-2"></i>
+                        Erro ao carregar dados da ocorrência. Tente novamente mais tarde.
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== DADOS DO FORMULÁRIO (ACCORDION) ==================== -->
+    <div class="accordion mb-3" id="formAccordion">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseForm" aria-expanded="false" aria-controls="collapseForm">
+                    <i class="bi bi-clipboard-check me-2"></i> Formulário de Qualidade
+                </button>
+            </h2>
+            <div id="collapseForm" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                <div class="accordion-body">
+                    @if (rncForm) {
+                    <!-- Status e Código do Formulário -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Código</small>
+                            <span class="fw-bold">{{ rncForm.code }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Estado</small>
+                            <span>{{ rncForm.status | rncFormStatus }}</span>
+                        </div>
+                    </div>
+
+                    <!-- ==================== SUB-ACCORDION 1: ANÁLISE ==================== -->
+                    @if (rncForm.analysis) {
+                    <div class="accordion mb-3" id="analysisAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseAnalysis" aria-expanded="false"
+                                    aria-controls="collapseAnalysis">
+                                    <i class="bi bi-search me-2"></i> Análise
+                                </button>
+                            </h2>
+                            <div id="collapseAnalysis" class="accordion-collapse collapse"
+                                data-bs-parent="#analysisAccordion">
+                                <div class="accordion-body">
+                                    <!-- Problema -->
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block">Problema Principal</small>
+                                            <span>{{ rncForm.analysis.problem }}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Perguntas -->
+                                    @if (rncForm.analysis.questions && rncForm.analysis.questions.length > 0) {
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            @for (question of rncForm.analysis.questions; track question.id) {
+                                            <div class="mb-2">
+                                                <span class="fw-bold">Por que? ({{ question.level }}):</span><br>
+                                                <span>{{ question.answer }}</span>
+                                            </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    }
+
+                                    <!-- Causas -->
+                                    @if (rncForm.analysis.causes && rncForm.analysis.causes.length > 0) {
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block mb-2">Causas</small>
+                                            <div class="row g-2">
+                                                @for (cause of rncForm.analysis.causes; track cause.id) {
+                                                <div class="col-md-6">
+                                                    <div class="card h-100">
+                                                        <div class="card-body py-2">
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-start">
+                                                                <span class="fw-bold">{{ cause.category |
+                                                                    rncCauseCategory }}</span>
+                                                                <span class="badge"
+                                                                    [class.bg-danger]="cause.causeType === 'ROOT'"
+                                                                    [class.bg-warning]="cause.causeType === 'CONTRIBUTING'">
+                                                                    {{ cause.causeType | rncCauseType }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="mt-1">
+                                                                <small>{{ cause.description }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ==================== SUB-ACCORDION 2: PLANO DE AÇÃO ==================== -->
+                    @if (rncForm.actionPlan) {
+                    <div class="accordion mb-3" id="actionPlanAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseActionPlan" aria-expanded="false"
+                                    aria-controls="collapseActionPlan">
+                                    <i class="bi bi-list-check me-2"></i> Plano de Ação
+                                </button>
+                            </h2>
+                            <div id="collapseActionPlan" class="accordion-collapse collapse"
+                                data-bs-parent="#actionPlanAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block">Descrição</small>
+                                            <span>{{ rncForm.actionPlan.description }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Data de Entrega do Plano</small>
+                                            <span>{{ rncForm.actionPlan.followUp | date: "dd/MM/yyyy" }}</span>
+                                        </div>
+                                        @if (rncForm.actionPlan.involved) {
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Envolvido ou Executor</small>
+                                            <span>{{ rncForm.actionPlan.involved.name }}</span>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ==================== SUB-ACCORDION 3: VALIDAÇÃO ==================== -->
+                    @if (rncForm.validation) {
+                    <div class="accordion mb-3" id="validationAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseValidation" aria-expanded="false"
+                                    aria-controls="collapseValidation">
+                                    <i class="bi bi-check-circle me-2"></i> Validação
+                                </button>
+                            </h2>
+                            <div id="collapseValidation" class="accordion-collapse collapse"
+                                data-bs-parent="#validationAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block">Descrição</small>
+                                            <span>{{ rncForm.validation.description }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Última Validação em</small>
+                                            <span>{{ rncForm.validation.validatedAt | date: "dd/MM/yyyy HH:mm" }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Validado por</small>
+                                            <span>{{ rncForm.validation.validatedBy }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ==================== SUB-ACCORDION 4: IMPLEMENTAÇÃO ==================== -->
+                    @if (rncForm.implementation) {
+                    <div class="accordion mb-3" id="implementationAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseImplementation" aria-expanded="false"
+                                    aria-controls="collapseImplementation">
+                                    <i class="bi bi-gear me-2"></i> Implementação
+                                </button>
+                            </h2>
+                            <div id="collapseImplementation" class="accordion-collapse collapse"
+                                data-bs-parent="#implementationAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block">Descrição</small>
+                                            <span>{{ rncForm.implementation.description }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Última Implementação em</small>
+                                            <span>{{ rncForm.implementation.implementedAt | date: "dd/MM/yyyy HH:mm"
+                                                }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Implementado por</small>
+                                            <span>{{ rncForm.implementation.implementedBy }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ==================== SUB-ACCORDION 5: ANÁLISE DE EFICÁCIA ==================== -->
+                    @if (rncForm.efficacy) {
+                    <div class="accordion mb-3" id="efficacyAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseEfficacy" aria-expanded="false"
+                                    aria-controls="collapseEfficacy">
+                                    <i class="bi bi-graph-up me-2"></i> Análise de Eficácia
+                                </button>
+                            </h2>
+                            <div id="collapseEfficacy" class="accordion-collapse collapse"
+                                data-bs-parent="#efficacyAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <small class="text-muted d-block">Descrição</small>
+                                            <span>{{ rncForm.efficacy.description }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Última Análise em</small>
+                                            <span>{{ rncForm.efficacy.analysedAt | date: "dd/MM/yyyy HH:mm" }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Analisado por</small>
+                                            <span>{{ rncForm.efficacy.analysedBy }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+
+                    <!-- ==================== SUB-ACCORDION 6: AUDITORIA DO FORMULÁRIO ==================== -->
+                    @if (rncForm.audit) {
+                    <div class="accordion mb-3" id="formAuditAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseFormAudit" aria-expanded="false"
+                                    aria-controls="collapseFormAudit">
+                                    <i class="bi bi-clock-history me-2"></i> Auditoria do Formulário
+                                </button>
+                            </h2>
+                            <div id="collapseFormAudit" class="accordion-collapse collapse"
+                                data-bs-parent="#formAuditAccordion">
+                                <div class="accordion-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Criado em</small>
+                                            <span>{{ rncForm.audit.createdAt | date: "dd/MM/yyyy HH:mm" }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Criado por</small>
+                                            <span>{{ rncForm.audit.createdBy }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Última Atualização em</small>
+                                            <span>{{ rncForm.audit.updatedAt | date: "dd/MM/yyyy HH:mm" }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Última Atualização por</small>
+                                            <span>{{ rncForm.audit.updatedBy }}</span>
+                                        </div>
+                                    </div>
+                                    @if (rncForm.audit.closedAt) {
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Encerrado em</small>
+                                            <span>{{ rncForm.audit.closedAt | date: "dd/MM/yyyy HH:mm" }}</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Encerrado por</small>
+                                            <span>{{ rncForm.audit.closedBy }}</span>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    } @else {
+                    <div class="alert alert-primary">
+                        <i class="bi bi-info-square-fill me-2"></i>
+                        Nenhum formulário associado a esta RNC.
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}

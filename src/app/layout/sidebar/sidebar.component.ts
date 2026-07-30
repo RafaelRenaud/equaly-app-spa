@@ -21,6 +21,7 @@ export class SidebarComponent {
 
   isMenuCollapsed = true; // controla collapse mobile
   isOccurrencesCollapsed = true;
+  isRncCollapsed = true;
 
   constructor(
     public sessionService: SessionService,
@@ -54,7 +55,7 @@ export class SidebarComponent {
       this.sessionService.hasRole('COMMON_EVENT_OPENER');
   }
 
-  hasQualityAccess(): boolean {
+  hasQualityManagementAccess(): boolean {
     return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
       this.sessionService.hasRole('MASTER_ADMIN') ||
       this.sessionService.hasRole('COMMON_ADMIN') ||
@@ -62,15 +63,27 @@ export class SidebarComponent {
       this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
   }
 
+  hasQualityAccess(): boolean {
+    return this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR')
+      || this.sessionService.hasRole('COMMON_RNC_REPORTER');
+  }
+
   hasOperationalAccess(): boolean {
     return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
       this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
       this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR')
+      || this.sessionService.hasRole('COMMON_RNC_REPORTER');
   }
 
   hasEventOrInspectorAccess(): boolean {
     return this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+  }
+
+  hasInspectorOrReporterAccess(): boolean {
+    return this.sessionService.hasRole('COMMON_RNC_REPORTER') ||
       this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
   }
 
@@ -94,5 +107,9 @@ export class SidebarComponent {
 
   toggleOccurrences(): void {
     this.isOccurrencesCollapsed = !this.isOccurrencesCollapsed;
+  }
+
+  toggleRnc(): void {
+    this.isRncCollapsed = !this.isRncCollapsed;
   }
 }

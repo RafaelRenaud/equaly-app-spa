@@ -100,7 +100,7 @@ export class LoginService {
     
     return lastValueFrom(this.http.delete(this.authEndpoint.concat("/logout"), { headers }))
       .finally(() => {
-        sessionStorage.clear();
+        localStorage.clear();
       })
       .then(() => {
         return this.router.navigateByUrl("/login", { replaceUrl: true });

@@ -24,6 +24,8 @@ import { OccurHubComponent } from "./component/occur/hub/occur-hub/occur-hub.com
 import { OccurPendingComponent } from "./component/occur/pending/pending.component";
 import { OccurViewerComponent } from "./component/occur/view/occur-viewer/occur-viewer.component";
 import { RecoveryComponent } from "./component/recovery/recovery.component";
+import { RncHubComponent } from "./component/rnc/hub/rnc-hub/rnc-hub.component";
+import { RncViewerComponent } from "./component/rnc/view/rnc-viewer/rnc-viewer.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
 import { UserHubComponent } from "./component/user/hub/user-hub.component";
@@ -249,6 +251,29 @@ export const routes: Routes = [
                 "COMMON_RNC_REPORTER"]
             },
             component: OccurViewerComponent
+          }
+        ],
+      },
+      {
+        path: "rncs",
+        children: [
+          {
+            path: "",
+            data: {
+              roles: ["MASTER_QUALITY_INSPECTOR",
+                "COMMON_QUALITY_INSPECTOR",
+                "COMMON_RNC_REPORTER"]
+            },
+            component: RncHubComponent
+          },
+          {
+            path: ":id",
+            data: {
+              roles: ["MASTER_QUALITY_INSPECTOR",
+                "COMMON_QUALITY_INSPECTOR",
+                "COMMON_RNC_REPORTER"]
+            },
+            component: RncViewerComponent
           }
         ],
       }

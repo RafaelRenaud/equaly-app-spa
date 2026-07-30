@@ -1,0 +1,668 @@
+<!-- rnc-hub.component.html -->
+
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Pesquisa de RNCs</h3>
+    </div>
+    <div class="surface-container-body">
+
+        <!-- ========== SWITCH DE PESQUISA ========== -->
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <div class="btn-group w-100" role="group">
+                    <button class="btn" [class.btn-primary]="searchType === 'RNC'"
+                        [class.btn-outline-primary]="searchType !== 'RNC'" (click)="changeSearchType('RNC')">
+                        <i class="bi bi-list-ul me-2"></i> Filtrar por RNC
+                    </button>
+                    <button class="btn" [class.btn-primary]="searchType === 'FORM'"
+                        [class.btn-outline-primary]="searchType !== 'FORM'" (click)="changeSearchType('FORM')">
+                        <i class="bi bi-file-earmark-text me-2"></i> Filtrar por Formulário
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="idFilter" id="idFilter"
+                        placeholder="ID da RNC" />
+                    <label for="idFilter">ID da RNC</label>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="rncCodeFilter" id="rncCodeFilter"
+                        placeholder="Código da RNC" [disabled]="isIdFilterFilled" />
+                    <label for="rncCodeFilter">Código da RNC</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== FILTROS GERAIS ========== -->
+        <div class="row mb-3">
+            <div class="col-md">
+                <div ngbAccordion [destroyOnHide]="false">
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros Gerais
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <div class="row mb-3">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="priorityFilter"
+                                                    title="Filtrar por prioridade" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todas</option>
+                                                    <option value="LOW">Baixa</option>
+                                                    <option value="MEDIUM">Média</option>
+                                                    <option value="HIGH">Alta</option>
+                                                </select>
+                                                <label>Prioridade</label>
+                                            </div>
+                                        </div>
+                                        @if(searchType === 'RNC') {
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <select class="form-select" [(ngModel)]="rncFilters.hasFormAssigned"
+                                                    title="Tem Formulário Associado" [disabled]="isIdFilterFilled">
+                                                    <option value="">Todos</option>
+                                                    <option value="true">Sim</option>
+                                                    <option value="false">Não</option>
+                                                </select>
+                                                <label>Tem Formulário Associado</label>
+                                            </div>
+                                        </div>
+                                        }
+                                        @if(searchType === 'FORM') {
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.content" id="contentFilter"
+                                                    placeholder="Título/Descrição/Complemento"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="contentFilter">Conteúdo</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.formCode" id="formCodeFilter"
+                                                    placeholder="Código do Formulário" [disabled]="isIdFilterFilled" />
+                                                <label for="formCodeFilter">Código do Formulário</label>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+
+                                    @if(searchType === 'FORM') {
+                                    <div class="row mb-3">
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.validationDescription"
+                                                    id="validationDescFilter" placeholder="Descrição da Validação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="validationDescFilter">Descrição da Validação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.implementationDescription"
+                                                    id="implementationDescFilter"
+                                                    placeholder="Descrição da Implementação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="implementationDescFilter">Descrição da Implementação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control"
+                                                    [(ngModel)]="formFilters.efficacyDescription"
+                                                    id="efficacyDescFilter" placeholder="Descrição da Eficácia"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="efficacyDescFilter">Descrição da Eficácia</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-occur-type-head-search [placeholder]='"Tipo de Ocorrência"'
+                                                (occurTypeSelected)="onOccurTypeSelected($event)"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()" />
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== FILTROS POR PESSOA ========== -->
+        @if(!isIdFilterFilled) {
+        <div class="row">
+            <div class="col-md">
+                <div ngbAccordion [destroyOnHide]="false">
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Pessoa
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
+                                                [placeholder]="'Responsável Inspeção de Qualidade'"
+                                                [modalId]="'inspectorSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                (outputUserSelected)="onInspectorSelected($event)" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [userRole]="['COMMON_RNC_REPORTER']"
+                                                [placeholder]="'Responsável pelo Preenchimento da Não Conformidade'"
+                                                [modalId]="'reporterSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                (outputUserSelected)="onReporterSelected($event)" />
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- ========== FILTROS POR DATA ========== -->
+        <div class="row">
+            <div class="col-md">
+                <div ngbAccordion [destroyOnHide]="false">
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Data
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    @if(searchType === 'RNC') {
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startOccurredDate"
+                                                    #dateInput placeholder="Data Início Ocorrido"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="startOccurredDate">Início Ocorrido</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endOccurredDate" #dateInput
+                                                    placeholder="Data Fim Ocorrido" [disabled]="isIdFilterFilled" />
+                                                <label for="endOccurredDate">Fim Ocorrido</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncCreationStartDate"
+                                                    #dateInput placeholder="Data Início Criação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncCreationStartDate">Início Criação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncCreationEndDate"
+                                                    #dateInput placeholder="Data Fim Criação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncCreationEndDate">Fim Criação</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncUpdateStartDate"
+                                                    #dateInput placeholder="Data Início Atualização"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncUpdateStartDate">Início Atualização</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncUpdateEndDate" #dateInput
+                                                    placeholder="Data Fim Atualização" [disabled]="isIdFilterFilled" />
+                                                <label for="rncUpdateEndDate">Fim Atualização</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncCloseStartDate"
+                                                    #dateInput placeholder="Data Início Encerramento"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncCloseStartDate">Início Encerramento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="rncCloseEndDate" #dateInput
+                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
+                                                <label for="rncCloseEndDate">Fim Encerramento</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+
+                                    @if(searchType === 'FORM') {
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formCreationStartDate"
+                                                    #dateInput placeholder="Data Início Criação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="formCreationStartDate">Início Criação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formCreationEndDate"
+                                                    #dateInput placeholder="Data Fim Criação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="formCreationEndDate">Fim Criação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formUpdateStartDate"
+                                                    #dateInput placeholder="Data Início Atualização"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="formUpdateStartDate">Início Atualização</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formUpdateEndDate"
+                                                    #dateInput placeholder="Data Fim Atualização"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="formUpdateEndDate">Fim Atualização</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formCloseStartDate"
+                                                    #dateInput placeholder="Data Início Encerramento"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="formCloseStartDate">Início Encerramento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="formCloseEndDate" #dateInput
+                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
+                                                <label for="formCloseEndDate">Fim Encerramento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startFollowUpDate"
+                                                    #dateInput placeholder="Início Acompanhamento"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="startFollowUpDate">Início Acompanhamento</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endFollowUpDate" #dateInput
+                                                    placeholder="Fim Acompanhamento" [disabled]="isIdFilterFilled" />
+                                                <label for="endFollowUpDate">Fim Acompanhamento</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startValidationDate"
+                                                    #dateInput placeholder="Início Validação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="startValidationDate">Início Validação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endValidationDate"
+                                                    #dateInput placeholder="Fim Validação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="endValidationDate">Fim Validação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startImplementationDate"
+                                                    #dateInput placeholder="Início Implementação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="startImplementationDate">Início Implementação</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endImplementationDate"
+                                                    #dateInput placeholder="Fim Implementação"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="endImplementationDate">Fim Implementação</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="startEfficacyDate"
+                                                    #dateInput placeholder="Início Eficácia"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="startEfficacyDate">Início Eficácia</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" id="endEfficacyDate" #dateInput
+                                                    placeholder="Fim Eficácia" [disabled]="isIdFilterFilled" />
+                                                <label for="endEfficacyDate">Fim Eficácia</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== FILTROS POR ESTADO ========== -->
+        <div class="row">
+            <div class="col-md">
+                <div ngbAccordion [destroyOnHide]="false" class="mt-3">
+                    <div ngbAccordionItem [collapsed]="true">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Estado
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            @if(searchType === 'RNC') {
+                                            <div class="row">
+                                                <div class="col-md-4 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedRncStatusMap['OPENED']"
+                                                            id="statusOPENED" [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label" for="statusOPENED">
+                                                            Aberta
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedRncStatusMap['WORK_IN_PROGRESS']"
+                                                            id="statusWORK_IN_PROGRESS" [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label" for="statusWORK_IN_PROGRESS">
+                                                            Em Andamento
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedRncStatusMap['CLOSED']"
+                                                            id="statusCLOSED" [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label" for="statusCLOSED">
+                                                            Encerrada
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            }
+
+                                            @if(searchType === 'FORM') {
+                                            <div class="row">
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['DRAFT_OPENED']"
+                                                            id="formStatusDRAFT_OPENED" [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label" for="formStatusDRAFT_OPENED">
+                                                            Em Rascunho
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['AWAITING_VALIDATION']"
+                                                            id="formStatusAWAITING_VALIDATION"
+                                                            [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label"
+                                                            for="formStatusAWAITING_VALIDATION">
+                                                            Aguardando Validação
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['VALIDATION_EDITION']"
+                                                            id="formStatusVALIDATION_EDITION"
+                                                            [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label"
+                                                            for="formStatusVALIDATION_EDITION">
+                                                            Edição de Validação
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['AWAITING_IMPLEMENTATION']"
+                                                            id="formStatusAWAITING_IMPLEMENTATION"
+                                                            [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label"
+                                                            for="formStatusAWAITING_IMPLEMENTATION">
+                                                            Aguardando Implementação
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['AWAITING_EFFICACY_ANALYSIS']"
+                                                            id="formStatusAWAITING_EFFICACY_ANALYSIS"
+                                                            [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label"
+                                                            for="formStatusAWAITING_EFFICACY_ANALYSIS">
+                                                            Aguardando Análise de Eficácia
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['IMPLEMENTATION_EDITION']"
+                                                            id="formStatusIMPLEMENTATION_EDITION"
+                                                            [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label"
+                                                            for="formStatusIMPLEMENTATION_EDITION">
+                                                            Edição de Implementação
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox"
+                                                            [(ngModel)]="selectedFormStatusMap['CLOSED']"
+                                                            id="formStatusCLOSED" [disabled]="isIdFilterFilled">
+                                                        <label class="form-check-label" for="formStatusCLOSED">
+                                                            Encerrado
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== BOTÕES DE AÇÃO ========== -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <button class="btn btn-primary me-2" (click)="search()">
+                    <i class="bi bi-search"></i> Buscar
+                </button>
+                <button class="btn btn-outline-secondary" (click)="clearFilters()">
+                    <i class="bi bi-eraser-fill"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- ========== TABELA DE RESULTADOS - RNC ========== -->
+        @if (searchType === 'RNC' && rncs.length > 0) {
+        <div class="table-responsive mt-4">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Estado</th>
+                        <th>Ocorrência</th>
+                        <th>Inspetor</th>
+                        <th>Data Criação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (rnc of rncs; track rnc.id) {
+                    <tr>
+                        <td>{{ rnc.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ rnc.code }}</span>
+                        </td>
+                        <td>
+                            @if (rnc.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (rnc.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>
+                            @switch (rnc.status) {
+                            @case ('OPENED') { <span>Aberta</span> }
+                            @case ('WORK_IN_PROGRESS') { <span>Em Andamento</span> }
+                            @case ('CLOSED') { <span>Encerrada</span> }
+                            @default { <span>{{ rnc.status }}</span> }
+                            }
+                        </td>
+                        <td>{{ rnc.occur.code || '-' }}</td>
+                        <td>{{ rnc.inspector.username || '-' }}</td>
+                        <td>{{ rnc.audit.createdAt | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', rnc.id]">
+                                <i class="bi bi-pencil-square"></i> Abrir
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <br />
+        <ngb-pagination [collectionSize]="collectionSize" [(page)]="currentPage" [pageSize]="pageSize"
+            [maxSize]="pageSize" [rotate]="true" (pageChange)="onPageChange($event)">
+        </ngb-pagination>
+        }
+
+        <!-- ========== TABELA DE RESULTADOS - FORMULÁRIOS ========== -->
+        @if (searchType === 'FORM' && forms.length > 0) {
+        <div class="table-responsive mt-4">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>RNC</th>
+                        <th>Status</th>
+                        <th>Problema</th>
+                        <th>Data Criação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (form of forms; track form.id) {
+                    <tr>
+                        <td>{{ form.id }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ form.code }}</span>
+                        </td>
+                        <td>{{ form.rnc.code || '-' }}</td>
+                        <td>{{ form.status | rncFormStatus }}</td>
+                        <td>
+                            {{ getProblemDisplay(form) }}
+                        </td>
+                        <td>{{ form.audit.createdAt | date:'dd/MM/yyyy' }}</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id]">
+                                <i class="bi bi-pencil-square"></i> Abrir RNC
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <br />
+        <ngb-pagination [collectionSize]="collectionSize" [(page)]="currentPage" [pageSize]="pageSize"
+            [maxSize]="pageSize" [rotate]="true" (pageChange)="onPageChange($event)">
+        </ngb-pagination>
+        }
+
+        <!-- ========== SEM RESULTADOS ========== -->
+        @if ((searchType === 'RNC' && rncs.length === 0) || (searchType === 'FORM' && forms.length === 0)) {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/no_data.svg" alt="Sem resultados" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Nenhum resultado encontrado</h4>
+            <p class="text-muted">Não há registros disponíveis para exibição com os filtros selecionados.</p>
+        </div>
+        }
+    </div>
+</div>

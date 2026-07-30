@@ -99,7 +99,7 @@
         </li>
         }
 
-        @if (hasQualityAccess()) {
+        @if (hasQualityManagementAccess()) {
         <li class="nav-item">
           <a class="nav-link" [routerLink]="['/occur-types']" routerLinkActive="active" (click)="closeMenu()">
             <i class="bi bi-ui-checks"></i>
@@ -160,7 +160,8 @@
 
             @if(hasEventOpenerAccess()) {
             <li>
-              <a class="submenu-link"  [routerLink]="['/occurs', 'feedbacks']" routerLinkActive="active" (click)="closeMenu()">
+              <a class="submenu-link" [routerLink]="['/occurs', 'feedbacks']" routerLinkActive="active"
+                (click)="closeMenu()">
                 <i class="bi bi-chat-left-fill"></i>
                 <span>Avaliações</span>
               </a>
@@ -168,6 +169,46 @@
             }
           </ul>
         </li>
+
+        @if (hasQualityAccess()) {
+        <li class="nav-item nav-dropdown">
+          <button class="nav-link" (click)="toggleRnc()">
+            <i class="bi bi-exclamation-square-fill"></i>
+            <span>RNCs</span>
+            <i class="bi dropdown-icon" [class]="isRncCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+          </button>
+          <ul class="submenu" [class.submenu-open]="!isRncCollapsed">
+            @if(hasInspectorOrReporterAccess()) {
+            <li>
+              <a class="submenu-link" [routerLink]="['/rncs', 'pendings']" routerLinkActive="active"
+                (click)="closeMenu()">
+                <i class="bi bi-card-checklist"></i>
+                <span>Pendências</span>
+              </a>
+            </li>
+            }
+
+
+            @if(sessionService.hasRole('COMMON_RNC_REPORTER')) {
+            <li>
+              <a class="submenu-link" [routerLink]="['/rncs']" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">
+                <i class="bi bi-clipboard-check-fill"></i>
+                <span>Correções</span>
+              </a>
+            </li>
+            }
+
+            <li>
+              <a class="submenu-link" [routerLink]="['/rncs']" routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()">
+                <i class="bi bi-search"></i>
+                <span>Pesquisar</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+        }
         }
       </ul>
     </div>

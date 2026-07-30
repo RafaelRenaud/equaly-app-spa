@@ -127,7 +127,9 @@ export class OccurMainViewerComponent implements OnInit {
     const byteArray = new Uint8Array(byteNumbers);
     const blob = new Blob([byteArray], { type: response.fileType });
 
-    const url = URL.createObjectURL(blob);
+    const file = new File([blob], response.fileName, { type: response.fileType });
+    const url = URL.createObjectURL(file);
+
     window.open(url, '_blank');
 
     setTimeout(() => {

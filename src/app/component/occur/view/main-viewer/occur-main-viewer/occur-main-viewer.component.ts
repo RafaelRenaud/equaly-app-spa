@@ -137,6 +137,10 @@ export class OccurMainViewerComponent implements OnInit {
     }, 10000);
   }
 
+  public viewRNC(rncId: number): void {
+    this.router.navigate(['/rncs', rncId]);
+  }
+
   private showAlert(
     type: "SUCCESS" | "WARNING" | "ERROR",
     message: string,

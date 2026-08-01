@@ -1,5 +1,7 @@
 // occur.model.ts
 
+import { RncWrapper } from "../rnc/rnc-wrapper.model";
+
 // ========== ENUMS ==========
 export enum Priority {
   LOW = 'LOW',
@@ -144,6 +146,7 @@ export interface Occur {
   complaint?: Complaint;
   inspectorReport?: string;
   hasRNCOpened?: boolean;
+  rnc?: RncWrapper;
   hasOpenerAssigned?: boolean;
   hasInspectorAssigned?: boolean;
   hasComplainantAssigned?: boolean;

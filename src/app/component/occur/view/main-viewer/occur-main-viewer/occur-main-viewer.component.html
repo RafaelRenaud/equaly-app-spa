@@ -318,7 +318,7 @@
             </div>
           </div>
 
-          <div class="row mb-3">
+          <div class="row">
             <div class="col-md-6">
               <small class="text-muted d-block">Gerou Não Conformidade</small>
               <div class="mt-1">
@@ -327,6 +327,16 @@
                 </span>
               </div>
             </div>
+            @if (occur.hasRNCOpened && occur.rnc) {
+            <div class="col-md-6">
+              <small class="text-muted d-block">Código da Não Conformidade</small>
+              @if(isOccurInspector) {
+              <span>{{ occur.rnc.code }} <button type="button" class="btn btn-sm btn-outline-primary bi bi-eye" (click)="viewRNC(occur.rnc.id)"> Visualizar</button></span>
+              } @else {
+                <span>{{ occur.rnc.code }}</span>
+              }
+            </div>
+            }
           </div>
         </div>
       </div>

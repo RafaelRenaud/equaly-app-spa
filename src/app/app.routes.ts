@@ -33,6 +33,8 @@ import { AuthGuard } from "./core/guard/auth.guard";
 import { LoginGuard } from "./core/guard/login.guard";
 import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
+import { RncPendingComponent } from "./component/rnc/pending/pending.component";
+import { RncFixesComponent } from "./component/rnc/fixes/fixes.component";
 
 export const routes: Routes = [
   {
@@ -265,6 +267,25 @@ export const routes: Routes = [
                 "COMMON_RNC_REPORTER"]
             },
             component: RncHubComponent
+          },
+          {
+            path: "pendings",
+            data: {
+              roles: [
+                "COMMON_RNC_REPORTER",
+                "COMMON_QUALITY_INSPECTOR"
+              ],
+            },
+            component: RncPendingComponent
+          },
+          {
+            path: "fixes",
+            data: {
+              roles: [
+                "COMMON_RNC_REPORTER"
+              ],
+            },
+            component: RncFixesComponent
           },
           {
             path: ":id",

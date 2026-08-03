@@ -19,9 +19,20 @@ export class SidebarComponent {
   companyDisplayName: string | null = null;
   departmentName: string | null = null;
 
-  isMenuCollapsed = true; // controla collapse mobile
+  isMenuCollapsed = true;
   isOccurrencesCollapsed = true;
   isRncCollapsed = true;
+
+  private readonly ROLES = {
+    EQUALY_MASTER_ADMIN: 'EQUALY_MASTER_ADMIN',
+    MASTER_ADMIN: 'MASTER_ADMIN',
+    COMMON_ADMIN: 'COMMON_ADMIN',
+    MASTER_EVENT_OPENER: 'MASTER_EVENT_OPENER',
+    COMMON_EVENT_OPENER: 'COMMON_EVENT_OPENER',
+    MASTER_QUALITY_INSPECTOR: 'MASTER_QUALITY_INSPECTOR',
+    COMMON_QUALITY_INSPECTOR: 'COMMON_QUALITY_INSPECTOR',
+    COMMON_RNC_REPORTER: 'COMMON_RNC_REPORTER'
+  } as const;
 
   constructor(
     public sessionService: SessionService,
@@ -37,54 +48,76 @@ export class SidebarComponent {
     this.departmentName = this.sessionService.getItem("departmentName");
   }
 
-  // Métodos auxiliares para verificação de permissões
+  public hasAnyRole(roles: string[]): boolean {
+    return roles.some(role => this.sessionService.hasRole(role));
+  }
+
+  public isMasterAdmin(): boolean {
+    return this.sessionService.hasRole(this.ROLES.EQUALY_MASTER_ADMIN);
+  }
+
+  public isAdmin(): boolean {
+    return this.hasAnyRole([
+      this.ROLES.EQUALY_MASTER_ADMIN,
+      this.ROLES.MASTER_ADMIN,
+      this.ROLES.COMMON_ADMIN
+    ]);
+  }
+
+  public isEventOpener(): boolean {
+    return this.hasAnyRole([
+      this.ROLES.MASTER_EVENT_OPENER,
+      this.ROLES.COMMON_EVENT_OPENER
+    ]);
+  }
+
+  public isQualityInspector(): boolean {
+    return this.hasAnyRole([
+      this.ROLES.MASTER_QUALITY_INSPECTOR,
+      this.ROLES.COMMON_QUALITY_INSPECTOR
+    ]);
+  }
+
+  public isRncReporter(): boolean {
+    return this.sessionService.hasRole(this.ROLES.COMMON_RNC_REPORTER);
+  }
+
+  public hasCommonEventOpenerOrInspectorAccess(): boolean {
+    return this.sessionService.hasRole(this.ROLES.COMMON_EVENT_OPENER) ||
+      this.sessionService.hasRole(this.ROLES.COMMON_QUALITY_INSPECTOR);
+  }
+
+  public hasCommonReporterOrInspectorAccess(): boolean {
+    return this.sessionService.hasRole(this.ROLES.COMMON_RNC_REPORTER) ||
+      this.sessionService.hasRole(this.ROLES.COMMON_QUALITY_INSPECTOR);
+  }
+
   hasAdminAccess(): boolean {
-    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-      this.sessionService.hasRole('MASTER_ADMIN') ||
-      this.sessionService.hasRole('COMMON_ADMIN');
+    return this.isAdmin();
   }
 
   hasAdminOrManagerAccess(): boolean {
-    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-      this.sessionService.hasRole('MASTER_ADMIN') ||
-      this.sessionService.hasRole('COMMON_ADMIN');
+    return this.isAdmin();
   }
 
   hasEventOpenerAccess(): boolean {
-    return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
-      this.sessionService.hasRole('COMMON_EVENT_OPENER');
+    return this.isEventOpener();
   }
 
   hasQualityManagementAccess(): boolean {
-    return this.sessionService.hasRole('EQUALY_MASTER_ADMIN') ||
-      this.sessionService.hasRole('MASTER_ADMIN') ||
-      this.sessionService.hasRole('COMMON_ADMIN') ||
-      this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+    return this.isAdmin() || this.isQualityInspector();
   }
 
   hasQualityAccess(): boolean {
-    return this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR')
-      || this.sessionService.hasRole('COMMON_RNC_REPORTER');
+    return this.isQualityInspector() || this.isRncReporter();
   }
 
   hasOperationalAccess(): boolean {
-    return this.sessionService.hasRole('MASTER_EVENT_OPENER') ||
-      this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
-      this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR')
-      || this.sessionService.hasRole('COMMON_RNC_REPORTER');
+    return this.isEventOpener() || this.isQualityInspector() || this.isRncReporter();
   }
 
-  hasEventOrInspectorAccess(): boolean {
-    return this.sessionService.hasRole('COMMON_EVENT_OPENER') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
-  }
-
-  hasInspectorOrReporterAccess(): boolean {
-    return this.sessionService.hasRole('COMMON_RNC_REPORTER') ||
-      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+  hasOccurOperationalAccess(): boolean {
+    return this.isEventOpener() || this.isQualityInspector();
   }
 
   logout(event: Event): void {

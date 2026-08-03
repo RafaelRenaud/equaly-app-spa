@@ -1,0 +1,92 @@
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Correções de RNC</h3>
+    </div>
+    <div class="surface-container-body">
+        <br />
+
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'formRefill'"
+                        [class.btn-primary]="activeTab === 'formRefill'" (click)="changeTab('formRefill')">
+                        Repreencher Formulário
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'implementationRedo'"
+                        [class.btn-primary]="activeTab === 'implementationRedo'"
+                        (click)="changeTab('implementationRedo')">
+                        Refazer Implementação
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <br />
+
+        @if(forms.length > 0) {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>RNC</th>
+                        <th>Problema</th>
+                        <th>Data de Entrega</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (form of forms; track form.id) {
+                    <tr>
+                        <td>{{ form.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ form.code }}</span>
+                        </td>
+                        <td>
+                            @if (form.rnc.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (form.rnc.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>{{ form.rnc.code || 'Não Informado' }}</td>
+                        <td>
+                            @if (form.analysis?.problem) {
+                            {{ form.analysis!.problem.length > 40 ? (form.analysis!.problem | slice:0:40) + '...' :
+                            form.analysis!.problem }}
+                            } @else {
+                            -
+                            }
+                        </td>
+                        <td>{{ (form.actionPlan?.followUp | date:'dd/MM/yyyy') || 'Não Informado' }}</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id]">
+                                <i class="bi bi-pencil-square"></i>
+                                Corrigir
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <br />
+            <ngb-pagination [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" [maxSize]="pageSize"
+                [rotate]="true" (pageChange)="onPageChange($event)">
+            </ngb-pagination>
+        </div>
+        } @else {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/relax.svg" alt="Sem correções" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Sem correções por aqui</h4>
+            <p class="text-muted">
+                Não há registros pendentes de correção para essa categoria.
+            </p>
+        </div>
+        }
+    </div>
+</div>

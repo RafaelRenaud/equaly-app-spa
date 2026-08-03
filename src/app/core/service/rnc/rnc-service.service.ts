@@ -14,6 +14,8 @@ import { CreateUpdateRncForm } from '../../model/rnc/rnc-form-create-update.mode
 import { RncFormValidationRequest } from '../../model/rnc/rnc-form-validation-request.model';
 import { RncFormImplementationRequest } from '../../model/rnc/rnc-form-implementation-request.model';
 import { RncFormEfficacyRequest } from '../../model/rnc/rnc-form-efficacy-request.model';
+import { RncFilters } from '../../model/rnc/rnc-filters.model';
+import { RncFormFilters } from '../../model/rnc/rnc-form-filters.model';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +32,7 @@ export class RncService {
    * List RNCs with pagination and filters
    */
   getRncs(
-    filters?: any,
+    filters?: RncFilters,
     page: number = 0,
     size: number = 10
   ): Observable<RncsResponse> {
@@ -79,7 +81,7 @@ export class RncService {
    * List RNC Forms with pagination and filters
    */
   getRncForms(
-    filters?: any,
+    filters?: RncFormFilters,
     page: number = 0,
     size: number = 10
   ): Observable<RncFormsResponse> {
@@ -182,9 +184,7 @@ export class RncService {
     return this.http.post<any>(url, body, { headers });
   }
 
-  /**
-   * Utility method to get default headers
-   */
+
   private getDefaultHeaders(): HttpHeaders {
     return new HttpHeaders({
       'Content-Type': 'application/json',

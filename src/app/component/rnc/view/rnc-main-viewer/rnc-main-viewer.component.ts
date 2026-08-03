@@ -1,6 +1,6 @@
 // rnc-main-viewer.component.ts
 
-import { DatePipe } from "@angular/common";
+import { CommonModule, DatePipe } from "@angular/common";
 import { AfterViewInit, Component, ElementRef, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Router } from "@angular/router";
 import { Occur } from "../../../../core/model/occur/occur.model";
@@ -14,16 +14,19 @@ import { RncCauseCategoryPipe } from "../../../../pipe/rnc-form-cause-category.p
 import { RncCauseTypePipe } from "../../../../pipe/rnc-form-cause-type.pipe";
 import { RncFormStatusPipe } from "../../../../pipe/rnc-form-status.pipe";
 import { OccurMainViewerComponent } from "../../../occur/view/main-viewer/occur-main-viewer/occur-main-viewer.component";
+import { SessionService } from "../../../../core/service/session/session.service";
+import { RncStatusPipe } from "../../../../pipe/rnc-status.pipe";
 
 @Component({
   selector: "app-rnc-main-viewer",
   imports: [
     DatePipe,
     OccurMainViewerComponent,
+    RncStatusPipe,
     RncFormStatusPipe,
     RncCauseCategoryPipe,
     RncCauseTypePipe,
-    DefaultValuePipe
+    DefaultValuePipe,
   ],
   templateUrl: "./rnc-main-viewer.component.html",
   styleUrl: "./rnc-main-viewer.component.scss",
@@ -44,6 +47,9 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
   formLoaded: boolean = false;
   isLoadingForm: boolean = false;
 
+  isRncReporter: boolean = false;
+  isRncInspector: boolean = false;
+
   private rncService = inject(RncService);
   private occurService = inject(OccurService);
   private loadingService = inject(LoadingService);
@@ -51,7 +57,14 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private collapseListener: (() => void) | null = null;
 
+  constructor(
+    private sessionService: SessionService
+  ) { }
+
   ngOnInit(): void {
+    this.isRncReporter = this.rnc?.reporter?.id === Number(this.sessionService.getItem('userId')) && this.sessionService.hasRole('COMMON_RNC_REPORTER');
+    this.isRncInspector = this.rnc?.inspector?.id === Number(this.sessionService.getItem('userId')) && this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
+
     if (this.occur) {
       this.occurLoaded = true;
     }
@@ -261,6 +274,31 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
     setTimeout(() => {
       URL.revokeObjectURL(url);
     }, 10000);
+  }
+
+  getFollowUpStatus(followUpDate: string): 'pending' | 'approaching' | 'overdue' | 'none' {
+    if (!followUpDate) return 'none';
+
+    const followUp = new Date(followUpDate);
+    const today = new Date();
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(today.getDate() - 15);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    if (followUp < today) {
+      return 'overdue';
+    }
+
+    const fifteenDaysFromNow = new Date();
+    fifteenDaysFromNow.setDate(today.getDate() + 15);
+
+    if (followUp <= fifteenDaysFromNow) {
+      return 'approaching';
+    }
+
+    return 'pending';
   }
 
   private showAlert(

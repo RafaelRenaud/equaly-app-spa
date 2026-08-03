@@ -1,5 +1,79 @@
 @if (rnc) {
 <div class="mt-4">
+
+    <!-- ==================== ALERTAS CONTEXTUAIS ==================== -->
+    @if (rnc.status === "OPENED" && rnc.hasFormAssigned && isRncReporter) {
+    <div class="row">
+        <div class="col-md alert alert-primary" role="alert">
+            <i class="bi bi-info-square-fill me-2"></i>
+            Existe um formulário em andamento atrelado ao seu nome. Finalize e envie-o para validação de qualidade.
+        </div>
+    </div>
+    }@else if (rnc.status === "OPENED" && !rnc.hasFormAssigned && isRncReporter) {
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-square-fill me-2"></i>
+            Não Conformidade Pendente de preenchimento de formulário. Acesse o menu de pendências e realize o envio.
+        </div>
+    </div>
+    }
+
+    @if(rncForm){
+    <!-- ==================== ALERTAS CONTEXTUAIS ==================== -->
+    @if (rncForm.status === "AWAITING_VALIDATION" && isRncInspector) {
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-square-fill me-2"></i>
+            Essa Não Conformidade possui um formulário pendente de sua validação.
+        </div>
+    </div>
+    }@else if (rncForm.status === "VALIDATION_EDITION" && isRncReporter) {
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-square-fill me-2"></i>
+            Essa Não Conformidade possui um formulário pendente de correção. Acesse o menu de pendências e realize o
+            envio.
+        </div>
+    </div>
+    }@else if ((rncForm.status === "AWAITING_IMPLEMENTATION" || rncForm.status === "IMPLEMENTATION_EDITION")
+    && isRncReporter) {
+    @switch (getFollowUpStatus(rncForm.actionPlan!.followUp)) {
+    @case ('pending') {
+    <div class="row">
+        <div class="col-md alert alert-info" role="alert">
+            <i class="bi bi-clock-fill me-2"></i>
+            Essa Não Conformidade possui um formulário pendente de finalização de implementação.
+        </div>
+    </div>
+    }
+    @case ('approaching') {
+    <div class="row">
+        <div class="col-md alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Essa Não Conformidade possui um formulário próximo ao vencimento do prazo de entrega da finalização de
+            implementação.
+        </div>
+    </div>
+    }
+    @case ('overdue') {
+    <div class="row">
+        <div class="col-md alert alert-danger" role="alert">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            Essa Não Conformidade possui um formulário com prazo de entrega da finalização de implementação vencido.
+        </div>
+    </div>
+    }
+    }
+    }@else if(rncForm.status === "AWAITING_EFFICACY_ANALYSIS" && isRncInspector) {
+    <div class="row">
+        <div class="col-md alert alert-info" role="alert">
+            <i class="bi bi-info-square-fill me-2"></i>
+            Essa Não Conformidade possui um formulário pendente de análise de eficácia.
+        </div>
+    </div>
+    }
+    }
+
     <!-- ==================== CARD DE IDENTIFICAÇÃO DA RNC ==================== -->
     <div class="card mb-4">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -43,12 +117,7 @@
                 <div class="col-md-4">
                     <small class="text-muted d-block">Estado</small>
                     <span class="mt-1 d-block">
-                        @switch (rnc.status) {
-                        @case ('OPENED') { <span>Aberta</span> }
-                        @case ('WORK_IN_PROGRESS') { <span>Em Andamento</span> }
-                        @case ('CLOSED') { <span>Encerrada</span> }
-                        @default { <span>{{ rnc.status | default }}</span> }
-                        }
+                        {{rnc.status | rncStatus | default}}
                     </span>
                 </div>
                 <div class="col-md-4">

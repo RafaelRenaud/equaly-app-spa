@@ -1,0 +1,166 @@
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">RNCs Pendentes</h3>
+    </div>
+    <div class="surface-container-body">
+        <br />
+
+        <!-- ========== TABS ========== -->
+        @if(isRncReporter) {
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'formFilling'"
+                        [class.btn-primary]="activeTab === 'formFilling'" (click)="changeTab('formFilling')">
+                        Preenchimento de Formulário
+                    </button>
+                    <button type="button" class="btn"
+                        [class.btn-outline-primary]="activeTab !== 'implementationFinalization'"
+                        [class.btn-primary]="activeTab === 'implementationFinalization'"
+                        (click)="changeTab('implementationFinalization')">
+                        Finalização de Implementação
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if(isQualityInspector) {
+        <div class="row">
+            <div class="col-md text-center">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'formValidation'"
+                        [class.btn-primary]="activeTab === 'formValidation'" (click)="changeTab('formValidation')">
+                        Validação de Formulário
+                    </button>
+                    <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'efficacyAnalysis'"
+                        [class.btn-primary]="activeTab === 'efficacyAnalysis'" (click)="changeTab('efficacyAnalysis')">
+                        Análise de Eficácia
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <br />
+
+        <!-- ========== LISTA DE RNCs (Preenchimento de Formulário) ========== -->
+        @if(activeTab === 'formFilling' && rncs.length > 0) {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Ocorrência</th>
+                        <th>Inspetor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (rnc of rncs; track rnc.id) {
+                    <tr>
+                        <td>{{ rnc.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ rnc.code }}</span>
+                        </td>
+                        <td>
+                            @if (rnc.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (rnc.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>{{ rnc.occur.code || 'Não Informado' }}</td>
+                        <td>{{ rnc.inspector.username || 'Não Informado' }}</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary" title="Preencher Formulário">
+                                <i class="bi bi-pencil-square"></i>
+                                Preencher
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <br />
+            <ngb-pagination [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" [maxSize]="pageSize"
+                [rotate]="true" (pageChange)="onPageChange($event)">
+            </ngb-pagination>
+        </div>
+        }
+
+        <!-- ========== LISTA DE RNC FORMS (Demais abas) ========== -->
+        @if(activeTab !== 'formFilling' && forms.length > 0) {
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>RNC</th>
+                        <th>Problema</th>
+                        <th>Data de Entrega</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (form of forms; track form.id) {
+                    <tr>
+                        <td>{{ form.id }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ form.code }}</span>
+                        </td>
+                        <td>
+                            @if (form.rnc.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (form.rnc.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
+                        <td>{{ form.rnc.code || 'Não Informado' }}</td>
+                        <td>
+                            @if (form.analysis?.problem) {
+                            {{ form.analysis!.problem.length > 40 ? (form.analysis!.problem | slice:0:40) + '...' :
+                            form.analysis!.problem }}
+                            } @else {
+                            -
+                            }
+                        </td>
+                        <td>{{ (form.actionPlan?.followUp | date:'dd/MM/yyyy') || 'Não Informado' }}</td>
+                        <td class="text-nowrap">
+                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id]">
+                                <i class="bi bi-eye-fill"></i>
+                                Abrir
+                            </button>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+            <br />
+            <ngb-pagination [collectionSize]="collectionSize" [(page)]="page" [pageSize]="pageSize" [maxSize]="pageSize"
+                [rotate]="true" (pageChange)="onPageChange($event)">
+            </ngb-pagination>
+        </div>
+        }
+
+        <!-- ========== SEM RESULTADOS ========== -->
+        @if((activeTab === 'formFilling' && rncs.length === 0) || (activeTab !== 'formFilling' && forms.length === 0)) {
+        <div class="surface-banner text-center py-5">
+            <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
+            <br /><br />
+            <h4>Sem pendências por aqui</h4>
+            <p class="text-muted">
+                Não há registros pendentes para essa categoria.
+            </p>
+        </div>
+        }
+    </div>
+</div>

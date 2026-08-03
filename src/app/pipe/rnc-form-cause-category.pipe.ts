@@ -19,4 +19,4 @@ export class RncCauseCategoryPipe implements PipeTransform {
 
     return categoryMap[value] || value;
   }
-}
+} 

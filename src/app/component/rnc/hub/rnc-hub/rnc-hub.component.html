@@ -1,10 +1,17 @@
-<!-- rnc-hub.component.html -->
-
 <div class="surface-container">
     <div class="surface-container-header">
         <h3 class="text-white pt-3 pb-2">Pesquisa de RNCs</h3>
     </div>
     <div class="surface-container-body">
+
+        @if(restrictedView){
+        <div class="row">
+            <div class="col-md alert alert-primary" role="alert">
+                <i class="bi bi-info-square-fill me-2"></i>
+                Para o seu perfil de acesso, não será possível pesquisar RNCs que não estejam vinculadas a você
+            </div>
+        </div>
+        }
 
         <!-- ========== SWITCH DE PESQUISA ========== -->
         <div class="row mb-3">
@@ -22,12 +29,13 @@
             </div>
         </div>
 
+        <!-- ========== FILTROS BÁSICOS ========== -->
         <div class="row mb-3">
             <div class="col-md">
                 <div class="form-floating">
                     <input type="text" class="form-control" [(ngModel)]="idFilter" id="idFilter"
                         placeholder="ID da RNC" />
-                    <label for="idFilter">ID da RNC</label>
+                    <label for="idFilter">{{ searchType === 'RNC' ? 'ID da RNC' : 'ID do Formulário' }}</label>
                 </div>
             </div>
             <div class="col-md">
@@ -37,6 +45,15 @@
                     <label for="rncCodeFilter">Código da RNC</label>
                 </div>
             </div>
+            @if(searchType === 'FORM') {
+            <div class="col-md">
+                <div class="form-floating">
+                    <input type="text" class="form-control" [(ngModel)]="formFilters.formCode" id="formCodeFilter"
+                        placeholder="Código do Formulário" [disabled]="isIdFilterFilled" />
+                    <label for="formCodeFilter">Código do Formulário</label>
+                </div>
+            </div>
+            }
         </div>
 
         <!-- ========== FILTROS GERAIS ========== -->
@@ -68,7 +85,7 @@
                                         @if(searchType === 'RNC') {
                                         <div class="col-md">
                                             <div class="form-floating">
-                                                <select class="form-select" [(ngModel)]="rncFilters.hasFormAssigned"
+                                                <select class="form-select" [(ngModel)]="hasFormAssignedFilter"
                                                     title="Tem Formulário Associado" [disabled]="isIdFilterFilled">
                                                     <option value="">Todos</option>
                                                     <option value="true">Sim</option>
@@ -77,23 +94,38 @@
                                                 <label>Tem Formulário Associado</label>
                                             </div>
                                         </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" [(ngModel)]="rncOccurIdFilter"
+                                                    id="occurIdFilter" placeholder="ID da Ocorrência"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="occurIdFilter">ID da Ocorrência</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md">
+                                            <div class="form-floating">
+                                                <input type="text" class="form-control" [(ngModel)]="rncOccurCodeFilter"
+                                                    id="occurCodeFilter" placeholder="Código da Ocorrência"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="occurCodeFilter">Código da Ocorrência</label>
+                                            </div>
+                                        </div>
                                         }
                                         @if(searchType === 'FORM') {
                                         <div class="col-md">
                                             <div class="form-floating">
                                                 <input type="text" class="form-control"
                                                     [(ngModel)]="formFilters.content" id="contentFilter"
-                                                    placeholder="Título/Descrição/Complemento"
-                                                    [disabled]="isIdFilterFilled" />
+                                                    placeholder="Conteúdo" [disabled]="isIdFilterFilled" />
                                                 <label for="contentFilter">Conteúdo</label>
                                             </div>
                                         </div>
                                         <div class="col-md">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control"
-                                                    [(ngModel)]="formFilters.formCode" id="formCodeFilter"
-                                                    placeholder="Código do Formulário" [disabled]="isIdFilterFilled" />
-                                                <label for="formCodeFilter">Código do Formulário</label>
+                                                <input type="text" class="form-control" [(ngModel)]="formRncIdFilter"
+                                                    id="rncIdFilter" placeholder="ID da RNC"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncIdFilter">ID da RNC</label>
                                             </div>
                                         </div>
                                         }
@@ -130,8 +162,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    }
-
+                                    }@else {
                                     <div class="row">
                                         <div class="col-md">
                                             <app-occur-type-head-search [placeholder]='"Tipo de Ocorrência"'
@@ -139,6 +170,7 @@
                                                 (loadingStateChanged)="onTypeheadLoadingChange()" />
                                         </div>
                                     </div>
+                                    }
                                 </ng-template>
                             </div>
                         </div>
@@ -161,19 +193,32 @@
                         <div ngbAccordionCollapse>
                             <div ngbAccordionBody>
                                 <ng-template>
+                                    @if(searchType === 'RNC') {
+                                    <div class="row">
+                                        <div class="col-md">
+                                            <app-user-type-head-search [userRole]="['COMMON_EVENT_OPENER']"
+                                                [placeholder]="'Responsável Abertura Ocorrência'"
+                                                [modalId]="'occurOpenerSearchModal'"
+                                                (loadingStateChanged)="onTypeheadLoadingChange()"
+                                                (outputUserSelected)="onOccurOpenerSelected($event)" />
+                                        </div>
+                                    </div>
+                                    }
+
                                     <div class="row">
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_QUALITY_INSPECTOR']"
-                                                [placeholder]="'Responsável Inspeção de Qualidade'"
+                                                [placeholder]="'Responsável Qualidade'"
                                                 [modalId]="'inspectorSearchModal'"
                                                 (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onInspectorSelected($event)" />
                                         </div>
                                     </div>
+
                                     <div class="row">
                                         <div class="col-md">
                                             <app-user-type-head-search [userRole]="['COMMON_RNC_REPORTER']"
-                                                [placeholder]="'Responsável pelo Preenchimento da Não Conformidade'"
+                                                [placeholder]="'Responsável Preenchimento'"
                                                 [modalId]="'reporterSearchModal'"
                                                 (loadingStateChanged)="onTypeheadLoadingChange()"
                                                 (outputUserSelected)="onReporterSelected($event)" />
@@ -188,7 +233,8 @@
         </div>
         }
 
-        <!-- ========== FILTROS POR DATA ========== -->
+        <!-- ========== FILTROS POR DATA - RNC ========== -->
+        @if(searchType === 'RNC') {
         <div class="row">
             <div class="col-md">
                 <div ngbAccordion [destroyOnHide]="false">
@@ -201,21 +247,21 @@
                         <div ngbAccordionCollapse>
                             <div ngbAccordionBody>
                                 <ng-template>
-                                    @if(searchType === 'RNC') {
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startOccurredDate"
+                                                <input type="text" class="form-control" id="rncStartOccurredDate"
                                                     #dateInput placeholder="Data Início Ocorrido"
                                                     [disabled]="isIdFilterFilled" />
-                                                <label for="startOccurredDate">Início Ocorrido</label>
+                                                <label for="rncStartOccurredDate">Início Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endOccurredDate" #dateInput
-                                                    placeholder="Data Fim Ocorrido" [disabled]="isIdFilterFilled" />
-                                                <label for="endOccurredDate">Fim Ocorrido</label>
+                                                <input type="text" class="form-control" id="rncEndOccurredDate"
+                                                    #dateInput placeholder="Data Fim Ocorrido"
+                                                    [disabled]="isIdFilterFilled" />
+                                                <label for="rncEndOccurredDate">Fim Ocorrido</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
@@ -267,9 +313,29 @@
                                             </div>
                                         </div>
                                     </div>
-                                    }
+                                </ng-template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
 
-                                    @if(searchType === 'FORM') {
+        <!-- ========== FILTROS POR DATA - FORMULÁRIO ========== -->
+        @if(searchType === 'FORM') {
+        <div class="row">
+            <div class="col-md">
+                <div ngbAccordion [destroyOnHide]="false">
+                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
+                        <h2 ngbAccordionHeader>
+                            <button ngbAccordionButton class="accordion-button">
+                                Filtros por Data
+                            </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                            <div ngbAccordionBody>
+                                <ng-template>
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
@@ -387,7 +453,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    }
                                 </ng-template>
                             </div>
                         </div>
@@ -395,6 +460,7 @@
                 </div>
             </div>
         </div>
+        }
 
         <!-- ========== FILTROS POR ESTADO ========== -->
         <div class="row">
@@ -563,8 +629,8 @@
                         <th>Prioridade</th>
                         <th>Estado</th>
                         <th>Ocorrência</th>
-                        <th>Inspetor</th>
-                        <th>Data Criação</th>
+                        <th>Responsável Qualidade</th>
+                        <th>Responsável Preenchimento</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -584,17 +650,10 @@
                             <span class="badge bg-info">Baixa</span>
                             }
                         </td>
-                        <td>
-                            @switch (rnc.status) {
-                            @case ('OPENED') { <span>Aberta</span> }
-                            @case ('WORK_IN_PROGRESS') { <span>Em Andamento</span> }
-                            @case ('CLOSED') { <span>Encerrada</span> }
-                            @default { <span>{{ rnc.status }}</span> }
-                            }
-                        </td>
-                        <td>{{ rnc.occur.code || '-' }}</td>
-                        <td>{{ rnc.inspector.username || '-' }}</td>
-                        <td>{{ rnc.audit.createdAt | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ rnc.status | rncStatus }}</td>
+                        <td>{{ rnc.occur.code || 'Não Informado' }}</td>
+                        <td>{{ rnc.inspector.username || 'Não Informado' }}</td>
+                        <td>{{ rnc.reporter.username || 'Não Informado' }}</td>
                         <td class="text-nowrap">
                             <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', rnc.id]">
                                 <i class="bi bi-pencil-square"></i> Abrir
@@ -619,10 +678,11 @@
                     <tr>
                         <th>ID</th>
                         <th>Código</th>
+                        <th>Prioridade</th>
+                        <th>Estado</th>
                         <th>RNC</th>
-                        <th>Status</th>
                         <th>Problema</th>
-                        <th>Data Criação</th>
+                        <th>Data de Entrega</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -631,17 +691,26 @@
                     <tr>
                         <td>{{ form.id }}</td>
                         <td>
-                            <span class="badge bg-secondary">{{ form.code }}</span>
+                            <span class="badge bg-primary">{{ form.code }}</span>
                         </td>
-                        <td>{{ form.rnc.code || '-' }}</td>
+                        <td>
+                            @if (form.rnc.priority === 'HIGH') {
+                            <span class="badge bg-danger">Alta</span>
+                            } @else if (form.rnc.priority === 'MEDIUM') {
+                            <span class="badge bg-warning text-dark">Média</span>
+                            } @else {
+                            <span class="badge bg-info">Baixa</span>
+                            }
+                        </td>
                         <td>{{ form.status | rncFormStatus }}</td>
+                        <td>{{ form.rnc.code || 'Não Informado' }}</td>
                         <td>
                             {{ getProblemDisplay(form) }}
                         </td>
-                        <td>{{ form.audit.createdAt | date:'dd/MM/yyyy' }}</td>
+                        <td>{{ (form.actionPlan?.followUp | date:'dd/MM/yyyy') || 'Não Informado' }}</td>
                         <td class="text-nowrap">
                             <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id]">
-                                <i class="bi bi-pencil-square"></i> Abrir RNC
+                                <i class="bi bi-pencil-square"></i> Abrir
                             </button>
                         </td>
                     </tr>
@@ -655,7 +724,6 @@
         </ngb-pagination>
         }
 
-        <!-- ========== SEM RESULTADOS ========== -->
         @if ((searchType === 'RNC' && rncs.length === 0) || (searchType === 'FORM' && forms.length === 0)) {
         <div class="surface-banner text-center py-5">
             <img src="assets/no_data.svg" alt="Sem resultados" class="img-fluid w-25" />

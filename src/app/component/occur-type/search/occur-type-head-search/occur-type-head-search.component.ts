@@ -168,7 +168,7 @@ export class OccurTypeHeadSearchComponent {
         return this.occurTypeService.getOccurTypes(
           'name',
           trimmedTerm,
-          Number(this.sessionService.getItem('companyId')),
+          null,
           'ACTIVE',
           0,
           5
@@ -271,13 +271,12 @@ export class OccurTypeHeadSearchComponent {
     this.loadingService.show();
     this.hasSearched = true;
 
-    const companyId = Number(this.sessionService.getItem('companyId'));
     const searchTerm = this.searchValue?.trim() || '';
 
     this.occurTypeService.getOccurTypes(
       this.selectedFilter,
       searchTerm,
-      companyId,
+      null,
       'ACTIVE',
       this.modalCurrentPage - 1,
       this.modalPageSize

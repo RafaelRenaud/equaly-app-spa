@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -13,50 +13,15 @@ import { RncsResponse } from '../../../../core/model/rnc/rncs-response.model';
 import { UserResponse } from '../../../../core/model/user/user-response.model';
 import { LoadingService } from '../../../../core/service/loading/loading.service';
 import { RncService } from '../../../../core/service/rnc/rnc-service.service';
+import { RncFormStatusPipe } from '../../../../pipe/rnc-form-status.pipe';
 import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
+import { RncFilters } from '../../../../core/model/rnc/rnc-filters.model';
+import { RncFormFilters } from '../../../../core/model/rnc/rnc-form-filters.model';
 import { RncStatusPipe } from '../../../../pipe/rnc-status.pipe';
-import { RncFormStatusPipe } from '../../../../pipe/rnc-form-status.pipe';
+import { SessionService } from '../../../../core/service/session/session.service';
 
 type SearchType = 'RNC' | 'FORM';
-
-type RncFormFiltersType = {
-  rncCode: string;
-  formCode: string;
-  priority: string;
-  content: string;
-  validationDescription: string;
-  implementationDescription: string;
-  efficacyDescription: string;
-  startFollowUpDate: string;
-  endFollowUpDate: string;
-  startValidationDate: string;
-  endValidationDate: string;
-  startImplementationDate: string;
-  endImplementationDate: string;
-  startEfficacyDate: string;
-  endEfficacyDate: string;
-  creationStartDate: string;
-  creationEndDate: string;
-  updateStartDate: string;
-  updateEndDate: string;
-  closeStartDate: string;
-  closeEndDate: string;
-};
-
-type RncFiltersType = {
-  rncCode: string;
-  priority: string;
-  hasFormAssigned: string;
-  startOccurredDate: string;
-  endOccurredDate: string;
-  creationStartDate: string;
-  creationEndDate: string;
-  updateStartDate: string;
-  updateEndDate: string;
-  closeStartDate: string;
-  closeEndDate: string;
-};
 
 @Component({
   selector: 'rnc-hub',
@@ -71,6 +36,7 @@ type RncFiltersType = {
     NgbPaginationModule,
     UserTypeHeadSearchComponent,
     OccurTypeHeadSearchComponent,
+    RncStatusPipe,
     RncFormStatusPipe
   ],
   standalone: true
@@ -81,21 +47,26 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   @ViewChild(OccurTypeHeadSearchComponent) occurTypeheadComponent!: OccurTypeHeadSearchComponent;
   @ViewChildren('dateInput') dateInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
-  // Tipos de busca
   searchType: SearchType = 'RNC';
 
   // Resultados
   rncs: Rnc[] = [];
   forms: RncForm[] = [];
 
+  restrictedView: boolean = false;
+
   // Seletores
   selectedInspector: UserResponse | null = null;
   selectedReporter: UserResponse | null = null;
   selectedOccurType: OccurTypeResponse | null = null;
+  selectedOccurOpener: UserResponse | null = null;
+  selectedOccurInspector: UserResponse | null = null;
 
   selectedInspectorDisplay: string = '';
   selectedReporterDisplay: string = '';
   selectedOccurTypeDisplay: string = '';
+  selectedOccurOpenerDisplay: string = '';
+  selectedOccurInspectorDisplay: string = '';
 
   // Paginação
   currentPage: number = 1;
@@ -104,56 +75,57 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   totalElements: number = 0;
   collectionSize: number = 0;
 
-  // Filtros RNC
-  rncFilters: RncFiltersType = {
-    rncCode: '',
-    priority: '',
-    hasFormAssigned: '',
-    startOccurredDate: '',
-    endOccurredDate: '',
-    creationStartDate: '',
-    creationEndDate: '',
-    updateStartDate: '',
-    updateEndDate: '',
-    closeStartDate: '',
-    closeEndDate: ''
+  rncFilters: RncFilters = {
+    rncCode: undefined,
+    priority: undefined,
+    hasFormAssigned: undefined,
+    occurId: undefined,
+    occurCode: undefined,
+    occurOpenerId: undefined,
+    occurInspectorId: undefined,
+    startOccurredDate: undefined,
+    endOccurredDate: undefined,
+    creationStartDate: undefined,
+    creationEndDate: undefined,
+    updateStartDate: undefined,
+    updateEndDate: undefined,
+    closeStartDate: undefined,
+    closeEndDate: undefined
   };
 
-  // Filtros Formulário
-  formFilters: RncFormFiltersType = {
-    rncCode: '',
-    formCode: '',
-    priority: '',
-    content: '',
-    validationDescription: '',
-    implementationDescription: '',
-    efficacyDescription: '',
-    startFollowUpDate: '',
-    endFollowUpDate: '',
-    startValidationDate: '',
-    endValidationDate: '',
-    startImplementationDate: '',
-    endImplementationDate: '',
-    startEfficacyDate: '',
-    endEfficacyDate: '',
-    creationStartDate: '',
-    creationEndDate: '',
-    updateStartDate: '',
-    updateEndDate: '',
-    closeStartDate: '',
-    closeEndDate: ''
+  formFilters: RncFormFilters = {
+    rncId: undefined,
+    rncCode: undefined,
+    formCode: undefined,
+    priority: undefined,
+    content: undefined,
+    validationDescription: undefined,
+    implementationDescription: undefined,
+    efficacyDescription: undefined,
+    startFollowUpDate: undefined,
+    endFollowUpDate: undefined,
+    startValidationDate: undefined,
+    endValidationDate: undefined,
+    startImplementationDate: undefined,
+    endImplementationDate: undefined,
+    startEfficacyDate: undefined,
+    endEfficacyDate: undefined,
+    creationStartDate: undefined,
+    creationEndDate: undefined,
+    updateStartDate: undefined,
+    updateEndDate: undefined,
+    closeStartDate: undefined,
+    closeEndDate: undefined
   };
 
   idFilter: string = '';
 
-  // Status RNC
   selectedRncStatusMap: { [key: string]: boolean } = {
     OPENED: false,
     WORK_IN_PROGRESS: false,
     CLOSED: false
   };
 
-  // Status Formulário
   selectedFormStatusMap: { [key: string]: boolean } = {
     DRAFT_OPENED: false,
     AWAITING_VALIDATION: false,
@@ -168,16 +140,83 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     return !!this.idFilter && this.idFilter.trim() !== '';
   }
 
+  get rncCodeFilter(): string {
+    return this.searchType === 'RNC' ? (this.rncFilters.rncCode || '') : (this.formFilters.rncCode || '');
+  }
+
+  set rncCodeFilter(value: string) {
+    if (this.searchType === 'RNC') {
+      this.rncFilters.rncCode = value || undefined;
+    } else {
+      this.formFilters.rncCode = value || undefined;
+    }
+  }
+
+  get priorityFilter(): string {
+    return this.searchType === 'RNC' ? (this.rncFilters.priority || '') : (this.formFilters.priority || '');
+  }
+
+  set priorityFilter(value: string) {
+    const typedValue = value as 'LOW' | 'MEDIUM' | 'HIGH' | undefined;
+    if (this.searchType === 'RNC') {
+      this.rncFilters.priority = value ? typedValue : undefined;
+    } else {
+      this.formFilters.priority = value ? typedValue : undefined;
+    }
+  }
+
+  get rncOccurIdFilter(): string {
+    return this.rncFilters.occurId?.toString() || '';
+  }
+
+  set rncOccurIdFilter(value: string) {
+    this.rncFilters.occurId = value ? parseInt(value, 10) : undefined;
+  }
+
+  get rncOccurCodeFilter(): string {
+    return this.rncFilters.occurCode || '';
+  }
+
+  set rncOccurCodeFilter(value: string) {
+    this.rncFilters.occurCode = value || undefined;
+  }
+
+  get hasFormAssignedFilter(): string {
+    if (this.rncFilters.hasFormAssigned === true) return 'true';
+    if (this.rncFilters.hasFormAssigned === false) return 'false';
+    return '';
+  }
+
+  set hasFormAssignedFilter(value: string) {
+    if (value === 'true') {
+      this.rncFilters.hasFormAssigned = true;
+    } else if (value === 'false') {
+      this.rncFilters.hasFormAssigned = false;
+    } else {
+      this.rncFilters.hasFormAssigned = undefined;
+    }
+  }
+
+  get formRncIdFilter(): string {
+    return this.formFilters.rncId?.toString() || '';
+  }
+
+  set formRncIdFilter(value: string) {
+    this.formFilters.rncId = value ? parseInt(value, 10) : undefined;
+  }
+
   private flatpickrInstances: any[] = [];
 
   constructor(
     private rncService: RncService,
     private loadingService: LoadingService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private sessionService: SessionService
   ) { }
 
   ngOnInit(): void {
+    this.restrictedView = !this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR');
     this.search();
   }
 
@@ -200,54 +239,47 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   private initDatePickers(): void {
     this.destroyDatePickers();
 
-    const dateInputMapping: Record<string, keyof RncFiltersType | keyof RncFormFiltersType> = {
-      // RNC dates
-      'startOccurredDate': 'startOccurredDate',
-      'endOccurredDate': 'endOccurredDate',
-      'rncCreationStartDate': 'creationStartDate',
-      'rncCreationEndDate': 'creationEndDate',
-      'rncUpdateStartDate': 'updateStartDate',
-      'rncUpdateEndDate': 'updateEndDate',
-      'rncCloseStartDate': 'closeStartDate',
-      'rncCloseEndDate': 'closeEndDate',
-      // Form dates
-      'formCreationStartDate': 'creationStartDate',
-      'formCreationEndDate': 'creationEndDate',
-      'formUpdateStartDate': 'updateStartDate',
-      'formUpdateEndDate': 'updateEndDate',
-      'formCloseStartDate': 'closeStartDate',
-      'formCloseEndDate': 'closeEndDate',
-      'startFollowUpDate': 'startFollowUpDate',
-      'endFollowUpDate': 'endFollowUpDate',
-      'startValidationDate': 'startValidationDate',
-      'endValidationDate': 'endValidationDate',
-      'startImplementationDate': 'startImplementationDate',
-      'endImplementationDate': 'endImplementationDate',
-      'startEfficacyDate': 'startEfficacyDate',
-      'endEfficacyDate': 'endEfficacyDate'
+    const dateInputMapping: Record<string, { type: 'RNC' | 'FORM', property: string }> = {
+      'rncStartOccurredDate': { type: 'RNC', property: 'startOccurredDate' },
+      'rncEndOccurredDate': { type: 'RNC', property: 'endOccurredDate' },
+      'rncCreationStartDate': { type: 'RNC', property: 'creationStartDate' },
+      'rncCreationEndDate': { type: 'RNC', property: 'creationEndDate' },
+      'rncUpdateStartDate': { type: 'RNC', property: 'updateStartDate' },
+      'rncUpdateEndDate': { type: 'RNC', property: 'updateEndDate' },
+      'rncCloseStartDate': { type: 'RNC', property: 'closeStartDate' },
+      'rncCloseEndDate': { type: 'RNC', property: 'closeEndDate' },
+      'formCreationStartDate': { type: 'FORM', property: 'creationStartDate' },
+      'formCreationEndDate': { type: 'FORM', property: 'creationEndDate' },
+      'formUpdateStartDate': { type: 'FORM', property: 'updateStartDate' },
+      'formUpdateEndDate': { type: 'FORM', property: 'updateEndDate' },
+      'formCloseStartDate': { type: 'FORM', property: 'closeStartDate' },
+      'formCloseEndDate': { type: 'FORM', property: 'closeEndDate' },
+      'startFollowUpDate': { type: 'FORM', property: 'startFollowUpDate' },
+      'endFollowUpDate': { type: 'FORM', property: 'endFollowUpDate' },
+      'startValidationDate': { type: 'FORM', property: 'startValidationDate' },
+      'endValidationDate': { type: 'FORM', property: 'endValidationDate' },
+      'startImplementationDate': { type: 'FORM', property: 'startImplementationDate' },
+      'endImplementationDate': { type: 'FORM', property: 'endImplementationDate' },
+      'startEfficacyDate': { type: 'FORM', property: 'startEfficacyDate' },
+      'endEfficacyDate': { type: 'FORM', property: 'endEfficacyDate' }
     };
 
     this.dateInputs.forEach(input => {
       const inputElement = input.nativeElement;
       const inputId = inputElement.id;
-      const formFilterProperty = dateInputMapping[inputId];
+      const mapping = dateInputMapping[inputId];
 
-      if (formFilterProperty) {
-        const currentValue = this.searchType === 'RNC'
-          ? (this.rncFilters as any)[formFilterProperty]
-          : (this.formFilters as any)[formFilterProperty];
+      if (mapping) {
+        const filterObj = mapping.type === 'RNC' ? this.rncFilters : this.formFilters;
+        const currentValue = (filterObj as any)[mapping.property] || '';
 
         const instance = flatpickr(inputElement, {
           locale: Portuguese,
           dateFormat: 'd/m/Y',
           allowInput: true,
           onChange: (dates) => {
-            const value = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-            if (this.searchType === 'RNC') {
-              (this.rncFilters as any)[formFilterProperty] = value;
-            } else {
-              (this.formFilters as any)[formFilterProperty] = value;
-            }
+            const value = dates[0] ? this.formatDateToYMD(dates[0]) : undefined;
+            (filterObj as any)[mapping.property] = value;
           }
         });
 
@@ -308,12 +340,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        this.router.navigate([], {
-          queryParams: {
-            action: "ERROR",
-            message: `Erro ao buscar RNCs, tente novamente mais tarde.`
-          }
-        });
+        this.handleError('Erro ao buscar RNCs, tente novamente mais tarde.');
         this.rncs = [];
         this.totalPages = 0;
         this.collectionSize = 0;
@@ -337,12 +364,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        this.router.navigate([], {
-          queryParams: {
-            action: "ERROR",
-            message: `Erro ao buscar formulários, tente novamente mais tarde.`
-          }
-        });
+        this.handleError('Erro ao buscar formulários, tente novamente mais tarde.');
         this.forms = [];
         this.totalPages = 0;
         this.collectionSize = 0;
@@ -355,60 +377,36 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   private prepareRncFilters(): any {
     const filters: any = {};
 
-    if (this.rncFilters.rncCode) {
-      filters.rncCode = this.rncFilters.rncCode;
+    if (this.rncFilters.rncCode) filters.rncCode = this.rncFilters.rncCode;
+    if (this.rncFilters.priority) filters.priority = this.rncFilters.priority;
+    if (this.selectedInspector) filters.inspectorId = this.selectedInspector.id;
+    if (this.selectedReporter) filters.reporterId = this.selectedReporter.id;
+    if (this.selectedOccurType) filters.occurTypeId = this.selectedOccurType.id;
+    if (this.rncFilters.occurId) filters.occurId = this.rncFilters.occurId;
+    if (this.rncFilters.occurCode) filters.occurCode = this.rncFilters.occurCode;
+    if (this.selectedOccurOpener) filters.occurOpenerId = this.selectedOccurOpener.id;
+    if (this.selectedOccurInspector) filters.occurInspectorId = this.selectedOccurInspector.id;
+    if (this.rncFilters.hasFormAssigned !== undefined) {
+      filters.hasFormAssigned = this.rncFilters.hasFormAssigned;
     }
 
-    if (this.selectedInspector) {
-      filters.inspectorId = this.selectedInspector.id;
-    }
+    // Datas RNC
+    const rncDateFields = [
+      'startOccurredDate', 'endOccurredDate',
+      'creationStartDate', 'creationEndDate',
+      'updateStartDate', 'updateEndDate',
+      'closeStartDate', 'closeEndDate'
+    ];
 
-    if (this.selectedReporter) {
-      filters.reporterId = this.selectedReporter.id;
-    }
+    rncDateFields.forEach(field => {
+      if ((this.rncFilters as any)[field]) {
+        filters[field] = (this.rncFilters as any)[field];
+      }
+    });
 
-    if (this.selectedOccurType) {
-      filters.occurTypeId = this.selectedOccurType.id;
-    }
-
-    if (this.rncFilters.priority) {
-      filters.priority = this.rncFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
-    }
-
-    if (this.rncFilters.hasFormAssigned === 'true') {
-      filters.hasFormAssigned = true;
-    } else if (this.rncFilters.hasFormAssigned === 'false') {
-      filters.hasFormAssigned = false;
-    }
-
-    // Datas
-    if (this.rncFilters.startOccurredDate) {
-      filters.startOccurredDate = this.rncFilters.startOccurredDate;
-    }
-    if (this.rncFilters.endOccurredDate) {
-      filters.endOccurredDate = this.rncFilters.endOccurredDate;
-    }
-    if (this.rncFilters.creationStartDate) {
-      filters.creationStartDate = this.rncFilters.creationStartDate;
-    }
-    if (this.rncFilters.creationEndDate) {
-      filters.creationEndDate = this.rncFilters.creationEndDate;
-    }
-    if (this.rncFilters.updateStartDate) {
-      filters.updateStartDate = this.rncFilters.updateStartDate;
-    }
-    if (this.rncFilters.updateEndDate) {
-      filters.updateEndDate = this.rncFilters.updateEndDate;
-    }
-    if (this.rncFilters.closeStartDate) {
-      filters.closeStartDate = this.rncFilters.closeStartDate;
-    }
-    if (this.rncFilters.closeEndDate) {
-      filters.closeEndDate = this.rncFilters.closeEndDate;
-    }
-
-    // Status
-    const selectedStatuses = Object.keys(this.selectedRncStatusMap).filter(key => this.selectedRncStatusMap[key]);
+    // Status RNC
+    const selectedStatuses = Object.keys(this.selectedRncStatusMap)
+      .filter(key => this.selectedRncStatusMap[key]) as ('OPENED' | 'WORK_IN_PROGRESS' | 'CLOSED')[];
     if (selectedStatuses.length > 0) {
       filters.status = selectedStatuses;
     }
@@ -416,47 +414,21 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     return filters;
   }
 
+
   private prepareFormFilters(): any {
     const filters: any = {};
 
-    if (this.formFilters.rncCode) {
-      filters.rncCode = this.formFilters.rncCode;
-    }
-
-    if (this.formFilters.formCode) {
-      filters.formCode = this.formFilters.formCode;
-    }
-
-    if (this.selectedInspector) {
-      filters.inspectorId = this.selectedInspector.id;
-    }
-
-    if (this.selectedReporter) {
-      filters.reporterId = this.selectedReporter.id;
-    }
-
-    if (this.formFilters.priority) {
-      filters.priority = this.formFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
-    }
-
-    if (this.formFilters.content) {
-      filters.content = this.formFilters.content;
-    }
-
-    if (this.formFilters.validationDescription) {
-      filters.validationDescription = this.formFilters.validationDescription;
-    }
-
-    if (this.formFilters.implementationDescription) {
-      filters.implementationDescription = this.formFilters.implementationDescription;
-    }
-
-    if (this.formFilters.efficacyDescription) {
-      filters.efficacyDescription = this.formFilters.efficacyDescription;
-    }
-
-    // Datas
-    const dateFields = [
+    if (this.formFilters.rncId) filters.rncId = this.formFilters.rncId;
+    if (this.formFilters.rncCode) filters.rncCode = this.formFilters.rncCode;
+    if (this.formFilters.formCode) filters.formCode = this.formFilters.formCode;
+    if (this.formFilters.priority) filters.priority = this.formFilters.priority;
+    if (this.selectedInspector) filters.inspectorId = this.selectedInspector.id;
+    if (this.selectedReporter) filters.reporterId = this.selectedReporter.id;
+    if (this.formFilters.content) filters.content = this.formFilters.content;
+    if (this.formFilters.validationDescription) filters.validationDescription = this.formFilters.validationDescription;
+    if (this.formFilters.implementationDescription) filters.implementationDescription = this.formFilters.implementationDescription;
+    if (this.formFilters.efficacyDescription) filters.efficacyDescription = this.formFilters.efficacyDescription;
+    const formDateFields = [
       'startFollowUpDate', 'endFollowUpDate',
       'startValidationDate', 'endValidationDate',
       'startImplementationDate', 'endImplementationDate',
@@ -466,14 +438,14 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       'closeStartDate', 'closeEndDate'
     ];
 
-    dateFields.forEach(field => {
+    formDateFields.forEach(field => {
       if ((this.formFilters as any)[field]) {
         filters[field] = (this.formFilters as any)[field];
       }
     });
 
-    // Status
-    const selectedStatuses = Object.keys(this.selectedFormStatusMap).filter(key => this.selectedFormStatusMap[key]);
+    const selectedStatuses = Object.keys(this.selectedFormStatusMap)
+      .filter(key => this.selectedFormStatusMap[key]);
     if (selectedStatuses.length > 0) {
       filters.status = selectedStatuses;
     }
@@ -482,79 +454,104 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   }
 
   searchById(): void {
-    if (!this.idFilter) {
+    if (!this.idFilter || this.idFilter.trim() === '') {
       this.search();
       return;
     }
 
     this.loadingService.show();
-    this.rncService.getRnc(Number(this.idFilter)).subscribe({
-      next: (rnc: Rnc) => {
-        this.rncs = [rnc];
-        this.forms = [];
-        this.totalPages = 1;
-        this.totalElements = 1;
-        this.collectionSize = 1;
-        this.currentPage = 1;
-        this.loadingService.hide();
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.router.navigate([], {
-          queryParams: {
-            action: "ERROR",
-            message: `RNC com ID ${this.idFilter} não encontrada.`
-          }
-        });
-        this.rncs = [];
-        this.forms = [];
-        this.totalPages = 0;
-        this.collectionSize = 0;
-        this.loadingService.hide();
-        this.cdr.detectChanges();
-      }
-    });
+
+    if (this.searchType === 'RNC') {
+      this.rncService.getRnc(Number(this.idFilter)).subscribe({
+        next: (rnc: Rnc) => {
+          this.rncs = [rnc];
+          this.forms = [];
+          this.totalPages = 1;
+          this.totalElements = 1;
+          this.collectionSize = 1;
+          this.currentPage = 1;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.handleError(`RNC com ID ${this.idFilter} não encontrada.`);
+          this.rncs = [];
+          this.forms = [];
+          this.totalPages = 0;
+          this.collectionSize = 0;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      this.rncService.getRncForm(Number(this.idFilter)).subscribe({
+        next: (form: RncForm) => {
+          this.forms = [form];
+          this.rncs = [];
+          this.totalPages = 1;
+          this.totalElements = 1;
+          this.collectionSize = 1;
+          this.currentPage = 1;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.handleError(`Formulário com ID ${this.idFilter} não encontrado.`);
+          this.rncs = [];
+          this.forms = [];
+          this.totalPages = 0;
+          this.collectionSize = 0;
+          this.loadingService.hide();
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   clearFilters(): void {
     // Reset RNC filters
     this.rncFilters = {
-      rncCode: '',
-      priority: '',
-      hasFormAssigned: '',
-      startOccurredDate: '',
-      endOccurredDate: '',
-      creationStartDate: '',
-      creationEndDate: '',
-      updateStartDate: '',
-      updateEndDate: '',
-      closeStartDate: '',
-      closeEndDate: ''
+      rncCode: undefined,
+      priority: undefined,
+      hasFormAssigned: undefined,
+      occurId: undefined,
+      occurCode: undefined,
+      occurOpenerId: undefined,
+      occurInspectorId: undefined,
+      startOccurredDate: undefined,
+      endOccurredDate: undefined,
+      creationStartDate: undefined,
+      creationEndDate: undefined,
+      updateStartDate: undefined,
+      updateEndDate: undefined,
+      closeStartDate: undefined,
+      closeEndDate: undefined
     };
 
     // Reset Form filters
     this.formFilters = {
-      rncCode: '',
-      formCode: '',
-      priority: '',
-      content: '',
-      validationDescription: '',
-      implementationDescription: '',
-      efficacyDescription: '',
-      startFollowUpDate: '',
-      endFollowUpDate: '',
-      startValidationDate: '',
-      endValidationDate: '',
-      startImplementationDate: '',
-      endImplementationDate: '',
-      startEfficacyDate: '',
-      endEfficacyDate: '',
-      creationStartDate: '',
-      creationEndDate: '',
-      updateStartDate: '',
-      updateEndDate: '',
-      closeStartDate: '',
-      closeEndDate: ''
+      rncId: undefined,
+      rncCode: undefined,
+      formCode: undefined,
+      priority: undefined,
+      content: undefined,
+      validationDescription: undefined,
+      implementationDescription: undefined,
+      efficacyDescription: undefined,
+      startFollowUpDate: undefined,
+      endFollowUpDate: undefined,
+      startValidationDate: undefined,
+      endValidationDate: undefined,
+      startImplementationDate: undefined,
+      endImplementationDate: undefined,
+      startEfficacyDate: undefined,
+      endEfficacyDate: undefined,
+      creationStartDate: undefined,
+      creationEndDate: undefined,
+      updateStartDate: undefined,
+      updateEndDate: undefined,
+      closeStartDate: undefined,
+      closeEndDate: undefined
     };
 
     Object.keys(this.selectedRncStatusMap).forEach(key => {
@@ -568,10 +565,14 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     this.selectedInspector = null;
     this.selectedReporter = null;
     this.selectedOccurType = null;
+    this.selectedOccurOpener = null;
+    this.selectedOccurInspector = null;
 
     this.selectedInspectorDisplay = '';
     this.selectedReporterDisplay = '';
     this.selectedOccurTypeDisplay = '';
+    this.selectedOccurOpenerDisplay = '';
+    this.selectedOccurInspectorDisplay = '';
     this.idFilter = '';
     this.currentPage = 1;
     this.searchType = 'RNC';
@@ -663,34 +664,32 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  onOccurOpenerSelected(opener: UserResponse | null): void {
+    if (opener) {
+      this.selectedOccurOpener = opener;
+      this.selectedOccurOpenerDisplay = `${opener.id} - ${opener.username}`;
+    } else {
+      this.selectedOccurOpener = null;
+      this.selectedOccurOpenerDisplay = '';
+    }
+    this.cdr.detectChanges();
+  }
+
+  onOccurInspectorSelected(inspector: UserResponse | null): void {
+    if (inspector) {
+      this.selectedOccurInspector = inspector;
+      this.selectedOccurInspectorDisplay = `${inspector.id} - ${inspector.username}`;
+    } else {
+      this.selectedOccurInspector = null;
+      this.selectedOccurInspectorDisplay = '';
+    }
+    this.cdr.detectChanges();
+  }
+
   changeSearchType(type: SearchType): void {
     this.searchType = type;
     this.currentPage = 1;
     this.search();
-  }
-
-  get rncCodeFilter(): string {
-    return this.searchType === 'RNC' ? this.rncFilters.rncCode : this.formFilters.rncCode;
-  }
-
-  set rncCodeFilter(value: string) {
-    if (this.searchType === 'RNC') {
-      this.rncFilters.rncCode = value;
-    } else {
-      this.formFilters.rncCode = value;
-    }
-  }
-
-  get priorityFilter(): string {
-    return this.searchType === 'RNC' ? this.rncFilters.priority : this.formFilters.priority;
-  }
-
-  set priorityFilter(value: string) {
-    if (this.searchType === 'RNC') {
-      this.rncFilters.priority = value;
-    } else {
-      this.formFilters.priority = value;
-    }
   }
 
   getProblemDisplay(form: RncForm): string {
@@ -699,5 +698,14 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     }
     const problem = form.analysis.problem;
     return problem.length > 40 ? problem.substring(0, 40) + '...' : problem;
+  }
+
+  private handleError(message: string): void {
+    this.router.navigate([], {
+      queryParams: {
+        action: "ERROR",
+        message: message
+      }
+    });
   }
 }

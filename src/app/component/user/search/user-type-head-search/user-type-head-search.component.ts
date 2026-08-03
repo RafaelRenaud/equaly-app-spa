@@ -96,7 +96,7 @@ export class UserTypeHeadSearchComponent {
 
             if (!hasRequiredRole) {
               this.resetSearchState(true);
-              this.handleError("Usuário não possui a role necessária");
+              this.handleError("Usuário sem perfil de acesso");
               this.cdr.detectChanges();
               return;
             }
@@ -169,7 +169,7 @@ export class UserTypeHeadSearchComponent {
 
       if (!hasRequiredRole) {
         this.resetSearchState(true);
-        this.handleError("Usuário não possui a role necessária");
+        this.handleError("Usuário sem perfil de acesso");
         this.cdr.detectChanges();
         return;
       }
@@ -388,7 +388,7 @@ export class UserTypeHeadSearchComponent {
       (user.roles?.some((role) => this.userRole.includes(role)) ?? false);
 
     if (!hasRequiredRole) {
-      this.handleError("Usuário não possui a role necessária");
+      this.handleError("Usuário sem perfil de acesso");
       return;
     }
 

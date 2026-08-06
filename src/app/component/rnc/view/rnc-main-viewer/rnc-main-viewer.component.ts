@@ -1,6 +1,6 @@
 // rnc-main-viewer.component.ts
 
-import { CommonModule, DatePipe } from "@angular/common";
+import { DatePipe } from "@angular/common";
 import { AfterViewInit, Component, ElementRef, EventEmitter, inject, Input, OnDestroy, OnInit, Output, ViewChild } from "@angular/core";
 import { Router } from "@angular/router";
 import { Occur } from "../../../../core/model/occur/occur.model";
@@ -9,13 +9,13 @@ import { Rnc } from "../../../../core/model/rnc/rnc.model";
 import { LoadingService } from "../../../../core/service/loading/loading.service";
 import { OccurService } from "../../../../core/service/occur/occur.service";
 import { RncService } from "../../../../core/service/rnc/rnc-service.service";
+import { SessionService } from "../../../../core/service/session/session.service";
 import { DefaultValuePipe } from "../../../../pipe/default-value.pipe";
 import { RncCauseCategoryPipe } from "../../../../pipe/rnc-form-cause-category.pipe";
 import { RncCauseTypePipe } from "../../../../pipe/rnc-form-cause-type.pipe";
 import { RncFormStatusPipe } from "../../../../pipe/rnc-form-status.pipe";
-import { OccurMainViewerComponent } from "../../../occur/view/main-viewer/occur-main-viewer/occur-main-viewer.component";
-import { SessionService } from "../../../../core/service/session/session.service";
 import { RncStatusPipe } from "../../../../pipe/rnc-status.pipe";
+import { OccurMainViewerComponent } from "../../../occur/view/main-viewer/occur-main-viewer/occur-main-viewer.component";
 
 @Component({
   selector: "app-rnc-main-viewer",
@@ -72,10 +72,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
     if (this.rncForm) {
       this.formLoaded = true;
     }
-
-    if (this.rnc?.hasFormAssigned && this.rnc?.form?.id && !this.rncForm) {
-      this.loadRncFormById(this.rnc.form.id);
-    }
   }
 
   ngAfterViewInit(): void {
@@ -125,33 +121,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  private loadRncFormById(formId: number): void {
-    if (this.isLoadingForm) {
-      return;
-    }
-
-    if (!formId) {
-      return;
-    }
-
-    this.isLoadingForm = true;
-    this.loadingService.show();
-
-    this.rncService.getRncForm(formId).subscribe({
-      next: (rncForm) => {
-        this.rncForm = rncForm;
-        this.formLoaded = true;
-        this.isLoadingForm = false;
-        this.loadingService.hide();
-      },
-      error: (error) => {
-        console.error('Erro ao carregar formulário da RNC:', error);
-        this.isLoadingForm = false;
-        this.loadingService.hide();
-      }
-    });
-  }
-
   reloadRnc(): void {
     if (!this.rnc?.id || this.isReloading) return;
 
@@ -163,16 +132,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
         this.rnc = rnc;
         this.isReloading = false;
         this.loadingService.hide();
-
-        if (rnc.hasFormAssigned && rnc?.form?.id) {
-          this.formLoaded = false;
-          this.rncForm = null;
-          this.loadRncFormById(rnc.form.id);
-        } else {
-          this.rncForm = null;
-          this.formLoaded = true;
-        }
-
         this.rncReloaded.emit(rnc);
       },
       error: (error) => {
@@ -186,27 +145,18 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
 
   // ==================== MÉTODOS PARA VERIFICAR SEÇÕES DO FORMULÁRIO ====================
 
-  /**
-   * Verifica se a validação tem dados válidos
-   */
   hasValidValidation(): boolean {
     if (!this.rncForm?.validation) return false;
     const v = this.rncForm.validation;
     return !!(v.description || v.validatedAt || v.validatedBy);
   }
 
-  /**
-   * Verifica se a implementação tem dados válidos
-   */
   hasValidImplementation(): boolean {
     if (!this.rncForm?.implementation) return false;
     const i = this.rncForm.implementation;
     return !!(i.description || i.implementedAt || i.implementedBy);
   }
 
-  /**
-   * Verifica se a eficácia tem dados válidos
-   */
   hasValidEfficacy(): boolean {
     if (!this.rncForm?.efficacy) return false;
     const e = this.rncForm.efficacy;

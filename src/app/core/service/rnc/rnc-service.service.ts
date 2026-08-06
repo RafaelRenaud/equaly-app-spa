@@ -171,7 +171,7 @@ export class RncService {
 
   /**
    * GET /rncs/{rnc_id}/documents
-   * Generate RNC PDF File by ID (se existir no futuro)
+   * Generate RNC PDF File by ID
    */
   generateRncPdf(rncId: number, sendEmail: boolean = false): Observable<any> {
     const headers = this.getDefaultHeaders();

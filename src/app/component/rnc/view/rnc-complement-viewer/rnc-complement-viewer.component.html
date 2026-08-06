@@ -1,0 +1,389 @@
+<!-- rnc-complement-viewer.component.html -->
+
+@if (rnc) {
+<div class="surface-container">
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">Opções da RNC</h3>
+    </div>
+    <div class="surface-container-body">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-3" [destroyOnHide]="false">
+
+            <!-- TAB: ANEXOS -->
+            @if (canShowAttachmentsTab()) {
+            <li ngbNavItem="attachments">
+                <button ngbNavLink>
+                    Anexos
+                    @if (existingFiles.length > 0) {
+                    <span class="badge bg-secondary ms-1">{{ existingFiles.length }}</span>
+                    }
+                </button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        @if (shouldShowAttachmentsAlert()) {
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <div class="alert alert-primary">
+                                    <i class="bi bi-info-square-fill me-2"></i>
+                                    Para adicionar anexos, abra o formulário e realize o preenchimento.
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        @if (existingFiles.length === 0 && attachedFiles.length === 0 && !isSavingAttachments) {
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <div class="alert alert-primary" role="alert">
+                                    <i class="bi bi-info-square-fill me-2"></i>
+                                    Nenhum anexo disponível para esta RNC.
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    @if (!isSavingAttachments) {
+                                    @if (canAddAttachments()) {
+                                    @if (existingFiles.length + attachedFiles.length < maxFiles) { <button
+                                        class="btn btn-primary" (click)="fileInput.click()">
+                                        <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                                        </button>
+                                        }
+                                        @if (attachedFiles.length > 0) {
+                                        <button class="btn btn-success" (click)="saveAttachments()"
+                                            [disabled]="isSavingAttachments">
+                                            <i class="bi bi-save-fill me-1"></i>
+                                            Salvar Alterações
+                                        </button>
+                                        }
+                                        <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml" multiple
+                                            hidden (change)="onFileSelected($event)" />
+                                        }
+                                        <button class="btn btn-outline-primary" (click)="refreshAttachments()"
+                                            title="Atualizar lista">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Atualizar
+                                        </button>
+                                        }
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (isUploading) {
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>{{ uploadProgress.message }}</span>
+                                    <span>{{ uploadProgress.percent }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                        role="progressbar" [style.width.%]="uploadProgress.percent"
+                                        [attr.aria-valuenow]="uploadProgress.percent" aria-valuemin="0"
+                                        aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        @if (existingFiles.length > 0) {
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <label class="form-label fw-bold">Arquivos Anexados ({{ existingFiles.length }}/{{
+                                    maxFiles }})</label>
+                                <div class="border rounded p-2">
+                                    @for (file of existingFiles; track file.id) {
+                                    <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                                        <div class="col-md-6">
+                                            <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                            <strong>{{ file.name }}</strong>
+                                            <small class="text-muted ms-2">{{ formatFileSize(file.size || 0) }}</small>
+                                        </div>
+                                        <div class="col-md-6 text-md-end">
+                                            <button class="btn btn-primary btn-sm me-1" (click)="viewFile(file)"
+                                                aria-label="Visualizar arquivo" [disabled]="isSavingAttachments">
+                                                <i class="bi bi-eye-fill me-1"></i> Visualizar
+                                            </button>
+                                            @if (canAddAttachments()) {
+                                            <button class="btn btn-danger btn-sm" (click)="removeExistingFile(file)"
+                                                aria-label="Remover arquivo" [disabled]="isSavingAttachments">
+                                                <i class="bi bi-trash-fill me-1"></i> Remover
+                                            </button>
+                                            }
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        }
+
+                        @if (canAddAttachments() && attachedFiles.length > 0) {
+                        <div class="row mb-3">
+                            <div class="col-md">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-file-earmark-plus me-1"></i>
+                                    Novos Arquivos ({{ attachedFiles.length }})
+                                </label>
+                                <div class="border rounded p-2">
+                                    @for (file of attachedFiles; track $index) {
+                                    <div class="row g-0 align-items-center py-1 border-bottom" [class.border-0]="$last">
+                                        <div class="col-md-8">
+                                            <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                            <strong>{{ file.name }}</strong>
+                                            <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
+                                        </div>
+                                        <div class="col-md-4 text-md-end">
+                                            <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)"
+                                                aria-label="Remover arquivo novo" [disabled]="isSavingAttachments">
+                                                <i class="bi bi-trash-fill me-1"></i> Remover
+                                            </button>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </ng-template>
+            </li>
+            }
+
+            <!-- TAB: VALIDAÇÃO DO FORMULÁRIO -->
+            @if (canShowValidation()) {
+            <li ngbNavItem="validation">
+                <button ngbNavLink>Validação do Formulário</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Análise de Validação</label>
+                            <textarea class="form-control" rows="5" [(ngModel)]="validationDescription" maxlength="512"
+                                placeholder="Descreva sua análise de validação..." (focus)="onTypingStart()"
+                                (input)="onTypingStart()" (blur)="onTypingEnd()"
+                                [class.is-invalid]="validationDescription.length < 32 && validationDescription.length > 0"
+                                [class.is-valid]="validationDescription.length >= 32">
+              </textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Mínimo 32 caracteres</small>
+                                <small
+                                    [class.text-danger]="validationDescription.length < 32 && validationDescription.length > 0"
+                                    [class.text-success]="validationDescription.length >= 32">
+                                    {{ validationDescription.length }}/512 caracteres
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" (click)="openValidationModal(validationModal, true)"
+                                [disabled]="validationDescription.length < 32 || validationDescription.length > 512 || isSubmittingValidation"
+                                aria-label="Aprovar">
+                                <i class="bi bi-check-square-fill me-1"></i> Aprovar
+                            </button>
+                            <button class="btn btn-danger" (click)="openValidationModal(validationModal, false)"
+                                [disabled]="validationDescription.length < 32 || validationDescription.length > 512 || isSubmittingValidation"
+                                aria-label="Reprovar">
+                                <i class="bi bi-x-square-fill me-1"></i> Reprovar
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </li>
+            }
+
+            <!-- TAB: IMPLEMENTAÇÃO DO FORMULÁRIO -->
+            @if (canShowImplementation()) {
+            <li ngbNavItem="implementation">
+                <button ngbNavLink>Implementação do Formulário</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <div class="alert alert-primary">
+                            <i class="bi bi-info-square-fill me-2"></i>
+                            Ao prosseguir, a implementação do seu plano de ação será enviada para o responsável de
+                            qualidade.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descrição da Implementação</label>
+                            <textarea class="form-control" rows="5" [(ngModel)]="implementationDescription"
+                                maxlength="512" placeholder="Descreva a implementação realizada..."
+                                (focus)="onTypingStart()" (input)="onTypingStart()" (blur)="onTypingEnd()"
+                                [class.is-invalid]="implementationDescription.length < 32 && implementationDescription.length > 0"
+                                [class.is-valid]="implementationDescription.length >= 32">
+              </textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Mínimo 32 caracteres</small>
+                                <small
+                                    [class.text-danger]="implementationDescription.length < 32 && implementationDescription.length > 0"
+                                    [class.text-success]="implementationDescription.length >= 32">
+                                    {{ implementationDescription.length }}/512 caracteres
+                                </small>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" (click)="submitImplementation()"
+                            [disabled]="implementationDescription.length < 32 || implementationDescription.length > 512 || isSubmittingImplementation"
+                            aria-label="Enviar implementação">
+                            <i class="bi bi-send-fill me-1"></i> Enviar Implementação
+                        </button>
+                    </div>
+                </ng-template>
+            </li>
+            }
+
+            <!-- TAB: ANÁLISE DE EFICÁCIA -->
+            @if (canShowEfficacy()) {
+            <li ngbNavItem="efficacy">
+                <button ngbNavLink>Análise de Eficácia</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Análise de Eficácia</label>
+                            <textarea class="form-control" rows="5" [(ngModel)]="efficacyDescription" maxlength="512"
+                                placeholder="Descreva sua análise de eficácia..." (focus)="onTypingStart()"
+                                (input)="onTypingStart()" (blur)="onTypingEnd()"
+                                [class.is-invalid]="efficacyDescription.length < 32 && efficacyDescription.length > 0"
+                                [class.is-valid]="efficacyDescription.length >= 32">
+              </textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Mínimo 32 caracteres</small>
+                                <small
+                                    [class.text-danger]="efficacyDescription.length < 32 && efficacyDescription.length > 0"
+                                    [class.text-success]="efficacyDescription.length >= 32">
+                                    {{ efficacyDescription.length }}/512 caracteres
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" (click)="openEfficacyModal(efficacyModal, true)"
+                                [disabled]="efficacyDescription.length < 32 || efficacyDescription.length > 512 || isSubmittingEfficacy"
+                                aria-label="Aprovar eficácia">
+                                <i class="bi bi-check-square-fill me-1"></i> Aprovar
+                            </button>
+                            <button class="btn btn-danger" (click)="openEfficacyModal(efficacyModal, false)"
+                                [disabled]="efficacyDescription.length < 32 || efficacyDescription.length > 512 || isSubmittingEfficacy"
+                                aria-label="Rejeitar eficácia">
+                                <i class="bi bi-x-square-fill me-1"></i> Rejeitar
+                            </button>
+                        </div>
+                    </div>
+                </ng-template>
+            </li>
+            }
+
+            <!-- TAB: HISTÓRICO DE ATIVIDADES -->
+            <li ngbNavItem="activityHistory">
+                <button ngbNavLink>Histórico de Atividades</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                        <app-audit [subjectId]="rnc.id!" [subjectType]="'RNC'" [subjectCode]="rnc.code" [pageSize]="5">
+                        </app-audit>
+                    </div>
+                </ng-template>
+            </li>
+
+            <!-- TAB: AVALIAÇÕES DO DALTON -->
+            @if (isDaltonEnabled) {
+            <li ngbNavItem="daltonRatings">
+                <button ngbNavLink>Avaliações do Dalton</button>
+                <ng-template ngbNavContent>
+                    <div class="tab-content-container p-3">
+                    </div>
+                </ng-template>
+            </li>
+            }
+        </ul>
+
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </div>
+</div>
+}
+
+<!-- ==================== MODAL DE VALIDAÇÃO (REPROVAR) ==================== -->
+<ng-template #validationModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">Confirmar Reprovação</h4>
+        <button type="button" class="btn-close" (click)="modal.dismiss(); onModalClose()" aria-label="Fechar"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p class="mt-3">
+            Ao reprovar, o formulário retornará para correção e preenchimento do responsável.
+        </p>
+        <p class="text-muted small">Deseja continuar?</p>
+        <img src="assets/answer.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss(); onModalClose()" aria-label="Cancelar">
+            <i class="bi bi-x-square-fill"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-danger"
+            (click)="modal.close(); onModalClose(); confirmValidationReproval()" aria-label="Confirmar reprovação">
+            <i class="bi bi-x-square-fill"></i> Confirmar Reprovação
+        </button>
+    </div>
+</ng-template>
+
+<!-- ==================== MODAL DE EFICÁCIA (APROVAR) ==================== -->
+<ng-template #efficacyModal let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title">{{ isSubmittingEfficacy ? 'Confirmar Aprovação' : 'Confirmar Rejeição' }}</h4>
+        <button type="button" class="btn-close" (click)="modal.dismiss(); onModalClose()" aria-label="Fechar"></button>
+    </div>
+    <div class="modal-body">
+        @if (efficacyDescription.length > 0) {
+        <div class="mb-3">
+            <label class="form-label fw-bold">Sua análise:</label>
+            <div class="border rounded p-3 bg-light">
+                {{ efficacyDescription }}
+            </div>
+        </div>
+        }
+
+        @if (!isSubmittingEfficacy) {
+        <div class="text-center">
+            <p class="mt-3">
+                Suas informações de fechamento abaixo serão registradas e a Não-Conformidade será encerrada junto ao
+                formulário.
+            </p>
+            <p class="text-muted small">Deseja prosseguir?</p>
+            <img src="assets/answer.svg" alt="Aviso" class="w-25" />
+        </div>
+        }
+
+        @if (isSubmittingEfficacy) {
+        <div class="mt-3">
+            <label class="form-label fw-bold">Selecione o próximo estado:</label>
+            <select class="form-select" [(ngModel)]="selectedDeniedStatus">
+                <option value="IMPLEMENTATION_EDITION">Solicitar Correção da Implementação</option>
+                <option value="VALIDATION_EDITION">Solicitar Correção do Formulário</option>
+            </select>
+            <div class="text-center mt-3">
+                <p>
+                    Suas informações de análise abaixo serão registradas e o formulário voltará para o estado desejado.
+                </p>
+                <p class="text-muted small">Deseja prosseguir?</p>
+                <img src="assets/answer.svg" alt="Aviso" class="w-25" />
+            </div>
+        </div>
+        }
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="modal.dismiss(); onModalClose()" aria-label="Cancelar">
+            <i class="bi bi-x-square-fill"></i> Cancelar
+        </button>
+        @if (!isSubmittingEfficacy) {
+        <button type="button" class="btn btn-success" (click)="modal.close(); onModalClose(); confirmEfficacyApproval()"
+            aria-label="Confirmar aprovação">
+            <i class="bi bi-check-square-fill"></i> Confirmar Aprovação
+        </button>
+        } @else {
+        <button type="button" class="btn btn-danger" (click)="modal.close(); onModalClose(); confirmEfficacyDenial()"
+            aria-label="Confirmar rejeição">
+            <i class="bi bi-x-square-fill"></i> Confirmar Rejeição
+        </button>
+        }
+    </div>
+</ng-template>

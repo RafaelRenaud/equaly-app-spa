@@ -40,7 +40,7 @@
     @switch (getFollowUpStatus(rncForm.actionPlan!.followUp)) {
     @case ('pending') {
     <div class="row">
-        <div class="col-md alert alert-info" role="alert">
+        <div class="col-md alert alert-primary" role="alert">
             <i class="bi bi-clock-fill me-2"></i>
             Essa Não Conformidade possui um formulário pendente de finalização de implementação.
         </div>
@@ -66,7 +66,7 @@
     }
     }@else if(rncForm.status === "AWAITING_EFFICACY_ANALYSIS" && isRncInspector) {
     <div class="row">
-        <div class="col-md alert alert-info" role="alert">
+        <div class="col-md alert alert-primary" role="alert">
             <i class="bi bi-info-square-fill me-2"></i>
             Essa Não Conformidade possui um formulário pendente de análise de eficácia.
         </div>

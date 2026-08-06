@@ -1,8 +1,10 @@
-<!-- rnc-viewer.component.html -->
-
 @if (rnc) {
 <h2>Visualização de Não-Conformidade</h2>
 <hr />
+
 <app-rnc-main-viewer [rnc]="rnc" [rncForm]="rncForm" [occur]="occur" (rncReloaded)="onRncReloaded($event)">
 </app-rnc-main-viewer>
+
+<app-rnc-complement-viewer [rnc]="rnc" [rncForm]="rncForm">
+</app-rnc-complement-viewer>
 }

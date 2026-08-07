@@ -102,6 +102,10 @@ export class RncViewerComponent implements OnInit, OnDestroy {
     }
   }
 
+  onReloadRequested(): void {
+    this.loadRnc();
+  }
+
   private handleError(message: string) {
     this.loadingService.hide();
     setTimeout(() => {

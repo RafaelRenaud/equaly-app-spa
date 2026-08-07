@@ -5,6 +5,9 @@
 <app-rnc-main-viewer [rnc]="rnc" [rncForm]="rncForm" [occur]="occur" (rncReloaded)="onRncReloaded($event)">
 </app-rnc-main-viewer>
 
-<app-rnc-complement-viewer [rnc]="rnc" [rncForm]="rncForm">
+<app-rnc-complement-viewer 
+  [rnc]="rnc" 
+  [rncForm]="rncForm"
+  (reloadRequested)="onReloadRequested()">
 </app-rnc-complement-viewer>
 }

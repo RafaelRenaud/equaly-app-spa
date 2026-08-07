@@ -1,0 +1,451 @@
+<div class="surface-container">
+    @if (!isLoading && rnc) {
+    <div class="surface-container-header">
+        <h3 class="text-white pt-3 pb-2">{{ isNewForm ? 'Novo Formulário' : 'Editar Formulário' }}</h3>
+    </div>
+    <div class="surface-container-body">
+        <app-rnc-main-viewer [rnc]="rnc" [rncForm]="rncForm" [occur]="occur" (rncReloaded)="onRncReloaded($event)">
+        </app-rnc-main-viewer>
+
+        <form [formGroup]="formGroup" class="mt-4">
+            <ul ngbNav #nav="ngbNav" [(activeId)]="activeTab" class="nav-tabs mb-4" [destroyOnHide]="false">
+                <!-- Tab: Análise de Causa -->
+                <li ngbNavItem="analysis">
+                    <button ngbNavLink>
+                        <i class="bi bi-clipboard-check me-1"></i> Análise de Causa
+                    </button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container p-3">
+                            <!-- Problema Principal -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="4"
+                                            [class.is-invalid]="isFieldInvalid('problem')" formControlName="problem"
+                                            id="floatingProblem"
+                                            placeholder="Descreva o problema principal..."></textarea>
+                                        <label for="floatingProblem">Problema Principal</label>
+                                    </div>
+                                    @if (formGroup.get('problem')?.value?.length > 0 || isFieldInvalid('problem')) {
+                                    <small class="text-muted d-block mt-1 ms-1">
+                                        Mínimo 16 | Máximo 128 caracteres ({{ getFieldLength('problem') }}/128)
+                                    </small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Perguntas (5 Porquês) -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="alert alert-primary">
+                                        <i class="bi bi-question-square-fill me-2"></i>
+                                        <strong>Análise dos 5 Porquês:</strong> Para cada nível, responda "Por que isso
+                                        aconteceu?" (Mínimo 3 respostas)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div formArrayName="questions">
+                                @for (q of questions.controls; track $index; let i = $index) {
+                                <div class="row mb-2" [formGroupName]="i">
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control"
+                                                [class.is-invalid]="q.get('answer')?.invalid && q.get('answer')?.touched"
+                                                formControlName="answer" [id]="'floatingQuestion' + (i + 1)"
+                                                placeholder="Por quê? (Nível {{ i + 1 }})" />
+                                            <label [for]="'floatingQuestion' + (i + 1)">
+                                                Por quê? (Nível {{ i + 1 }})
+                                            </label>
+                                        </div>
+                                        <input type="hidden" formControlName="level" />
+                                        @if (q.get('answer')?.value?.length > 0 || q.get('answer')?.touched) {
+                                        <small class="text-muted d-block mt-1 ms-1">
+                                            Mínimo 8 | Máximo 64 caracteres ({{ q.get('answer')?.value?.length || 0
+                                            }}/64)
+                                        </small>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                            </div>
+
+                            <!-- Causas -->
+                            <div class="row mb-3">
+                                <div class="col-md-12 d-flex justify-content-between align-items-center">
+                                    <label class="form-label fw-bold mb-0">Causas ({{ causes.length }}/5)</label>
+                                    <button type="button" class="btn btn-sm btn-primary" (click)="addCause()"
+                                        [disabled]="causes.length >= 5">
+                                        <i class="bi bi-plus me-1"></i> Adicionar Causa
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-primary">
+                                <i class="bi bi-info-square-fill me-2"></i>
+                                Adicione pelo menos uma causa. Apenas uma causa pode ser do tipo <strong>Raiz</strong>.
+                            </div>
+
+                            <div formArrayName="causes">
+                                @for (c of causes.controls; track $index; let i = $index) {
+                                <div class="row g-2 mb-3 align-items-start" [formGroupName]="i">
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <select class="form-select"
+                                                [class.is-invalid]="c.get('category')?.invalid && c.get('category')?.touched"
+                                                formControlName="category">
+                                                <option value="" selected disabled>Selecione</option>
+                                                <option value="MACHINE">Máquina</option>
+                                                <option value="METHOD">Método</option>
+                                                <option value="MOTHER_NATURE">Meio Ambiente</option>
+                                                <option value="MANPOWER">Mão de Obra</option>
+                                                <option value="MEASUREMENTS">Medições</option>
+                                            </select>
+                                            <label>Categoria</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-floating">
+                                            <select class="form-select"
+                                                [class.is-invalid]="c.get('causeType')?.invalid && c.get('causeType')?.touched"
+                                                formControlName="causeType">
+                                                <option value="" selected disabled>Selecione</option>
+                                                <option value="ROOT">Raiz</option>
+                                                <option value="CONTRIBUTING">Contribuinte</option>
+                                            </select>
+                                            <label>Tipo</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-floating">
+                                            <textarea class="form-control" rows="3"
+                                                [class.is-invalid]="c.get('description')?.invalid && c.get('description')?.touched"
+                                                formControlName="description" [id]="'floatingCauseDesc' + i"
+                                                placeholder="Descrição detalhada da causa..."></textarea>
+                                            <label [for]="'floatingCauseDesc' + i">Descrição</label>
+                                        </div>
+                                        @if (c.get('description')?.value?.length > 0 || c.get('description')?.touched) {
+                                        <small class="text-muted d-block mt-1 ms-1">
+                                            Mínimo 16 | Máximo 256 caracteres ({{ c.get('description')?.value?.length ||
+                                            0
+                                            }}/256)
+                                        </small>
+                                        }
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-danger w-100" (click)="removeCause(i)"
+                                            [disabled]="!canRemoveCause()">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <!-- Tab: Plano de Ação -->
+                <li ngbNavItem="actionPlan">
+                    <button ngbNavLink>
+                        <i class="bi bi-list-task me-1"></i> Plano de Ação
+                    </button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container p-3">
+                            <!-- Descrição do Plano de Ação -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" rows="4"
+                                            [class.is-invalid]="isFieldInvalid('actionPlanDescription')"
+                                            formControlName="actionPlanDescription" id="floatingActionPlan"
+                                            placeholder="Descreva o plano de ação..."></textarea>
+                                        <label for="floatingActionPlan">Descrição do Plano de Ação</label>
+                                    </div>
+                                    @if (formGroup.get('actionPlanDescription')?.value?.length > 0 ||
+                                    isFieldInvalid('actionPlanDescription')) {
+                                    <small class="text-muted d-block mt-1 ms-1">
+                                        Mínimo 32 | Máximo 1024 caracteres ({{ getFieldLength('actionPlanDescription')
+                                        }}/1024)
+                                    </small>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Data de Entrega -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('followUp')" formControlName="followUp"
+                                            id="floatingFollowUp" [min]="today" />
+                                        <label for="floatingFollowUp">Data de Entrega do Plano</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 h-100"
+                                        [class.is-invalid]="isFieldInvalid('involvedType')">
+                                        <div class="form-label mb-2">Tipo de Envolvido</div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" value="internal"
+                                                formControlName="involvedType" id="involvedTypeInternal" />
+                                            <label class="form-check-label" for="involvedTypeInternal">Usuário do
+                                                Sistema</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" value="external"
+                                                formControlName="involvedType" id="involvedTypeExternal" />
+                                            <label class="form-check-label" for="involvedTypeExternal">Nome
+                                                Livre</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Envolvido: Usuário do Sistema -->
+                            @if (isInternalInvolved) {
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div [class.is-invalid]="isFieldInvalid('involvedInternal')">
+                                        <app-user-type-head-search [initialId]="initialInvolvedId"
+                                            placeholder="Envolvido" modalId="involvedSearchModal"
+                                            (outputUserSelected)="onInvolvedSelected($event)">
+                                        </app-user-type-head-search>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <!-- Envolvido: Nome Livre -->
+                            @if (!isInternalInvolved) {
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control"
+                                            [class.is-invalid]="isFieldInvalid('involvedExternal')"
+                                            formControlName="involvedExternal" id="floatingInvolvedExternal"
+                                            placeholder="Nome do envolvido..." />
+                                        <label for="floatingInvolvedExternal">Envolvido</label>
+                                    </div>
+                                    @if (formGroup.get('involvedExternal')?.value?.length > 0 ||
+                                    isFieldInvalid('involvedExternal')) {
+                                    <small class="text-muted d-block mt-1 ms-1">
+                                        Mínimo 8 | Máximo 128 caracteres ({{ getFieldLength('involvedExternal') }}/128)
+                                    </small>
+                                    }
+                                </div>
+                            </div>
+                            }
+
+                            <div class="alert alert-primary">
+                                <i class="bi bi-info-square-fill me-2"></i>
+                                O envolvido é o responsável pela execução do plano de ação, o responsável do formulário deve garantir que o plano seja executado por ele corretamente dentro do prazo.
+                            </div>
+                        </div>
+                    </ng-template>
+                </li>
+
+                <!-- Tab: Anexos -->
+                <li ngbNavItem="attachments">
+                    <button ngbNavLink>
+                        <i class="bi bi-paperclip me-1"></i> Anexos
+                        @if (existingFiles.length > 0 || attachedFiles.length > 0) {
+                        <span class="badge bg-secondary ms-1">{{ existingFiles.length + attachedFiles.length }}</span>
+                        }
+                    </button>
+                    <ng-template ngbNavContent>
+                        <div class="tab-content-container p-3">
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <div class="alert alert-primary">
+                                        <i class="bi bi-info-square-fill me-2"></i>
+                                        É possível anexar até {{ maxFiles }} arquivos. Formatos suportados: PDF, JPG,
+                                        PNG, HEIC, XML.
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (existingFiles.length > 0) {
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <label class="form-label fw-bold">Arquivos Anexados ({{ existingFiles.length }}/{{
+                                        maxFiles }})</label>
+                                    <div class="border rounded p-2">
+                                        @for (file of existingFiles; track file.id) {
+                                        <div class="row g-0 align-items-center py-1 border-bottom"
+                                            [class.border-0]="$last">
+                                            <div class="col-md-6">
+                                                <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                                <strong>{{ file.name }}</strong>
+                                                <small class="text-muted ms-2">{{ formatFileSize(file.size || 0)
+                                                    }}</small>
+                                            </div>
+                                            <div class="col-md-6 text-md-end">
+                                                <button class="btn btn-primary btn-sm me-1" (click)="viewFile(file)"
+                                                    aria-label="Visualizar arquivo">
+                                                    <i class="bi bi-eye-fill me-1"></i> Visualizar
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" (click)="removeExistingFile(file)"
+                                                    aria-label="Remover arquivo">
+                                                    <i class="bi bi-trash-fill me-1"></i> Remover
+                                                </button>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            @if (isUploading) {
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <span>{{ uploadProgress.message }}</span>
+                                        <span>{{ uploadProgress.current }}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                            role="progressbar" [style.width.%]="uploadProgress.current"
+                                            [attr.aria-valuenow]="uploadProgress.current" aria-valuemin="0"
+                                            aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        @if (!isSavingAttachments) {
+                                        @if (existingFiles.length + attachedFiles.length < maxFiles) { <button
+                                            class="btn btn-primary" (click)="fileInput.click()">
+                                            <i class="bi bi-upload me-1"></i> Adicionar Arquivo
+                                            </button>
+                                            }
+                                            @if (attachedFiles.length > 0) {
+                                            <button class="btn btn-success" (click)="saveAttachments()"
+                                                [disabled]="isSavingAttachments">
+                                                <i class="bi bi-save-fill me-1"></i> Salvar Alterações
+                                            </button>
+                                            }
+                                            <input #fileInput type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.xml"
+                                                multiple hidden (change)="onFileSelected($event)" />
+                                            <button class="btn btn-outline-primary" (click)="refreshAttachments()"
+                                                title="Atualizar lista">
+                                                <i class="bi bi-arrow-repeat me-1"></i> Atualizar
+                                            </button>
+                                            }
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (attachedFiles.length > 0) {
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <label class="form-label fw-bold">
+                                        <i class="bi bi-file-earmark-plus me-1"></i>
+                                        Novos Arquivos ({{ attachedFiles.length }})
+                                    </label>
+                                    <div class="border rounded p-2">
+                                        @for (file of attachedFiles; track $index) {
+                                        <div class="row g-0 align-items-center py-1 border-bottom"
+                                            [class.border-0]="$last">
+                                            <div class="col-md-8">
+                                                <i class="bi bi-file-earmark text-secondary me-2"></i>
+                                                <strong>{{ file.name }}</strong>
+                                                <small class="text-muted ms-2">{{ formatFileSize(file.size) }}</small>
+                                            </div>
+                                            <div class="col-md-4 text-md-end">
+                                                <button class="btn btn-danger btn-sm" (click)="removeNewFile($index)"
+                                                    aria-label="Remover arquivo novo">
+                                                    <i class="bi bi-trash-fill me-1"></i> Remover
+                                                </button>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            }
+
+                            @if (existingFiles.length === 0 && attachedFiles.length === 0 && !isSavingAttachments) {
+                            <div class="row mb-3">
+                                <div class="col-md">
+                                    <div class="alert alert-primary" role="alert">
+                                        <i class="bi bi-info-square-fill me-2"></i>
+                                        Nenhum anexo disponível para este formulário.
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </ng-template>
+                </li>
+            </ul>
+
+            <div [ngbNavOutlet]="nav" class="mt-3"></div>
+
+            <div class="row mt-5">
+                <div class="col-md-12 text-center">
+                    <button class="btn btn-secondary me-2" type="button" (click)="goBack()">
+                        <i class="bi bi-arrow-left-square-fill"></i> Voltar
+                    </button>
+
+                    <button class="btn btn-outline-primary me-2" type="button"
+                        (click)="openSaveDraftModal(saveDraftModal)">
+                        <i class="bi bi-file-earmark-text"></i> Salvar Rascunho
+                    </button>
+
+                    <button class="btn btn-success" type="button" (click)="openSubmitModal(submitModal)"
+                        [disabled]="isSubmitting">
+                        <i class="bi bi-send-fill"></i>
+                        {{ isNewForm ? 'Enviar para Validação' : 'Atualizar e Enviar' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    }
+</div>
+
+<ng-template #saveDraftModal>
+    <div class="modal-header">
+        <h5 class="modal-title">Salvar Rascunho</h5>
+        <button type="button" class="btn-close" (click)="modalService.dismissAll()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p>Os dados do formulário serão salvos como rascunho.</p>
+        <p class="text-muted small">Você poderá continuar a edição posteriormente.</p>
+        <img src="assets/document_warning.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modalService.dismissAll()">Cancelar</button>
+        <button class="btn btn-outline-primary" (click)="confirmSaveDraft(); modalService.dismissAll()">
+            <i class="bi bi-file-earmark-text"></i> Salvar Rascunho
+        </button>
+    </div>
+</ng-template>
+
+<ng-template #submitModal>
+    <div class="modal-header">
+        <h5 class="modal-title">{{ isNewForm ? 'Enviar para Validação' : 'Atualizar e Enviar' }}</h5>
+        <button type="button" class="btn-close" (click)="modalService.dismissAll()"></button>
+    </div>
+    <div class="modal-body text-center">
+        <p>
+            O formulário será <strong>{{ isNewForm ? 'criado e' : 'atualizado e' }}</strong>
+            enviado para validação do responsável de qualidade.
+        </p>
+        <p class="text-muted small">Após o envio, você não poderá mais editar o formulário até que seja retornado para
+            correção.</p>
+        <img src="assets/answer.svg" alt="Aviso" class="w-25" />
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="modalService.dismissAll()">Cancelar</button>
+        <button class="btn btn-success" (click)="confirmSubmitForm(); modalService.dismissAll()">
+            <i class="bi bi-send-fill"></i> Confirmar Envio
+        </button>
+    </div>
+</ng-template>

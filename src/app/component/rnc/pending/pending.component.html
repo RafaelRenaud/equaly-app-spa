@@ -54,7 +54,9 @@
                         <th>Código</th>
                         <th>Prioridade</th>
                         <th>Ocorrência</th>
-                        <th>Inspetor</th>
+                        <th>Formulário Criado</th>
+                        <th>Responsável Qualidade</th>
+                        <th>Responsável Preenchimento</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -75,9 +77,12 @@
                             }
                         </td>
                         <td>{{ rnc.occur.code || 'Não Informado' }}</td>
+                        <td>{{ rnc.hasFormAssigned ? 'Sim' : 'Não' }}</td>
                         <td>{{ rnc.inspector.username || 'Não Informado' }}</td>
+                        <td>{{ rnc.reporter.username || 'Não Informado' }}</td>
                         <td class="text-nowrap">
-                            <button class="btn btn-primary" title="Preencher Formulário">
+                            <button class="btn btn-primary" title="Preencher Formulário"
+                                [routerLink]="['/rncs', rnc.id, 'form']">
                                 <i class="bi bi-pencil-square"></i>
                                 Preencher
                             </button>

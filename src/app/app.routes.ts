@@ -24,7 +24,10 @@ import { OccurHubComponent } from "./component/occur/hub/occur-hub/occur-hub.com
 import { OccurPendingComponent } from "./component/occur/pending/pending.component";
 import { OccurViewerComponent } from "./component/occur/view/occur-viewer/occur-viewer.component";
 import { RecoveryComponent } from "./component/recovery/recovery.component";
+import { RncFixesComponent } from "./component/rnc/fixes/fixes.component";
+import { RncFormEditComponent } from "./component/rnc/form/rnc-form-edit/rnc-form-edit.component";
 import { RncHubComponent } from "./component/rnc/hub/rnc-hub/rnc-hub.component";
+import { RncPendingComponent } from "./component/rnc/pending/pending.component";
 import { RncViewerComponent } from "./component/rnc/view/rnc-viewer/rnc-viewer.component";
 import { UserCreateComponent } from "./component/user/create/user-create.component";
 import { UserEditComponent } from "./component/user/edit/user-edit.component";
@@ -33,8 +36,6 @@ import { AuthGuard } from "./core/guard/auth.guard";
 import { LoginGuard } from "./core/guard/login.guard";
 import { AuthLayoutComponent } from "./layout/auth-layout/auth-layout.component";
 import { MainLayoutComponent } from "./layout/main-layout/main-layout.component";
-import { RncPendingComponent } from "./component/rnc/pending/pending.component";
-import { RncFixesComponent } from "./component/rnc/fixes/fixes.component";
 
 export const routes: Routes = [
   {
@@ -295,6 +296,14 @@ export const routes: Routes = [
                 "COMMON_RNC_REPORTER"]
             },
             component: RncViewerComponent
+          },
+          {
+            path: ":id/form",
+            data: {
+              roles: [
+                "COMMON_RNC_REPORTER"]
+            },
+            component: RncFormEditComponent
           }
         ],
       }

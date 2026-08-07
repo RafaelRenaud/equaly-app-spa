@@ -329,23 +329,14 @@
 <!-- ==================== MODAL DE EFICÁCIA (APROVAR) ==================== -->
 <ng-template #efficacyModal let-modal>
     <div class="modal-header">
-        <h4 class="modal-title">{{ isSubmittingEfficacy ? 'Confirmar Aprovação' : 'Confirmar Rejeição' }}</h4>
+        <h4 class="modal-title">{{ efficacyAction === 'approve' ? 'Confirmar Aprovação' : 'Confirmar Rejeição' }}</h4>
         <button type="button" class="btn-close" (click)="modal.dismiss(); onModalClose()" aria-label="Fechar"></button>
     </div>
     <div class="modal-body">
-        @if (efficacyDescription.length > 0) {
-        <div class="mb-3">
-            <label class="form-label fw-bold">Sua análise:</label>
-            <div class="border rounded p-3 bg-light">
-                {{ efficacyDescription }}
-            </div>
-        </div>
-        }
-
-        @if (!isSubmittingEfficacy) {
+        @if (efficacyAction === 'approve') {
         <div class="text-center">
             <p class="mt-3">
-                Suas informações de fechamento abaixo serão registradas e a Não-Conformidade será encerrada junto ao
+                Suas informações de fechamento serão registradas e a Não-Conformidade será encerrada junto ao
                 formulário.
             </p>
             <p class="text-muted small">Deseja prosseguir?</p>
@@ -353,7 +344,7 @@
         </div>
         }
 
-        @if (isSubmittingEfficacy) {
+        @if (efficacyAction === 'deny') {
         <div class="mt-3">
             <label class="form-label fw-bold">Selecione o próximo estado:</label>
             <select class="form-select" [(ngModel)]="selectedDeniedStatus">
@@ -362,7 +353,7 @@
             </select>
             <div class="text-center mt-3">
                 <p>
-                    Suas informações de análise abaixo serão registradas e o formulário voltará para o estado desejado.
+                    Suas informações de análise serão registradas e o formulário voltará para o estado desejado.
                 </p>
                 <p class="text-muted small">Deseja prosseguir?</p>
                 <img src="assets/answer.svg" alt="Aviso" class="w-25" />
@@ -374,12 +365,13 @@
         <button type="button" class="btn btn-secondary" (click)="modal.dismiss(); onModalClose()" aria-label="Cancelar">
             <i class="bi bi-x-square-fill"></i> Cancelar
         </button>
-        @if (!isSubmittingEfficacy) {
+        @if (efficacyAction === 'approve') {
         <button type="button" class="btn btn-success" (click)="modal.close(); onModalClose(); confirmEfficacyApproval()"
             aria-label="Confirmar aprovação">
             <i class="bi bi-check-square-fill"></i> Confirmar Aprovação
         </button>
-        } @else {
+        }
+        @if (efficacyAction === 'deny') {
         <button type="button" class="btn btn-danger" (click)="modal.close(); onModalClose(); confirmEfficacyDenial()"
             aria-label="Confirmar rejeição">
             <i class="bi bi-x-square-fill"></i> Confirmar Rejeição

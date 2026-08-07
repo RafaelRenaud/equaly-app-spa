@@ -1,13 +1,17 @@
+// rnc-complement-viewer.component.ts
+
 import { CommonModule } from "@angular/common";
 import {
   Component,
   ElementRef,
+  EventEmitter,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
-  ViewChild,
-  OnChanges,
+  Output,
   SimpleChanges,
+  ViewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
@@ -47,6 +51,8 @@ import { AuditComponent } from "../../../audit/audit.component";
 export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true }) rnc!: Rnc;
   @Input({ required: true }) rncForm!: RncForm | null;
+  @Output() reloadRequested = new EventEmitter<void>(); // 👈 NOVO OUTPUT
+
   @ViewChild("fileInput") fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild(AuditComponent) auditComponent!: AuditComponent;
 
@@ -71,6 +77,7 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
 
   efficacyDescription: string = "";
   isSubmittingEfficacy: boolean = false;
+  efficacyAction: 'approve' | 'deny' | null = null;
   selectedDeniedStatus: 'VALIDATION_EDITION' | 'IMPLEMENTATION_EDITION' = 'IMPLEMENTATION_EDITION';
 
   maxFiles: number = 20;
@@ -460,12 +467,8 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
       return;
     }
 
-    if (isApproved) {
-      this.modalService.open(content, { size: "lg", centered: true, backdrop: 'static' });
-    } else {
-      this.selectedDeniedStatus = 'IMPLEMENTATION_EDITION';
-      this.modalService.open(content, { size: "lg", centered: true, backdrop: 'static' });
-    }
+    this.efficacyAction = isApproved ? 'approve' : 'deny';
+    this.modalService.open(content, { size: "lg", centered: true, backdrop: 'static' });
   }
 
   confirmEfficacyApproval(): void {
@@ -500,6 +503,7 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
         this.isSubmittingEfficacy = false;
         this.loadingService.hide();
         this.efficacyDescription = '';
+        this.efficacyAction = null;
         this.onModalClose();
         this.showAlert('SUCCESS', isApproved ? 'Análise de eficácia aprovada. Não-Conformidade encerrada com sucesso!' : 'Análise de eficácia registrada. Formulário retornará para o estado selecionado.');
         this.reloadRncAndForm();
@@ -507,6 +511,7 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
       error: () => {
         this.isSubmittingEfficacy = false;
         this.loadingService.hide();
+        this.efficacyAction = null;
         this.onModalClose();
         this.showAlert('ERROR', 'Erro ao analisar eficácia. Tente novamente.');
       }
@@ -514,9 +519,8 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
   }
 
   private reloadRncAndForm(): void {
-    setTimeout(() => {
-      this.autoRefresh.forceRefresh();
-    }, 500);
+    this.activeTab = 'attachments';
+    this.reloadRequested.emit();
   }
 
   private showAlert(type: "SUCCESS" | "WARNING" | "ERROR", message: string): void {

@@ -377,6 +377,9 @@
                                     data-bs-target="#collapseActionPlan" aria-expanded="false"
                                     aria-controls="collapseActionPlan">
                                     <i class="bi bi-list-check me-2"></i> Plano de Ação
+                                    @if(rncForm!.status === 'VALIDATION_EDITION'){
+                                        <span class="badge ms-2 bg-danger">Reprovada</span>
+                                    }
                                 </button>
                             </h2>
                             <div id="collapseActionPlan" class="accordion-collapse collapse"
@@ -452,6 +455,9 @@
                                     data-bs-target="#collapseImplementation" aria-expanded="false"
                                     aria-controls="collapseImplementation">
                                     <i class="bi bi-gear me-2"></i> Implementação
+                                    @if(rncForm!.status === 'IMPLEMENTATION_EDITION'){
+                                        <span class="badge ms-2 bg-danger">Reprovada</span>
+                                    }
                                 </button>
                             </h2>
                             <div id="collapseImplementation" class="accordion-collapse collapse"

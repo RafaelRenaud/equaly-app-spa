@@ -1,6 +1,5 @@
 @if (rnc) {
-<div class="mt-4">
-
+<div>
     <!-- ==================== ALERTAS CONTEXTUAIS ==================== -->
     @if (rnc.status === "OPENED" && rnc.hasFormAssigned && isRncReporter) {
     <div class="row">
@@ -13,7 +12,7 @@
     <div class="row">
         <div class="col-md alert alert-warning" role="alert">
             <i class="bi bi-exclamation-square-fill me-2"></i>
-            Não Conformidade Pendente de preenchimento de formulário. Acesse o menu de pendências e realize o envio.
+            Não Conformidade Pendente de preenchimento de formulário. Realize o envio para a validação de qualidade.
         </div>
     </div>
     }
@@ -31,8 +30,7 @@
     <div class="row">
         <div class="col-md alert alert-warning" role="alert">
             <i class="bi bi-exclamation-square-fill me-2"></i>
-            Essa Não Conformidade possui um formulário pendente de correção. Acesse o menu de pendências e realize o
-            envio.
+            Essa Não Conformidade possui um formulário pendente de correção. Ajuste os apontamentos e realize o reenvio.
         </div>
     </div>
     }@else if ((rncForm.status === "AWAITING_IMPLEMENTATION" || rncForm.status === "IMPLEMENTATION_EDITION")
@@ -581,26 +579,6 @@
             </div>
         </div>
     </div>
-    } @else {
-    <!-- ==================== SEM FORMULÁRIO ==================== -->
-    <div class="accordion mb-3" id="formAccordion">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#collapseForm" aria-expanded="false" aria-controls="collapseForm">
-                    <i class="bi bi-clipboard-check me-2"></i> Formulário de Qualidade
-                </button>
-            </h2>
-            <div id="collapseForm" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
-                <div class="accordion-body">
-                    <div class="alert alert-primary">
-                        <i class="bi bi-info-square-fill me-2"></i>
-                        Nenhum formulário associado a esta RNC.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    }
+    } 
 </div>
 }

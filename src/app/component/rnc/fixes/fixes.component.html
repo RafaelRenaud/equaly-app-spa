@@ -10,7 +10,7 @@
                 <div class="btn-group" role="group">
                     <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'formRefill'"
                         [class.btn-primary]="activeTab === 'formRefill'" (click)="changeTab('formRefill')">
-                        Repreencher Formulário
+                        Corrigir Formulário
                     </button>
                     <button type="button" class="btn" [class.btn-outline-primary]="activeTab !== 'implementationRedo'"
                         [class.btn-primary]="activeTab === 'implementationRedo'"
@@ -64,7 +64,7 @@
                         </td>
                         <td>{{ (form.actionPlan?.followUp | date:'dd/MM/yyyy') || 'Não Informado' }}</td>
                         <td class="text-nowrap">
-                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id]">
+                            <button class="btn btn-primary" title="Abrir RNC" [routerLink]="['/rncs', form.rnc.id, 'form']">
                                 <i class="bi bi-pencil-square"></i>
                                 Corrigir
                             </button>

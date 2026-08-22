@@ -91,7 +91,7 @@
                                 <div class="row g-2 mb-3 align-items-start" [formGroupName]="i">
                                     <div class="col-md-3">
                                         <div class="form-floating">
-                                            <select class="form-select"
+                                            <select class="form-select" title="Selecione o tipo da categoria de não conformidade"
                                                 [class.is-invalid]="c.get('category')?.invalid && c.get('category')?.touched"
                                                 formControlName="category">
                                                 <option value="" selected disabled>Selecione</option>
@@ -106,7 +106,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-floating">
-                                            <select class="form-select"
+                                            <select class="form-select" title="Selecione o tipo de causa"
                                                 [class.is-invalid]="c.get('causeType')?.invalid && c.get('causeType')?.touched"
                                                 formControlName="causeType">
                                                 <option value="" selected disabled>Selecione</option>

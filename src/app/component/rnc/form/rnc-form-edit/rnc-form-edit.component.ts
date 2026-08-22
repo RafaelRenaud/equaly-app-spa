@@ -1,8 +1,25 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from "@angular/core";
+import {
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
-import { NgbAccordionModule, NgbModal, NgbNavModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
+import {
+  NgbAccordionModule,
+  NgbModal,
+  NgbNavModule,
+  NgbTooltipModule,
+} from "@ng-bootstrap/ng-bootstrap";
 import { forkJoin, of, Subscription } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
 import { FileResponse } from "../../../../core/model/file/file-response.model";
@@ -16,6 +33,8 @@ import { RncService } from "../../../../core/service/rnc/rnc-service.service";
 import { SessionService } from "../../../../core/service/session/session.service";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 import { RncMainViewerComponent } from "../../view/rnc-main-viewer/rnc-main-viewer.component";
+import { Occur } from "../../../../core/model/occur/occur.model";
+import { OccurService } from "../../../../core/service/occur/occur.service";
 
 interface UploadProgress {
   current: number;
@@ -35,7 +54,7 @@ interface UploadProgress {
     NgbTooltipModule,
     NgbNavModule,
     RncMainViewerComponent,
-    UserTypeHeadSearchComponent
+    UserTypeHeadSearchComponent,
   ],
   templateUrl: "./rnc-form-edit.component.html",
   styleUrl: "./rnc-form-edit.component.scss",
@@ -44,16 +63,15 @@ interface UploadProgress {
 export class RncFormEditComponent implements OnInit, OnDestroy {
   rnc: Rnc | null = null;
   rncForm: RncForm | null = null;
-  occur: any = null;
+  occur: Occur | null = null;
 
   formGroup!: FormGroup;
   activeTab = "analysis";
-
   isSubmitting = false;
   isLoading = true;
   isNewForm = false;
   isRncReporter = false;
-  isInternalInvolved = false;
+  isInternalInvolved = true;
 
   existingFiles: FileResponse[] = [];
   attachedFiles: File[] = [];
@@ -80,17 +98,20 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     public modalService: NgbModal,
     private loadingService: LoadingService,
     private rncService: RncService,
+    private occurService: OccurService,
     private fileService: FileService,
     private sessionService: SessionService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
+    this.isInternalInvolved =
+      this.formGroup.get("involvedType")?.value === "internal";
     this.loadData();
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   private loadData(): void {
@@ -106,23 +127,77 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     this.rncService.getRnc(this.rncId).subscribe({
       next: (rnc) => {
         this.rnc = rnc;
-        this.isRncReporter = rnc.reporter?.id === Number(this.sessionService.getItem("userId"));
+        this.isRncReporter =
+          rnc.reporter?.id === Number(this.sessionService.getItem("userId"));
 
         if (!this.isRncReporter) {
           this.loadingService.hide();
-          this.redirectWithError("Você não tem permissão para editar este formulário.");
+          this.redirectWithError(
+            "Você não tem permissão para editar este formulário.",
+          );
           return;
+        }
+
+        const requests = [];
+
+        if (rnc.occur?.id) {
+          requests.push(
+            this.occurService.getOccur(rnc.occur.id).pipe(
+              map((occur) => {
+                this.occur = occur;
+                return occur;
+              }),
+            ),
+          );
         }
 
         if (rnc.hasFormAssigned && rnc.form?.id) {
           this.isNewForm = false;
-          this.loadRncForm(rnc.form.id);
+          requests.push(
+            this.rncService.getRncForm(rnc.form.id).pipe(
+              map((rncForm) => {
+                this.rncForm = rncForm;
+                return rncForm;
+              }),
+            ),
+          );
         } else {
           this.isNewForm = true;
+        }
+
+        if (requests.length === 0) {
           this.isLoading = false;
           this.loadingService.hide();
           this.cdr.detectChanges();
+          return;
         }
+
+        forkJoin(requests).subscribe({
+          next: () => {
+            if (!this.isNewForm && this.rncForm) {
+              if (
+                this.rncForm.status !== "DRAFT_OPENED" &&
+                this.rncForm.status !== "VALIDATION_EDITION"
+              ) {
+                this.loadingService.hide();
+                this.redirectWithError(
+                  "Este formulário não está disponível para edição.",
+                );
+                return;
+              }
+              this.populateForm(this.rncForm);
+              this.loadAttachments();
+            }
+
+            this.isLoading = false;
+            this.loadingService.hide();
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.loadingService.hide();
+            this.redirectWithError("Erro ao carregar dados. Tente novamente.");
+          },
+        });
       },
       error: () => {
         this.loadingService.hide();
@@ -131,40 +206,33 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadRncForm(formId: number): void {
-    this.rncService.getRncForm(formId).subscribe({
-      next: (rncForm) => {
-        this.rncForm = rncForm;
-
-        if (rncForm.status !== "DRAFT_OPENED" && rncForm.status !== "VALIDATION_EDITION") {
-          this.loadingService.hide();
-          this.redirectWithError("Este formulário não está disponível para edição.");
-          return;
-        }
-
-        this.isLoading = false;
-        this.loadingService.hide();
-        this.populateForm(rncForm);
-        this.loadAttachments();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loadingService.hide();
-        this.redirectWithError("Erro ao carregar formulário. Tente novamente.");
-      },
-    });
-  }
-
   private initializeForm(): void {
     this.formGroup = this.fb.group({
-      problem: ["", [Validators.required, Validators.minLength(16), Validators.maxLength(128)]],
+      problem: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(16),
+          Validators.maxLength(128),
+        ],
+      ],
       questions: this.fb.array([]),
       causes: this.fb.array([]),
-      actionPlanDescription: ["", [Validators.required, Validators.minLength(32), Validators.maxLength(1024)]],
+      actionPlanDescription: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(32),
+          Validators.maxLength(1024),
+        ],
+      ],
       followUp: ["", [Validators.required]],
       involvedType: ["internal"],
       involvedInternal: [null],
-      involvedExternal: ["", [Validators.minLength(8), Validators.maxLength(128)]],
+      involvedExternal: [
+        "",
+        [Validators.minLength(8), Validators.maxLength(128)],
+      ],
     });
 
     for (let i = 1; i <= 5; i++) {
@@ -174,6 +242,7 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     this.formGroup.get("involvedType")?.valueChanges.subscribe((val) => {
       this.isInternalInvolved = val === "internal";
       this.updateInvolvedValidators();
+      this.cdr.detectChanges();
     });
   }
 
@@ -186,7 +255,11 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       externalCtrl?.clearValidators();
     } else {
       internalCtrl?.clearValidators();
-      externalCtrl?.setValidators([Validators.required, Validators.minLength(8), Validators.maxLength(128)]);
+      externalCtrl?.setValidators([
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(128),
+      ]);
     }
 
     internalCtrl?.updateValueAndValidity({ emitEvent: false });
@@ -204,7 +277,14 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
   addQuestion(level: number): void {
     const questionGroup = this.fb.group({
       level: [level, Validators.required],
-      answer: ["", [Validators.required, Validators.minLength(8), Validators.maxLength(64)]],
+      answer: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(64),
+        ],
+      ],
     });
     this.questions.push(questionGroup);
   }
@@ -217,7 +297,14 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     const causeGroup = this.fb.group({
       category: ["", Validators.required],
       causeType: ["", Validators.required],
-      description: ["", [Validators.required, Validators.minLength(16), Validators.maxLength(256)]],
+      description: [
+        "",
+        [
+          Validators.required,
+          Validators.minLength(16),
+          Validators.maxLength(256),
+        ],
+      ],
     });
     this.causes.push(causeGroup);
   }
@@ -234,15 +321,23 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
         problem: form.analysis.problem || "",
       });
 
-      if (form.analysis.questions?.length) {
-        this.questions.clear();
-        form.analysis.questions.forEach((q) => {
-          const group = this.fb.group({
-            level: [q.level, Validators.required],
-            answer: [q.answer || "", [Validators.required, Validators.minLength(8), Validators.maxLength(64)]],
-          });
-          this.questions.push(group);
+      const existingQuestions = form.analysis.questions || [];
+      this.questions.clear();
+
+      for (let i = 1; i <= 5; i++) {
+        const existing = existingQuestions.find((q) => q.level === i);
+        const group = this.fb.group({
+          level: [i, Validators.required],
+          answer: [
+            existing?.answer || "",
+            [
+              Validators.required,
+              Validators.minLength(8),
+              Validators.maxLength(64),
+            ],
+          ],
         });
+        this.questions.push(group);
       }
 
       if (form.analysis.causes?.length) {
@@ -251,7 +346,14 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
           const group = this.fb.group({
             category: [c.category || "", Validators.required],
             causeType: [c.causeType || "", Validators.required],
-            description: [c.description || "", [Validators.required, Validators.minLength(16), Validators.maxLength(256)]],
+            description: [
+              c.description || "",
+              [
+                Validators.required,
+                Validators.minLength(16),
+                Validators.maxLength(256),
+              ],
+            ],
           });
           this.causes.push(group);
         });
@@ -270,7 +372,12 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
         this.initialInvolvedId = form.actionPlan.involved.id;
         const involved: UserResponse = {
           id: form.actionPlan.involved.id,
-          universalUser: { id: 0, name: form.actionPlan.involved.name || "", document: "", documentType: "" },
+          universalUser: {
+            id: 0,
+            name: form.actionPlan.involved.name || "",
+            document: "",
+            documentType: "",
+          },
           company: { id: 0, name: "" },
           department: { id: 0, name: "" },
           roles: [],
@@ -307,15 +414,14 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     };
   }
 
-  // ==================================================
-  // ANEXOS
-  // ==================================================
-
   private loadAttachments(): void {
     if (!this.rncForm?.id) return;
 
+    this.loadingService.show();
+
     this.fileService
       .getFiles(this.rncForm.id.toString(), "RNC", 0, 20)
+      .pipe(finalize(() => this.loadingService.hide()))
       .subscribe({
         next: (response) => {
           this.existingFiles = response.files || [];
@@ -342,20 +448,36 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       const file = files[i];
 
       if (totalFiles + i >= this.maxFiles) {
-        this.showAlert("WARNING", `Limite máximo de ${this.maxFiles} anexos atingido.`);
+        this.showAlert(
+          "WARNING",
+          `Limite máximo de ${this.maxFiles} anexos atingido.`,
+        );
         break;
       }
 
-      const allowedExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".heic", ".xml"];
+      const allowedExtensions = [
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".heic",
+        ".xml",
+      ];
       const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
       if (!allowedExtensions.includes(fileExtension)) {
-        this.showAlert("WARNING", `Tipo de arquivo não suportado: ${file.name}. Formatos permitidos: PDF, JPG, PNG, HEIC, XML.`);
+        this.showAlert(
+          "WARNING",
+          `Tipo de arquivo não suportado: ${file.name}. Formatos permitidos: PDF, JPG, PNG, HEIC, XML.`,
+        );
         continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        this.showAlert("WARNING", `Arquivo muito grande: ${file.name} (máximo 10MB).`);
+        this.showAlert(
+          "WARNING",
+          `Arquivo muito grande: ${file.name} (máximo 10MB).`,
+        );
         continue;
       }
 
@@ -404,7 +526,10 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.loadingService.hide();
-          this.showAlert("ERROR", "Erro ao acessar o arquivo. Tente novamente.");
+          this.showAlert(
+            "ERROR",
+            "Erro ao acessar o arquivo. Tente novamente.",
+          );
         },
       });
   }
@@ -422,7 +547,10 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
 
     const totalAfterAdd = this.existingFiles.length + this.attachedFiles.length;
     if (totalAfterAdd > this.maxFiles) {
-      this.showAlert("WARNING", `Limite máximo de ${this.maxFiles} anexos. Você pode adicionar no máximo ${this.maxFiles - this.existingFiles.length}.`);
+      this.showAlert(
+        "WARNING",
+        `Limite máximo de ${this.maxFiles} anexos. Você pode adicionar no máximo ${this.maxFiles - this.existingFiles.length}.`,
+      );
       return;
     }
 
@@ -450,11 +578,17 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       const uploads = compressedFiles.map((compressedFile, index) => {
         const originalFile = filesToUpload[index];
         return this.fileService
-          .createFile(this.rncForm!.id!.toString(), "RNC", compressedFile, originalFile.name)
+          .createFile(
+            this.rncForm!.id!.toString(),
+            "RNC",
+            compressedFile,
+            originalFile.name,
+          )
           .pipe(
             map(() => {
               completedFiles++;
-              const newPercent = 20 + Math.floor((completedFiles / totalFiles) * 80);
+              const newPercent =
+                20 + Math.floor((completedFiles / totalFiles) * 80);
               if (newPercent > currentProgress) {
                 currentProgress = newPercent;
                 this.uploadProgress.current = currentProgress;
@@ -464,7 +598,8 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
             catchError(() => {
               failedFiles.push(originalFile);
               completedFiles++;
-              const newPercent = 20 + Math.floor((completedFiles / totalFiles) * 80);
+              const newPercent =
+                20 + Math.floor((completedFiles / totalFiles) * 80);
               if (newPercent > currentProgress) {
                 currentProgress = newPercent;
                 this.uploadProgress.current = currentProgress;
@@ -483,14 +618,23 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       if (failedCount > 0) {
         this.attachedFiles = failedFiles;
         if (failedCount === filesToUpload.length) {
-          this.showAlert("ERROR", `Todos os ${failedCount} arquivo(s) falharam ao serem salvos. Tente novamente.`);
+          this.showAlert(
+            "ERROR",
+            `Todos os ${failedCount} arquivo(s) falharam ao serem salvos. Tente novamente.`,
+          );
         } else {
           const successCount = filesToUpload.length - failedCount;
-          this.showAlert("WARNING", `${successCount} arquivo(s) salvos com sucesso, mas ${failedCount} arquivo(s) falharam. Os arquivos com erro permanecem na lista para nova tentativa.`);
+          this.showAlert(
+            "WARNING",
+            `${successCount} arquivo(s) salvos com sucesso, mas ${failedCount} arquivo(s) falharam. Os arquivos com erro permanecem na lista para nova tentativa.`,
+          );
         }
       } else {
         this.attachedFiles = [];
-        this.showAlert("SUCCESS", `${filesToUpload.length} anexo(s) adicionado(s) com sucesso!`);
+        this.showAlert(
+          "SUCCESS",
+          `${filesToUpload.length} anexo(s) adicionado(s) com sucesso!`,
+        );
       }
     } catch (error) {
       this.isUploading = false;
@@ -501,10 +645,6 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       this.uploadProgress.current = 0;
     }
   }
-
-  // ==================================================
-  // EVENTOS DO TYPEHEAD
-  // ==================================================
 
   onInvolvedSelected(user: UserResponse | null): void {
     if (user) {
@@ -517,14 +657,13 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ==================================================
-  // SUBMISSÃO
-  // ==================================================
-
   openSaveDraftModal(content: any): void {
     if (!this.isFormValid(true)) {
       this.markDraftInvalidFields();
-      this.showAlert("WARNING", "Preencha corretamente os campos obrigatórios para salvar o rascunho.");
+      this.showAlert(
+        "WARNING",
+        "Preencha corretamente os campos obrigatórios para salvar o rascunho.",
+      );
       return;
     }
 
@@ -538,7 +677,10 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
   openSubmitModal(content: any): void {
     if (!this.isFormValid(false)) {
       this.markAllRequiredAsTouched();
-      this.showAlert("WARNING", "Preencha todos os campos obrigatórios corretamente.");
+      this.showAlert(
+        "WARNING",
+        "Preencha todos os campos obrigatórios corretamente.",
+      );
       return;
     }
 
@@ -567,11 +709,12 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
         this.loadingService.hide();
         this.modalService.dismissAll();
 
-        const message = status === "DRAFT_OPENED"
-          ? "Rascunho salvo com sucesso!"
-          : "Formulário enviado para validação com sucesso!";
+        const message =
+          status === "DRAFT_OPENED"
+            ? "Rascunho salvo com sucesso!"
+            : "Formulário enviado para validação com sucesso!";
 
-        this.router.navigate(["/rncs", this.rncId], {
+        this.router.navigate(["/rncs/pendings"], {
           queryParams: { action: "SUCCESS", message },
         });
       },
@@ -584,12 +727,8 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ==================================================
-  // VALIDAÇÕES
-  // ==================================================
-
   get today(): string {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split("T")[0];
   }
 
   private isFormValid(isDraft: boolean): boolean {
@@ -602,6 +741,16 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
           return false;
         }
       }
+
+      const hasActionPlanData = this.hasActionPlanData();
+
+      if (hasActionPlanData) {
+        const descriptionControl = this.formGroup.get("actionPlanDescription");
+        if (!descriptionControl?.value || descriptionControl?.invalid) {
+          return false;
+        }
+      }
+
       return true;
     }
 
@@ -651,6 +800,24 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  private hasActionPlanData(): boolean {
+    const raw = this.formGroup.getRawValue();
+    const hasDescription =
+      raw.actionPlanDescription && raw.actionPlanDescription.trim().length > 0;
+    const hasFollowUp = raw.followUp && raw.followUp.trim().length > 0;
+    const hasInvolvedInternal =
+      raw.involvedInternal && raw.involvedInternal.trim().length > 0;
+    const hasInvolvedExternal =
+      raw.involvedExternal && raw.involvedExternal.trim().length > 0;
+
+    return (
+      hasDescription ||
+      hasFollowUp ||
+      hasInvolvedInternal ||
+      hasInvolvedExternal
+    );
+  }
+
   private markDraftInvalidFields(): void {
     const controls = this.formGroup.controls;
     for (const key of Object.keys(controls)) {
@@ -674,11 +841,9 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     this.updateInvolvedValidators();
   }
 
-  // ==================================================
-  // UTILITÁRIOS
-  // ==================================================
-
-  private buildFormData(status: "DRAFT_OPENED" | "AWAITING_VALIDATION"): CreateUpdateRncForm {
+  private buildFormData(
+    status: "DRAFT_OPENED" | "AWAITING_VALIDATION",
+  ): CreateUpdateRncForm {
     const raw = this.formGroup.getRawValue();
 
     const data: CreateUpdateRncForm = {
@@ -686,34 +851,54 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
       status,
     };
 
-    if (raw.problem || this.questions.length > 0 || this.causes.length > 0) {
+    const hasProblem = raw.problem && raw.problem.trim().length > 0;
+
+    const filledQuestions = this.questions.controls
+      .map((q) => ({
+        level: q.get("level")?.value || 0,
+        answer: q.get("answer")?.value?.trim() || "",
+      }))
+      .filter((q) => q.answer.length > 0);
+
+    const filledCauses = this.causes.controls
+      .map((c) => ({
+        category: c.get("category")?.value || "",
+        causeType: c.get("causeType")?.value || "",
+        description: c.get("description")?.value?.trim() || "",
+      }))
+      .filter((c) => c.description.length > 0);
+
+    if (hasProblem || filledQuestions.length > 0 || filledCauses.length > 0) {
       data.analysis = {
-        problem: raw.problem || "",
-        questions: this.questions.controls.map((q) => ({
-          level: q.get("level")?.value || 0,
-          answer: q.get("answer")?.value || "",
-        })),
-        causes: this.causes.controls.map((c) => ({
-          category: c.get("category")?.value || "",
-          causeType: c.get("causeType")?.value || "",
-          description: c.get("description")?.value || "",
-        })),
+        problem: hasProblem ? raw.problem.trim() : "",
+        questions: filledQuestions,
+        causes: filledCauses,
       };
     }
 
-    if (raw.actionPlanDescription || raw.followUp) {
+    const hasDescription =
+      raw.actionPlanDescription && raw.actionPlanDescription.trim().length > 0;
+    const hasFollowUp = raw.followUp && raw.followUp.trim().length > 0;
+
+    if (hasDescription || hasFollowUp) {
       data.actionPlan = {
-        description: raw.actionPlanDescription || "",
-        followUp: raw.followUp || "",
+        description: hasDescription ? raw.actionPlanDescription.trim() : "",
+        followUp: hasFollowUp ? raw.followUp : "",
       };
 
       if (this.isInternalInvolved && raw.involvedInternal) {
         const id = parseInt(raw.involvedInternal.split(" - ")[0]);
         if (!isNaN(id)) {
-          data.actionPlan.involved = { id, name: raw.involvedInternal.split(" - ")[1] || "" };
+          data.actionPlan.involved = {
+            id,
+            name: raw.involvedInternal.split(" - ")[1]?.trim() || "",
+          };
         }
-      } else if (!this.isInternalInvolved && raw.involvedExternal) {
-        data.actionPlan.involved = { id: 0, name: raw.involvedExternal };
+      } else if (!this.isInternalInvolved && raw.involvedExternal?.trim()) {
+        data.actionPlan.involved = {
+          id: null as any,
+          name: raw.involvedExternal.trim(),
+        };
       }
     }
 
@@ -721,10 +906,13 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(["/rncs", this.rncId]);
+    this.router.navigate(["/rncs/pendings"]);
   }
 
-  private showAlert(type: "SUCCESS" | "WARNING" | "ERROR", message: string): void {
+  private showAlert(
+    type: "SUCCESS" | "WARNING" | "ERROR",
+    message: string,
+  ): void {
     this.router.navigate([], { queryParams: { action: type, message } });
   }
 

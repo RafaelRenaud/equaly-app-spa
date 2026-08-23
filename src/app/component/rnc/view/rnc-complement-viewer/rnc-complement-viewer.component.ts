@@ -536,8 +536,4 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
   shouldShowAttachmentsAlert(): boolean {
     return !!(this.rncForm && this.rncForm.status === 'DRAFT_OPENED' && this.isRncReporter);
   }
-
-  canShowAttachmentsTab(): boolean {
-    return this.rnc?.status !== 'OPENED' && !!this.rncForm;
-  }
 }

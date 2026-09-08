@@ -92,7 +92,7 @@ export class OccurViewerComponent implements OnInit, OnDestroy {
             this.occur = occur;
           }
         },
-        error: () => console.error("Erro ao recarregar ocorrência"),
+        error: () => this.handleError("Erro ao carregar ocorrência"),
       });
   }
 

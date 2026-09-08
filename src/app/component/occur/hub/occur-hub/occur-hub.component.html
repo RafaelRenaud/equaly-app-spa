@@ -246,80 +246,94 @@
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startOccurredDate"
-                                                    #dateInput placeholder="Data Início Ocorrido"
+                                                <input type="date" class="form-control" id="startOccurredDate"
+                                                    [(ngModel)]="formFilters.startOccurredDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="startOccurredDate">Início Ocorrido</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endOccurredDate" #dateInput
-                                                    placeholder="Data Fim Ocorrido" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="endOccurredDate"
+                                                    [(ngModel)]="formFilters.endOccurredDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="endOccurredDate">Fim Ocorrido</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rateStartDate" #dateInput
-                                                    placeholder="Data Início Avaliação" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="rateStartDate"
+                                                    [(ngModel)]="formFilters.rateStartDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="rateStartDate">Início Avaliação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rateEndDate" #dateInput
-                                                    placeholder="Data Fim Avaliação" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="rateEndDate"
+                                                    [(ngModel)]="formFilters.rateEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="rateEndDate">Fim Avaliação</label>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="creationStartDate"
-                                                    #dateInput placeholder="Data Início Criação"
+                                                <input type="date" class="form-control" id="creationStartDate"
+                                                    [(ngModel)]="formFilters.creationStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="creationStartDate">Início Criação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="creationEndDate" #dateInput
-                                                    placeholder="Data Fim Criação" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="creationEndDate"
+                                                    [(ngModel)]="formFilters.creationEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="creationEndDate">Fim Criação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeStartDate"
-                                                    #dateInput placeholder="Data Início Envio Análise"
+                                                <input type="date" class="form-control" id="officializeStartDate"
+                                                    [(ngModel)]="formFilters.officializeStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="officializeStartDate">Início Envio Análise</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="officializeEndDate"
-                                                    #dateInput placeholder="Data Fim Envio Análise"
+                                                <input type="date" class="form-control" id="officializeEndDate"
+                                                    [(ngModel)]="formFilters.officializeEndDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="officializeEndDate">Fim Envio Análise</label>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
+
+                                    <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="closeStartDate" #dateInput
-                                                    placeholder="Data Início Encerramento"
+                                                <input type="date" class="form-control" id="closeStartDate"
+                                                    [(ngModel)]="formFilters.closeStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="closeStartDate">Início Encerramento</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="closeEndDate" #dateInput
-                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="closeEndDate"
+                                                    [(ngModel)]="formFilters.closeEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="closeEndDate">Fim Encerramento</label>
                                             </div>
                                         </div>

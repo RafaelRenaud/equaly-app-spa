@@ -232,7 +232,6 @@ export class UserEditComponent implements OnInit {
         this.loadingService.hide();
       },
       error: (error) => {
-        console.error("Erro ao carregar dados do usuário:", error);
         this.loadingService.hide();
         this.router.navigate(["/users"], {
           queryParams: {

@@ -340,7 +340,6 @@ export class OccurCreateComponent implements OnInit {
               return result;
             }),
             catchError((error) => {
-              console.error(`Erro ao enviar arquivo ${file.name}:`, error);
               currentFileProgress += percentPerFile;
               this.uploadProgress.current = Math.min(currentFileProgress, 100);
               this.uploadProgress.message = `Erro no arquivo ${index + 1}/${this.attachedFiles.length}`;

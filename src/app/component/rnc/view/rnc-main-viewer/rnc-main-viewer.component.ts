@@ -115,7 +115,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
         this.loadingService.hide();
       },
       error: (error) => {
-        console.error('Erro ao carregar ocorrência:', error);
         this.loadingService.hide();
       }
     });
@@ -135,7 +134,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
         this.rncReloaded.emit(rnc);
       },
       error: (error) => {
-        console.error('Erro ao recarregar RNC:', error);
         this.isReloading = false;
         this.loadingService.hide();
         this.showAlert('ERROR', 'Erro ao recarregar RNC. Tente novamente.');
@@ -178,7 +176,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
         this.openPdfInNewTab(response);
       },
       error: (error) => {
-        console.error('Erro ao exportar PDF:', error);
         this.isExporting = false;
         this.loadingService.hide();
         this.showAlert('ERROR', 'Erro ao gerar PDF. Tente novamente.');
@@ -199,7 +196,6 @@ export class RncMainViewerComponent implements OnInit, AfterViewInit, OnDestroy 
         this.showAlert('SUCCESS', 'PDF enviado por e-mail com sucesso!');
       },
       error: (error) => {
-        console.error('Erro ao enviar PDF por e-mail:', error);
         this.isSendingEmail = false;
         this.loadingService.hide();
         this.showAlert('ERROR', 'Erro ao enviar PDF por e-mail. Tente novamente.');

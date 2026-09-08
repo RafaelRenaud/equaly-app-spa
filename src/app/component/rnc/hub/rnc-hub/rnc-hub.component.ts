@@ -1,11 +1,18 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import flatpickr from 'flatpickr';
-import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { OccurTypeResponse } from '../../../../core/model/occurType/occur-type-response.model';
+import { RncFilters } from '../../../../core/model/rnc/rnc-filters.model';
+import { RncFormFilters } from '../../../../core/model/rnc/rnc-form-filters.model';
 import { RncForm } from '../../../../core/model/rnc/rnc-form.model';
 import { RncFormsResponse } from '../../../../core/model/rnc/rnc-forms-response.model';
 import { Rnc } from '../../../../core/model/rnc/rnc.model';
@@ -13,13 +20,11 @@ import { RncsResponse } from '../../../../core/model/rnc/rncs-response.model';
 import { UserResponse } from '../../../../core/model/user/user-response.model';
 import { LoadingService } from '../../../../core/service/loading/loading.service';
 import { RncService } from '../../../../core/service/rnc/rnc-service.service';
-import { RncFormStatusPipe } from '../../../../pipe/rnc-form-status.pipe';
-import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
-import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
-import { RncFilters } from '../../../../core/model/rnc/rnc-filters.model';
-import { RncFormFilters } from '../../../../core/model/rnc/rnc-form-filters.model';
-import { RncStatusPipe } from '../../../../pipe/rnc-status.pipe';
 import { SessionService } from '../../../../core/service/session/session.service';
+import { RncFormStatusPipe } from '../../../../pipe/rnc-form-status.pipe';
+import { RncStatusPipe } from '../../../../pipe/rnc-status.pipe';
+import { OccurTypeHeadSearchComponent } from '../../../occur-type/search/occur-type-head-search/occur-type-head-search.component';
+import { UserTypeHeadSearchComponent } from '../../../user/search/user-type-head-search/user-type-head-search.component';
 
 type SearchType = 'RNC' | 'FORM';
 
@@ -41,21 +46,21 @@ type SearchType = 'RNC' | 'FORM';
   ],
   standalone: true
 })
-export class RncHubComponent implements OnInit, AfterViewInit {
+export class RncHubComponent implements OnInit {
 
-  @ViewChildren(UserTypeHeadSearchComponent) typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
-  @ViewChild(OccurTypeHeadSearchComponent) occurTypeheadComponent!: OccurTypeHeadSearchComponent;
-  @ViewChildren('dateInput') dateInputs!: QueryList<ElementRef<HTMLInputElement>>;
+  @ViewChildren(UserTypeHeadSearchComponent)
+  typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
+
+  @ViewChild(OccurTypeHeadSearchComponent)
+  occurTypeheadComponent!: OccurTypeHeadSearchComponent;
 
   searchType: SearchType = 'RNC';
 
-  // Resultados
   rncs: Rnc[] = [];
   forms: RncForm[] = [];
 
   restrictedView: boolean = false;
 
-  // Seletores
   selectedInspector: UserResponse | null = null;
   selectedReporter: UserResponse | null = null;
   selectedOccurType: OccurTypeResponse | null = null;
@@ -68,7 +73,6 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   selectedOccurOpenerDisplay: string = '';
   selectedOccurInspectorDisplay: string = '';
 
-  // Paginação
   currentPage: number = 1;
   pageSize: number = 10;
   totalPages: number = 0;
@@ -141,7 +145,9 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   }
 
   get rncCodeFilter(): string {
-    return this.searchType === 'RNC' ? (this.rncFilters.rncCode || '') : (this.formFilters.rncCode || '');
+    return this.searchType === 'RNC'
+      ? (this.rncFilters.rncCode || '')
+      : (this.formFilters.rncCode || '');
   }
 
   set rncCodeFilter(value: string) {
@@ -153,11 +159,14 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   }
 
   get priorityFilter(): string {
-    return this.searchType === 'RNC' ? (this.rncFilters.priority || '') : (this.formFilters.priority || '');
+    return this.searchType === 'RNC'
+      ? (this.rncFilters.priority || '')
+      : (this.formFilters.priority || '');
   }
 
   set priorityFilter(value: string) {
     const typedValue = value as 'LOW' | 'MEDIUM' | 'HIGH' | undefined;
+
     if (this.searchType === 'RNC') {
       this.rncFilters.priority = value ? typedValue : undefined;
     } else {
@@ -205,8 +214,6 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     this.formFilters.rncId = value ? parseInt(value, 10) : undefined;
   }
 
-  private flatpickrInstances: any[] = [];
-
   constructor(
     private rncService: RncService,
     private loadingService: LoadingService,
@@ -216,98 +223,14 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    this.restrictedView = !this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR');
-    this.search();
-  }
+    this.restrictedView =
+      !this.sessionService.hasRole('MASTER_QUALITY_INSPECTOR');
 
-  ngAfterViewInit(): void {
-    this.dateInputs.changes.subscribe(() => {
-      this.initDatePickers();
-    });
+    this.search();
   }
 
   onTypeheadLoadingChange(): void {
     this.cdr.detectChanges();
-  }
-
-  onDataAccordionShown(): void {
-    setTimeout(() => {
-      this.initDatePickers();
-    }, 0);
-  }
-
-  private initDatePickers(): void {
-    this.destroyDatePickers();
-
-    const dateInputMapping: Record<string, { type: 'RNC' | 'FORM', property: string }> = {
-      'rncStartOccurredDate': { type: 'RNC', property: 'startOccurredDate' },
-      'rncEndOccurredDate': { type: 'RNC', property: 'endOccurredDate' },
-      'rncCreationStartDate': { type: 'RNC', property: 'creationStartDate' },
-      'rncCreationEndDate': { type: 'RNC', property: 'creationEndDate' },
-      'rncUpdateStartDate': { type: 'RNC', property: 'updateStartDate' },
-      'rncUpdateEndDate': { type: 'RNC', property: 'updateEndDate' },
-      'rncCloseStartDate': { type: 'RNC', property: 'closeStartDate' },
-      'rncCloseEndDate': { type: 'RNC', property: 'closeEndDate' },
-      'formCreationStartDate': { type: 'FORM', property: 'creationStartDate' },
-      'formCreationEndDate': { type: 'FORM', property: 'creationEndDate' },
-      'formUpdateStartDate': { type: 'FORM', property: 'updateStartDate' },
-      'formUpdateEndDate': { type: 'FORM', property: 'updateEndDate' },
-      'formCloseStartDate': { type: 'FORM', property: 'closeStartDate' },
-      'formCloseEndDate': { type: 'FORM', property: 'closeEndDate' },
-      'startFollowUpDate': { type: 'FORM', property: 'startFollowUpDate' },
-      'endFollowUpDate': { type: 'FORM', property: 'endFollowUpDate' },
-      'startValidationDate': { type: 'FORM', property: 'startValidationDate' },
-      'endValidationDate': { type: 'FORM', property: 'endValidationDate' },
-      'startImplementationDate': { type: 'FORM', property: 'startImplementationDate' },
-      'endImplementationDate': { type: 'FORM', property: 'endImplementationDate' },
-      'startEfficacyDate': { type: 'FORM', property: 'startEfficacyDate' },
-      'endEfficacyDate': { type: 'FORM', property: 'endEfficacyDate' }
-    };
-
-    this.dateInputs.forEach(input => {
-      const inputElement = input.nativeElement;
-      const inputId = inputElement.id;
-      const mapping = dateInputMapping[inputId];
-
-      if (mapping) {
-        const filterObj = mapping.type === 'RNC' ? this.rncFilters : this.formFilters;
-        const currentValue = (filterObj as any)[mapping.property] || '';
-
-        const instance = flatpickr(inputElement, {
-          locale: Portuguese,
-          dateFormat: 'd/m/Y',
-          allowInput: true,
-          onChange: (dates) => {
-            const value = dates[0] ? this.formatDateToYMD(dates[0]) : undefined;
-            (filterObj as any)[mapping.property] = value;
-          }
-        });
-
-        if (currentValue) {
-          const [year, month, day] = currentValue.split('-');
-          inputElement.value = `${day}/${month}/${year}`;
-          instance.setDate(new Date(Number(year), Number(month) - 1, Number(day)), false);
-        }
-
-        this.flatpickrInstances.push(instance);
-      }
-    });
-  }
-
-  private destroyDatePickers(): void {
-    this.flatpickrInstances.forEach(instance => {
-      if (instance && typeof instance.destroy === 'function') {
-        instance.destroy();
-      }
-    });
-    this.flatpickrInstances = [];
-  }
-
-  private formatDateToYMD(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   }
 
   search(): void {
@@ -329,7 +252,11 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   private searchRncs(): void {
     const filters = this.prepareRncFilters();
 
-    this.rncService.getRncs(filters, this.currentPage - 1, this.pageSize).subscribe({
+    this.rncService.getRncs(
+      filters,
+      this.currentPage - 1,
+      this.pageSize
+    ).subscribe({
       next: (response: RncsResponse) => {
         this.rncs = response.rncs;
         this.forms = [];
@@ -339,7 +266,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.handleError('Erro ao buscar RNCs, tente novamente mais tarde.');
         this.rncs = [];
         this.totalPages = 0;
@@ -353,7 +280,11 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   private searchForms(): void {
     const filters = this.prepareFormFilters();
 
-    this.rncService.getRncForms(filters, this.currentPage - 1, this.pageSize).subscribe({
+    this.rncService.getRncForms(
+      filters,
+      this.currentPage - 1,
+      this.pageSize
+    ).subscribe({
       next: (response: RncFormsResponse) => {
         this.forms = response.forms;
         this.rncs = [];
@@ -363,7 +294,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.handleError('Erro ao buscar formulários, tente novamente mais tarde.');
         this.forms = [];
         this.totalPages = 0;
@@ -384,18 +315,28 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     if (this.selectedOccurType) filters.occurTypeId = this.selectedOccurType.id;
     if (this.rncFilters.occurId) filters.occurId = this.rncFilters.occurId;
     if (this.rncFilters.occurCode) filters.occurCode = this.rncFilters.occurCode;
-    if (this.selectedOccurOpener) filters.occurOpenerId = this.selectedOccurOpener.id;
-    if (this.selectedOccurInspector) filters.occurInspectorId = this.selectedOccurInspector.id;
+
+    if (this.selectedOccurOpener) {
+      filters.occurOpenerId = this.selectedOccurOpener.id;
+    }
+
+    if (this.selectedOccurInspector) {
+      filters.occurInspectorId = this.selectedOccurInspector.id;
+    }
+
     if (this.rncFilters.hasFormAssigned !== undefined) {
       filters.hasFormAssigned = this.rncFilters.hasFormAssigned;
     }
 
-    // Datas RNC
     const rncDateFields = [
-      'startOccurredDate', 'endOccurredDate',
-      'creationStartDate', 'creationEndDate',
-      'updateStartDate', 'updateEndDate',
-      'closeStartDate', 'closeEndDate'
+      'startOccurredDate',
+      'endOccurredDate',
+      'creationStartDate',
+      'creationEndDate',
+      'updateStartDate',
+      'updateEndDate',
+      'closeStartDate',
+      'closeEndDate'
     ];
 
     rncDateFields.forEach(field => {
@@ -404,16 +345,19 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // Status RNC
     const selectedStatuses = Object.keys(this.selectedRncStatusMap)
-      .filter(key => this.selectedRncStatusMap[key]) as ('OPENED' | 'WORK_IN_PROGRESS' | 'CLOSED')[];
+      .filter(key => this.selectedRncStatusMap[key]) as (
+        'OPENED' |
+        'WORK_IN_PROGRESS' |
+        'CLOSED'
+      )[];
+
     if (selectedStatuses.length > 0) {
       filters.status = selectedStatuses;
     }
 
     return filters;
   }
-
 
   private prepareFormFilters(): any {
     const filters: any = {};
@@ -425,17 +369,35 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     if (this.selectedInspector) filters.inspectorId = this.selectedInspector.id;
     if (this.selectedReporter) filters.reporterId = this.selectedReporter.id;
     if (this.formFilters.content) filters.content = this.formFilters.content;
-    if (this.formFilters.validationDescription) filters.validationDescription = this.formFilters.validationDescription;
-    if (this.formFilters.implementationDescription) filters.implementationDescription = this.formFilters.implementationDescription;
-    if (this.formFilters.efficacyDescription) filters.efficacyDescription = this.formFilters.efficacyDescription;
+
+    if (this.formFilters.validationDescription) {
+      filters.validationDescription = this.formFilters.validationDescription;
+    }
+
+    if (this.formFilters.implementationDescription) {
+      filters.implementationDescription =
+        this.formFilters.implementationDescription;
+    }
+
+    if (this.formFilters.efficacyDescription) {
+      filters.efficacyDescription = this.formFilters.efficacyDescription;
+    }
+
     const formDateFields = [
-      'startFollowUpDate', 'endFollowUpDate',
-      'startValidationDate', 'endValidationDate',
-      'startImplementationDate', 'endImplementationDate',
-      'startEfficacyDate', 'endEfficacyDate',
-      'creationStartDate', 'creationEndDate',
-      'updateStartDate', 'updateEndDate',
-      'closeStartDate', 'closeEndDate'
+      'startFollowUpDate',
+      'endFollowUpDate',
+      'startValidationDate',
+      'endValidationDate',
+      'startImplementationDate',
+      'endImplementationDate',
+      'startEfficacyDate',
+      'endEfficacyDate',
+      'creationStartDate',
+      'creationEndDate',
+      'updateStartDate',
+      'updateEndDate',
+      'closeStartDate',
+      'closeEndDate'
     ];
 
     formDateFields.forEach(field => {
@@ -446,6 +408,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
 
     const selectedStatuses = Object.keys(this.selectedFormStatusMap)
       .filter(key => this.selectedFormStatusMap[key]);
+
     if (selectedStatuses.length > 0) {
       filters.status = selectedStatuses;
     }
@@ -473,7 +436,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
-        error: (error) => {
+        error: () => {
           this.handleError(`RNC com ID ${this.idFilter} não encontrada.`);
           this.rncs = [];
           this.forms = [];
@@ -495,7 +458,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
-        error: (error) => {
+        error: () => {
           this.handleError(`Formulário com ID ${this.idFilter} não encontrado.`);
           this.rncs = [];
           this.forms = [];
@@ -509,7 +472,6 @@ export class RncHubComponent implements OnInit, AfterViewInit {
   }
 
   clearFilters(): void {
-    // Reset RNC filters
     this.rncFilters = {
       rncCode: undefined,
       priority: undefined,
@@ -528,7 +490,6 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       closeEndDate: undefined
     };
 
-    // Reset Form filters
     this.formFilters = {
       rncId: undefined,
       rncCode: undefined,
@@ -578,15 +539,10 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     this.searchType = 'RNC';
 
     this.typeheadComponents.forEach(typehead => typehead.clear());
+
     if (this.occurTypeheadComponent) {
       this.occurTypeheadComponent.clear();
     }
-
-    this.dateInputs.forEach(input => {
-      if (input && input.nativeElement) {
-        input.nativeElement.value = '';
-      }
-    });
 
     this.search();
     this.cdr.detectChanges();
@@ -598,7 +554,12 @@ export class RncHubComponent implements OnInit, AfterViewInit {
 
     if (this.searchType === 'RNC') {
       const filters = this.prepareRncFilters();
-      this.rncService.getRncs(filters, this.currentPage - 1, this.pageSize).subscribe({
+
+      this.rncService.getRncs(
+        filters,
+        this.currentPage - 1,
+        this.pageSize
+      ).subscribe({
         next: (response: RncsResponse) => {
           this.rncs = response.rncs;
           this.totalPages = response.pageable.totalPages;
@@ -607,14 +568,19 @@ export class RncHubComponent implements OnInit, AfterViewInit {
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
-        error: (error) => {
+        error: () => {
           this.loadingService.hide();
           this.cdr.detectChanges();
         }
       });
     } else {
       const filters = this.prepareFormFilters();
-      this.rncService.getRncForms(filters, this.currentPage - 1, this.pageSize).subscribe({
+
+      this.rncService.getRncForms(
+        filters,
+        this.currentPage - 1,
+        this.pageSize
+      ).subscribe({
         next: (response: RncFormsResponse) => {
           this.forms = response.forms;
           this.totalPages = response.pageable.totalPages;
@@ -623,7 +589,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
           this.loadingService.hide();
           this.cdr.detectChanges();
         },
-        error: (error) => {
+        error: () => {
           this.loadingService.hide();
           this.cdr.detectChanges();
         }
@@ -639,6 +605,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       this.selectedInspector = null;
       this.selectedInspectorDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -650,6 +617,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       this.selectedReporter = null;
       this.selectedReporterDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -661,6 +629,7 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       this.selectedOccurType = null;
       this.selectedOccurTypeDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -672,17 +641,20 @@ export class RncHubComponent implements OnInit, AfterViewInit {
       this.selectedOccurOpener = null;
       this.selectedOccurOpenerDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
   onOccurInspectorSelected(inspector: UserResponse | null): void {
     if (inspector) {
       this.selectedOccurInspector = inspector;
-      this.selectedOccurInspectorDisplay = `${inspector.id} - ${inspector.username}`;
+      this.selectedOccurInspectorDisplay =
+        `${inspector.id} - ${inspector.username}`;
     } else {
       this.selectedOccurInspector = null;
       this.selectedOccurInspectorDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -696,15 +668,18 @@ export class RncHubComponent implements OnInit, AfterViewInit {
     if (!form.analysis?.problem) {
       return '-';
     }
+
     const problem = form.analysis.problem;
-    return problem.length > 40 ? problem.substring(0, 40) + '...' : problem;
+    return problem.length > 40
+      ? problem.substring(0, 40) + '...'
+      : problem;
   }
 
   private handleError(message: string): void {
     this.router.navigate([], {
       queryParams: {
-        action: "ERROR",
-        message: message
+        action: 'ERROR',
+        message
       }
     });
   }

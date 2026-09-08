@@ -86,7 +86,6 @@ export class MyAccountComponent implements OnInit {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao carregar dados do usuário:", err);
         this.loadingService.hide();
       },
     });
@@ -109,7 +108,6 @@ export class MyAccountComponent implements OnInit {
           this.loginService.logout();
         },
         error: (err) => {
-          console.error("Erro ao enviar RAC:", err);
           this.invalidRecovery = true;
         },
         complete: () => {
@@ -220,7 +218,6 @@ export class MyAccountComponent implements OnInit {
             this.router.navigate(["/login"]);
           },
           error: (err) => {
-            console.error("Erro ao chamar API de Atualização de Perfil: ", err);
             this.loadingService.hide();
           },
         });

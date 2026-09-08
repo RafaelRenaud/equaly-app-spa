@@ -72,7 +72,6 @@ export class RecoveryComponent {
             this.router.navigate(["/login"]);
           },
           error: (err) => {
-            console.error("Erro ao chamar API de Recuperação: ", err);
             this.invalidRecovery = true;
             this.loadingService.hide();
           },

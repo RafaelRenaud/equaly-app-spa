@@ -1,10 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbModal, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import flatpickr from 'flatpickr';
-import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { finalize } from 'rxjs';
 import { OccurFilters } from '../../../core/model/occur/occur-filters.model';
 import { Occur } from '../../../core/model/occur/occur.model';
@@ -19,7 +17,7 @@ import { SessionService } from '../../../core/service/session/session.service';
   styleUrl: './draft.component.scss',
   standalone: true
 })
-export class OccurDraftComponent implements AfterViewInit {
+export class OccurDraftComponent {
 
   @ViewChild('deleteModal') deleteModal: any;
 
@@ -35,6 +33,7 @@ export class OccurDraftComponent implements AfterViewInit {
   selectedPriority: string = '';
   startDate: string = '';
   endDate: string = '';
+  maxDate: string = new Date().toISOString().split('T')[0];
 
   occurToDelete: Occur | null = null;
 
@@ -50,39 +49,6 @@ export class OccurDraftComponent implements AfterViewInit {
     this.loadOccurs();
   }
 
-  ngAfterViewInit(): void {
-    this.initFlatpickr();
-  }
-
-  initFlatpickr(): void {
-    const startDateInput = document.getElementById('startDate') as HTMLInputElement;
-    const endDateInput = document.getElementById('endDate') as HTMLInputElement;
-
-    if (startDateInput) {
-      flatpickr(startDateInput, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        maxDate: 'today',
-        onChange: (selectedDates: Date[], dateStr: string) => {
-          this.startDate = dateStr;
-        }
-      });
-    }
-
-    if (endDateInput) {
-      flatpickr(endDateInput, {
-        locale: Portuguese,
-        dateFormat: 'd/m/Y',
-        allowInput: true,
-        maxDate: 'today',
-        onChange: (selectedDates: Date[], dateStr: string) => {
-          this.endDate = dateStr;
-        }
-      });
-    }
-  }
-
   loadOccurs(): void {
     this.loadingService.show();
 
@@ -96,13 +62,11 @@ export class OccurDraftComponent implements AfterViewInit {
     }
 
     if (this.startDate) {
-      const [d, m, y] = this.startDate.split('/');
-      filters.startOccurredDate = `${y}-${m}-${d}`;
+      filters.startOccurredDate = this.startDate;
     }
 
     if (this.endDate) {
-      const [d, m, y] = this.endDate.split('/');
-      filters.endOccurredDate = `${y}-${m}-${d}`;
+      filters.endOccurredDate = this.endDate;
     }
 
     if (this.selectedFilter !== 'NONE' && this.filterValue) {
@@ -111,7 +75,11 @@ export class OccurDraftComponent implements AfterViewInit {
           finalize(() => this.loadingService.hide())
         ).subscribe({
           next: (response) => {
-            if (response && response.status === 'DRAFT_OPENED' && response.opener?.id === Number(this.sessionService.getItem('userId'))) {
+            if (
+              response &&
+              response.status === 'DRAFT_OPENED' &&
+              response.opener?.id === Number(this.sessionService.getItem('userId'))
+            ) {
               this.occurs = [response];
               this.totalPages = 1;
               this.collectionSize = 1;
@@ -121,19 +89,19 @@ export class OccurDraftComponent implements AfterViewInit {
               this.collectionSize = 0;
               this.router.navigate([], {
                 queryParams: {
-                  action: "WARNING",
+                  action: 'WARNING',
                   message: `Nenhum rascunho encontrado com o ID ${this.filterValue}.`
                 }
               });
             }
           },
-          error: (error) => {
+          error: () => {
             this.occurs = [];
             this.totalPages = 1;
             this.collectionSize = 0;
             this.router.navigate([], {
               queryParams: {
-                action: "WARNING",
+                action: 'WARNING',
                 message: `Nenhum rascunho encontrado com o ID ${this.filterValue}.`
               }
             });
@@ -155,11 +123,11 @@ export class OccurDraftComponent implements AfterViewInit {
         this.totalPages = response.pageable?.totalPages || 1;
         this.collectionSize = response.pageable?.totalElements || 0;
       },
-      error: (error) => {
+      error: () => {
         this.router.navigate([], {
           queryParams: {
-            action: "ERROR",
-            message: `Erro ao carregar rascunhos. Tente novamente mais tarde.`
+            action: 'ERROR',
+            message: 'Erro ao carregar rascunhos. Tente novamente mais tarde.'
           }
         });
       }
@@ -194,6 +162,7 @@ export class OccurDraftComponent implements AfterViewInit {
   confirmDelete(modal: any): void {
     if (this.occurToDelete) {
       this.loadingService.show();
+
       this.occurService.deleteOccur(this.occurToDelete.id!).pipe(
         finalize(() => this.loadingService.hide())
       ).subscribe({
@@ -201,18 +170,18 @@ export class OccurDraftComponent implements AfterViewInit {
           modal.close();
           this.router.navigate([], {
             queryParams: {
-              action: "SUCCESS",
+              action: 'SUCCESS',
               message: `Rascunho ${this.occurToDelete?.code} excluído com sucesso.`
             }
           });
           this.loadOccurs();
         },
-        error: (error) => {
+        error: () => {
           modal.close();
           this.router.navigate([], {
             queryParams: {
-              action: "ERROR",
-              message: `Erro ao excluir rascunho. Tente novamente mais tarde.`
+              action: 'ERROR',
+              message: 'Erro ao excluir rascunho. Tente novamente mais tarde.'
             }
           });
         }

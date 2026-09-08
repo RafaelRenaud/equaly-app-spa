@@ -1,10 +1,15 @@
 import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  QueryList,
+  ViewChild,
+  ViewChildren
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbAccordionModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
-import flatpickr from 'flatpickr';
-import { Portuguese } from 'flatpickr/dist/l10n/pt.js';
 import { OccurFilters } from '../../../../core/model/occur/occur-filters.model';
 import { Occur } from '../../../../core/model/occur/occur.model';
 import { OccursResponse } from '../../../../core/model/occur/occurs-response.model';
@@ -14,8 +19,8 @@ import { LoadingService } from '../../../../core/service/loading/loading.service
 import { OccurService } from '../../../../core/service/occur/occur.service';
 import { SessionService } from '../../../../core/service/session/session.service';
 import { OccurStatusPipe } from '../../../../pipe/occur-status-pipe.pipe';
-import { OccurTypeHeadSearchComponent } from "../../../occur-type/search/occur-type-head-search/occur-type-head-search.component";
-import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
+import { OccurTypeHeadSearchComponent } from '../../../occur-type/search/occur-type-head-search/occur-type-head-search.component';
+import { UserTypeHeadSearchComponent } from '../../../user/search/user-type-head-search/user-type-head-search.component';
 
 type FormFiltersType = {
   occurCode: string;
@@ -45,7 +50,8 @@ type FormFiltersType = {
   selector: 'occur-hub',
   templateUrl: './occur-hub.component.html',
   styleUrls: ['./occur-hub.component.scss'],
-  imports: [CommonModule,
+  imports: [
+    CommonModule,
     FormsModule,
     SlicePipe,
     DatePipe,
@@ -54,14 +60,17 @@ type FormFiltersType = {
     NgbAccordionModule,
     NgbPaginationModule,
     UserTypeHeadSearchComponent,
-    OccurTypeHeadSearchComponent],
+    OccurTypeHeadSearchComponent
+  ],
   standalone: true
 })
-export class OccurHubComponent implements OnInit, AfterViewInit {
+export class OccurHubComponent implements OnInit {
 
-  @ViewChildren(UserTypeHeadSearchComponent) typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
-  @ViewChild(OccurTypeHeadSearchComponent) occurTypeheadComponent!: OccurTypeHeadSearchComponent;
-  @ViewChildren('dateInput') dateInputs!: QueryList<ElementRef<HTMLInputElement>>;
+  @ViewChildren(UserTypeHeadSearchComponent)
+  typeheadComponents!: QueryList<UserTypeHeadSearchComponent>;
+
+  @ViewChild(OccurTypeHeadSearchComponent)
+  occurTypeheadComponent!: OccurTypeHeadSearchComponent;
 
   isOnlyOpener: boolean = false;
   isOnlyInspector: boolean = false;
@@ -77,14 +86,12 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   selectedComplainantDisplay: string = '';
   selectedOccurTypeDisplay: string = '';
 
-  // Paginação
   currentPage: number = 1;
   pageSize: number = 10;
   totalPages: number = 0;
   totalElements: number = 0;
   collectionSize: number = 0;
 
-  // Filtros do formulário
   formFilters: FormFiltersType = {
     priority: '',
     hasInspectorAssigned: '',
@@ -123,8 +130,6 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     CLOSED: false
   };
 
-  private flatpickrInstances: any[] = [];
-
   constructor(
     private occurService: OccurService,
     private loadingService: LoadingService,
@@ -134,87 +139,22 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    this.isOnlyOpener = this.sessionService.hasRole('COMMON_EVENT_OPENER') && this.sessionService.getRoles().length === 1;
-    this.isOnlyInspector = this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR') && this.sessionService.getRoles().length === 1;
+    this.isOnlyOpener =
+      this.sessionService.hasRole('COMMON_EVENT_OPENER') &&
+      this.sessionService.getRoles().length === 1;
+
+    this.isOnlyInspector =
+      this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR') &&
+      this.sessionService.getRoles().length === 1;
 
     this.search();
-  }
-
-  ngAfterViewInit(): void {
-    this.dateInputs.changes.subscribe(() => {
-      this.initDatePickers();
-    });
   }
 
   onTypeheadLoadingChange(): void {
     this.cdr.detectChanges();
   }
 
-  onDataAccordionShown(): void {
-    setTimeout(() => {
-      this.initDatePickers();
-    }, 0);
-  }
-
-  private initDatePickers(): void {
-    this.destroyDatePickers();
-
-    const dateInputMapping: Record<string, keyof FormFiltersType> = {
-      'startOccurredDate': 'startOccurredDate',
-      'endOccurredDate': 'endOccurredDate',
-      'rateStartDate': 'rateStartDate',
-      'rateEndDate': 'rateEndDate',
-      'creationStartDate': 'creationStartDate',
-      'creationEndDate': 'creationEndDate',
-      'officializeStartDate': 'officializeStartDate',
-      'officializeEndDate': 'officializeEndDate',
-      'closeStartDate': 'closeStartDate',
-      'closeEndDate': 'closeEndDate'
-    };
-
-    this.dateInputs.forEach(input => {
-      const inputElement = input.nativeElement;
-      const inputId = inputElement.id;
-      const formFilterProperty = dateInputMapping[inputId];
-
-      if (formFilterProperty) {
-        const currentValue = this.formFilters[formFilterProperty];
-
-        const instance = flatpickr(inputElement, {
-          locale: Portuguese,
-          dateFormat: 'd/m/Y',
-          allowInput: true,
-          onChange: (dates) => {
-            (this.formFilters as any)[formFilterProperty] = dates[0] ? this.formatDateToYMD(dates[0]) : '';
-          }
-        });
-
-        if (currentValue) {
-          const [year, month, day] = currentValue.split('-');
-          inputElement.value = `${day}/${month}/${year}`;
-          instance.setDate(new Date(Number(year), Number(month) - 1, Number(day)), false);
-        }
-
-        this.flatpickrInstances.push(instance);
-      }
-    });
-  }
-
-  private destroyDatePickers(): void {
-    this.flatpickrInstances.forEach(instance => {
-      if (instance && typeof instance.destroy === 'function') {
-        instance.destroy();
-      }
-    });
-    this.flatpickrInstances = [];
-  }
-
-  private formatDateToYMD(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
+  onDataAccordionShown(): void { }
 
   search(): void {
     if (this.idFilter && this.idFilter.trim() !== '') {
@@ -227,7 +167,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
 
     const searchFilters = this.prepareFilters();
 
-    this.occurService.getOccurs(searchFilters, this.currentPage - 1, this.pageSize).subscribe({
+    this.occurService.getOccurs(
+      searchFilters,
+      this.currentPage - 1,
+      this.pageSize
+    ).subscribe({
       next: (response: OccursResponse) => {
         this.occurs = response.occurs;
         this.totalPages = response.pageable.totalPages;
@@ -236,11 +180,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.router.navigate([], {
           queryParams: {
-            action: "ERROR",
-            message: `Erro ao buscar ocorrências, tente novamente mais tarde.`
+            action: 'ERROR',
+            message: 'Erro ao buscar ocorrências, tente novamente mais tarde.'
           }
         });
         this.occurs = [];
@@ -276,19 +220,23 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     }
 
     if (this.formFilters.priority) {
-      filtersToSend.priority = this.formFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
+      filtersToSend.priority =
+        this.formFilters.priority as 'LOW' | 'MEDIUM' | 'HIGH';
     }
 
     if (this.formFilters.complaintType) {
-      filtersToSend.complaintType = this.formFilters.complaintType as 'INTERNAL' | 'EXTERNAL';
+      filtersToSend.complaintType =
+        this.formFilters.complaintType as 'INTERNAL' | 'EXTERNAL';
     }
 
     if (this.formFilters.complaintChannel) {
-      filtersToSend.complaintChannel = this.formFilters.complaintChannel as 'EQUALY' | 'DALTON' | 'WHATSAPP';
+      filtersToSend.complaintChannel =
+        this.formFilters.complaintChannel as 'EQUALY' | 'DALTON' | 'WHATSAPP';
     }
 
     if (this.formFilters.closeStatus) {
-      filtersToSend.closeStatus = this.formFilters.closeStatus as 'CLOSED_WITH_RATING' | 'CLOSED_WITHOUT_RATING';
+      filtersToSend.closeStatus =
+        this.formFilters.closeStatus as 'CLOSED_WITH_RATING' | 'CLOSED_WITHOUT_RATING';
     }
 
     if (this.formFilters.complaintOrderId) {
@@ -340,7 +288,8 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     }
 
     if (this.formFilters.complainantInformation) {
-      filtersToSend.complainantInformation = this.formFilters.complainantInformation;
+      filtersToSend.complainantInformation =
+        this.formFilters.complainantInformation;
     }
 
     if (this.formFilters.hasInspectorAssigned === 'true') {
@@ -361,7 +310,9 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       filtersToSend.hasComplainantAssigned = false;
     }
 
-    const selectedStatuses = Object.keys(this.selectedStatusMap).filter(key => this.selectedStatusMap[key]);
+    const selectedStatuses = Object.keys(this.selectedStatusMap)
+      .filter(key => this.selectedStatusMap[key]);
+
     if (selectedStatuses.length > 0) {
       filtersToSend.status = selectedStatuses as OccurFilters['status'];
     }
@@ -413,12 +364,6 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     this.typeheadComponents.forEach(typehead => typehead.clear());
     this.occurTypeheadComponent.clear();
 
-    this.dateInputs.forEach(input => {
-      if (input && input.nativeElement) {
-        input.nativeElement.value = '';
-      }
-    });
-
     this.search();
     this.cdr.detectChanges();
   }
@@ -429,7 +374,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
 
     const searchFilters = this.prepareFilters();
 
-    this.occurService.getOccurs(searchFilters, this.currentPage - 1, this.pageSize).subscribe({
+    this.occurService.getOccurs(
+      searchFilters,
+      this.currentPage - 1,
+      this.pageSize
+    ).subscribe({
       next: (response: OccursResponse) => {
         this.occurs = response.occurs;
         this.totalPages = response.pageable.totalPages;
@@ -438,11 +387,11 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.router.navigate([], {
           queryParams: {
-            action: "ERROR",
-            message: `Erro ao buscar ocorrências, tente novamente mais tarde.`
+            action: 'ERROR',
+            message: 'Erro ao buscar ocorrências, tente novamente mais tarde.'
           }
         });
         this.loadingService.hide();
@@ -458,6 +407,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
     }
 
     this.loadingService.show();
+
     this.occurService.getOccur(Number(this.idFilter)).subscribe({
       next: (occur: Occur) => {
         this.occurs = [occur];
@@ -468,10 +418,10 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
         this.loadingService.hide();
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: () => {
         this.router.navigate([], {
           queryParams: {
-            action: "ERROR",
+            action: 'ERROR',
             message: `Ocorrência com ID ${this.idFilter} não encontrada.`
           }
         });
@@ -492,6 +442,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       this.selectedOpener = null;
       this.selectedOpenerDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -503,17 +454,20 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       this.selectedInspector = null;
       this.selectedInspectorDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
   onComplainantSelected(complainant: UserResponse | null): void {
     if (complainant) {
       this.selectedComplainant = complainant;
-      this.selectedComplainantDisplay = `${complainant.id} - ${complainant.username}`;
+      this.selectedComplainantDisplay =
+        `${complainant.id} - ${complainant.username}`;
     } else {
       this.selectedComplainant = null;
       this.selectedComplainantDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 
@@ -525,6 +479,7 @@ export class OccurHubComponent implements OnInit, AfterViewInit {
       this.selectedOccurType = null;
       this.selectedOccurTypeDisplay = '';
     }
+
     this.cdr.detectChanges();
   }
 }

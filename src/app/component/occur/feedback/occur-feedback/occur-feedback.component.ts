@@ -113,7 +113,6 @@ export class OccurFeedbackComponent implements OnInit {
         this.isSubmitting = false;
         this.message = error.error?.message || 'Erro ao enviar avaliação. Tente novamente.';
         this.messageType = 'error';
-        console.error('Erro ao enviar avaliação:', error);
       }
     });
   }

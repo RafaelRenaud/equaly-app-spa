@@ -197,7 +197,7 @@ export class RncComplementViewerComponent implements OnInit, OnChanges, OnDestro
           this.existingFiles = newFiles;
         },
         error: () => {
-          console.error("Erro ao carregar anexos automaticamente");
+          this.showAlert("ERROR", "Erro ao atualizar arquivos da RNC.");
         },
       });
   }

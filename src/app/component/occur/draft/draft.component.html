@@ -39,13 +39,13 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="startDate" placeholder="Data Inicial" />
+                    <input type="date" class="form-control" id="startDate" [(ngModel)]="startDate" [max]="maxDate" />
                     <label for="startDate">Data Inicial</label>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-floating">
-                    <input type="text" class="form-control" id="endDate" placeholder="Data Final" />
+                    <input type="date" class="form-control" id="endDate" [(ngModel)]="endDate" [max]="maxDate" />
                     <label for="endDate">Data Final</label>
                 </div>
             </div>

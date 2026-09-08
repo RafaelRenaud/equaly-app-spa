@@ -111,7 +111,6 @@ export class UserTypeHeadSearchComponent {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error("Erro ao buscar usuário:", error);
           this.isLoading = false;
           this.loadingStateChanged.emit(false);
           this.resetSearchState(true);
@@ -371,7 +370,6 @@ export class UserTypeHeadSearchComponent {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error("Erro ao buscar usuários:", error);
           this.handleError("Erro ao buscar usuários");
           this.searchedUsers = [];
           this.modalTotalPages = 0;

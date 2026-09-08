@@ -88,7 +88,6 @@ export class MyCompanyComponent {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao carregar dados da empresa:", err);
         this.loadingService.hide();
         this.router.navigate(["/"]);
       },

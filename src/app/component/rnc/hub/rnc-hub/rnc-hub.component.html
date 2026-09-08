@@ -60,7 +60,7 @@
         <div class="row mb-3">
             <div class="col-md">
                 <div ngbAccordion [destroyOnHide]="false">
-                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                    <div ngbAccordionItem [collapsed]="true">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
                                 Filtros Gerais
@@ -184,7 +184,7 @@
         <div class="row">
             <div class="col-md">
                 <div ngbAccordion [destroyOnHide]="false">
-                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()">
+                    <div ngbAccordionItem [collapsed]="true">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
                                 Filtros por Pessoa
@@ -238,77 +238,87 @@
         <div class="row">
             <div class="col-md">
                 <div ngbAccordion [destroyOnHide]="false">
-                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
+                    <div ngbAccordionItem [collapsed]="true" class="mt-3">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
                                 Filtros por Data
                             </button>
                         </h2>
+
                         <div ngbAccordionCollapse>
                             <div ngbAccordionBody>
                                 <ng-template>
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncStartOccurredDate"
-                                                    #dateInput placeholder="Data Início Ocorrido"
+                                                <input type="date" class="form-control" id="rncStartOccurredDate"
+                                                    [(ngModel)]="rncFilters.startOccurredDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncStartOccurredDate">Início Ocorrido</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncEndOccurredDate"
-                                                    #dateInput placeholder="Data Fim Ocorrido"
+                                                <input type="date" class="form-control" id="rncEndOccurredDate"
+                                                    [(ngModel)]="rncFilters.endOccurredDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncEndOccurredDate">Fim Ocorrido</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncCreationStartDate"
-                                                    #dateInput placeholder="Data Início Criação"
+                                                <input type="date" class="form-control" id="rncCreationStartDate"
+                                                    [(ngModel)]="rncFilters.creationStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncCreationStartDate">Início Criação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncCreationEndDate"
-                                                    #dateInput placeholder="Data Fim Criação"
+                                                <input type="date" class="form-control" id="rncCreationEndDate"
+                                                    [(ngModel)]="rncFilters.creationEndDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncCreationEndDate">Fim Criação</label>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncUpdateStartDate"
-                                                    #dateInput placeholder="Data Início Atualização"
+                                                <input type="date" class="form-control" id="rncUpdateStartDate"
+                                                    [(ngModel)]="rncFilters.updateStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncUpdateStartDate">Início Atualização</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncUpdateEndDate" #dateInput
-                                                    placeholder="Data Fim Atualização" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="rncUpdateEndDate"
+                                                    [(ngModel)]="rncFilters.updateEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="rncUpdateEndDate">Fim Atualização</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncCloseStartDate"
-                                                    #dateInput placeholder="Data Início Encerramento"
+                                                <input type="date" class="form-control" id="rncCloseStartDate"
+                                                    [(ngModel)]="rncFilters.closeStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="rncCloseStartDate">Início Encerramento</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="rncCloseEndDate" #dateInput
-                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="rncCloseEndDate"
+                                                    [(ngModel)]="rncFilters.closeEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="rncCloseEndDate">Fim Encerramento</label>
                                             </div>
                                         </div>
@@ -327,128 +337,147 @@
         <div class="row">
             <div class="col-md">
                 <div ngbAccordion [destroyOnHide]="false">
-                    <div ngbAccordionItem [collapsed]="true" (shown)="onDataAccordionShown()" class="mt-3">
+                    <div ngbAccordionItem [collapsed]="true" class="mt-3">
                         <h2 ngbAccordionHeader>
                             <button ngbAccordionButton class="accordion-button">
                                 Filtros por Data
                             </button>
                         </h2>
+
                         <div ngbAccordionCollapse>
                             <div ngbAccordionBody>
                                 <ng-template>
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formCreationStartDate"
-                                                    #dateInput placeholder="Data Início Criação"
+                                                <input type="date" class="form-control" id="formCreationStartDate"
+                                                    [(ngModel)]="formFilters.creationStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="formCreationStartDate">Início Criação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formCreationEndDate"
-                                                    #dateInput placeholder="Data Fim Criação"
+                                                <input type="date" class="form-control" id="formCreationEndDate"
+                                                    [(ngModel)]="formFilters.creationEndDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="formCreationEndDate">Fim Criação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formUpdateStartDate"
-                                                    #dateInput placeholder="Data Início Atualização"
+                                                <input type="date" class="form-control" id="formUpdateStartDate"
+                                                    [(ngModel)]="formFilters.updateStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="formUpdateStartDate">Início Atualização</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formUpdateEndDate"
-                                                    #dateInput placeholder="Data Fim Atualização"
+                                                <input type="date" class="form-control" id="formUpdateEndDate"
+                                                    [(ngModel)]="formFilters.updateEndDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="formUpdateEndDate">Fim Atualização</label>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row mb-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formCloseStartDate"
-                                                    #dateInput placeholder="Data Início Encerramento"
+                                                <input type="date" class="form-control" id="formCloseStartDate"
+                                                    [(ngModel)]="formFilters.closeStartDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="formCloseStartDate">Início Encerramento</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="formCloseEndDate" #dateInput
-                                                    placeholder="Data Fim Encerramento" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="formCloseEndDate"
+                                                    [(ngModel)]="formFilters.closeEndDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="formCloseEndDate">Fim Encerramento</label>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="row mt-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startFollowUpDate"
-                                                    #dateInput placeholder="Início Acompanhamento"
+                                                <input type="date" class="form-control" id="startFollowUpDate"
+                                                    [(ngModel)]="formFilters.startFollowUpDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="startFollowUpDate">Início Acompanhamento</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endFollowUpDate" #dateInput
-                                                    placeholder="Fim Acompanhamento" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="endFollowUpDate"
+                                                    [(ngModel)]="formFilters.endFollowUpDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="endFollowUpDate">Fim Acompanhamento</label>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startValidationDate"
-                                                    #dateInput placeholder="Início Validação"
+                                                <input type="date" class="form-control" id="startValidationDate"
+                                                    [(ngModel)]="formFilters.startValidationDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="startValidationDate">Início Validação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endValidationDate"
-                                                    #dateInput placeholder="Fim Validação"
+                                                <input type="date" class="form-control" id="endValidationDate"
+                                                    [(ngModel)]="formFilters.endValidationDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="endValidationDate">Fim Validação</label>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="row mt-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startImplementationDate"
-                                                    #dateInput placeholder="Início Implementação"
+                                                <input type="date" class="form-control" id="startImplementationDate"
+                                                    [(ngModel)]="formFilters.startImplementationDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="startImplementationDate">Início Implementação</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endImplementationDate"
-                                                    #dateInput placeholder="Fim Implementação"
+                                                <input type="date" class="form-control" id="endImplementationDate"
+                                                    [(ngModel)]="formFilters.endImplementationDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="endImplementationDate">Fim Implementação</label>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="row mt-3">
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="startEfficacyDate"
-                                                    #dateInput placeholder="Início Eficácia"
+                                                <input type="date" class="form-control" id="startEfficacyDate"
+                                                    [(ngModel)]="formFilters.startEfficacyDate"
                                                     [disabled]="isIdFilterFilled" />
                                                 <label for="startEfficacyDate">Início Eficácia</label>
                                             </div>
                                         </div>
+
                                         <div class="col-md-3">
                                             <div class="form-floating">
-                                                <input type="text" class="form-control" id="endEfficacyDate" #dateInput
-                                                    placeholder="Fim Eficácia" [disabled]="isIdFilterFilled" />
+                                                <input type="date" class="form-control" id="endEfficacyDate"
+                                                    [(ngModel)]="formFilters.endEfficacyDate"
+                                                    [disabled]="isIdFilterFilled" />
                                                 <label for="endEfficacyDate">Fim Eficácia</label>
                                             </div>
                                         </div>

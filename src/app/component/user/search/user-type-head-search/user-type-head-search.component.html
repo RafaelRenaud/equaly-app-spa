@@ -97,11 +97,11 @@
         </div>
         }
         @if (searchedUsers.length === 0 && hasSearched) {
-        <div class="surface-banner text-center">
-          <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid" />
-          <br />
+        <div class="surface-banner text-center py-5">
+          <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid w-25" />
+          <br /><br />
           <h4>Nada foi encontrado por aqui...</h4>
-          <br />
+          <p class="text-muted">Nenhum item encontrado com os filtros aplicados.</p>
         </div>
         }
         @if (searchedUsers.length > 0) {

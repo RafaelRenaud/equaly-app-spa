@@ -63,7 +63,6 @@ export class OccurMainViewerComponent implements OnInit {
         this.loadingService.hide();
       },
       error: (error) => {
-        console.error('Erro ao gerar PDF:', error);
         this.showAlert('ERROR', 'Erro ao gerar PDF. Tente novamente.');
         this.isExporting = false;
         this.loadingService.hide();
@@ -84,7 +83,6 @@ export class OccurMainViewerComponent implements OnInit {
         this.showAlert('SUCCESS', 'PDF enviado por e-mail com sucesso!');
       },
       error: (error) => {
-        console.error('Erro ao enviar PDF por email:', error);
         this.showAlert('ERROR', 'Erro ao enviar PDF por e-mail. Tente novamente.');
         this.isSendingEmail = false;
         this.loadingService.hide();
@@ -110,7 +108,7 @@ export class OccurMainViewerComponent implements OnInit {
 
       },
       error: (error) => {
-        console.error('Erro ao recarregar ocorrência:', error);
+
         this.isReloading = false;
         this.loadingService.hide();
         this.showAlert('ERROR', 'Erro ao recarregar ocorrência. Tente novamente.');

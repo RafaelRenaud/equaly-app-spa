@@ -89,7 +89,6 @@ export class RncViewerComponent implements OnInit, OnDestroy {
         this.loadingService.hide();
       },
       error: (error) => {
-        console.error('Erro ao carregar formulário da RNC:', error);
         this.loadingService.hide();
       }
     });

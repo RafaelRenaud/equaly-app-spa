@@ -201,7 +201,7 @@ export class OccurComplementViewerComponent implements OnInit, OnDestroy {
           this.existingFiles = newFiles;
         },
         error: () => {
-          console.error("Erro ao carregar anexos automaticamente");
+          this.showAlert("ERROR", "Erro ao carregar arquivos da ocorrência.");
         },
       });
   }

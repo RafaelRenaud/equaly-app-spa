@@ -190,7 +190,6 @@ export class LoginComponent {
         this.router.navigate(["/"]);
       },
       error: (err) => {
-        console.error("Erro ao chamar API de Autenticação: ", err);
         this.invalidLogin = true;
         this.loadingService.hide();
       },
@@ -213,7 +212,6 @@ export class LoginComponent {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao enviar RAC: ", err);
         this.invalidRecovery = true;
         this.loadingService.hide();
       },
@@ -241,7 +239,6 @@ export class LoginComponent {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error("Erro ao buscar empresas: ", err);
         this.loadingService.hide();
       },
     });

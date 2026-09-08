@@ -78,7 +78,6 @@ export class OccurTypeHeadSearchComponent {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Erro ao buscar tipo de ocorrência:', error);
           this.isLoading = false;
           this.loadingStateChanged.emit(false);
           this.resetSearchState(true);
@@ -289,7 +288,6 @@ export class OccurTypeHeadSearchComponent {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Erro ao buscar tipos de ocorrência:', error);
         this.handleError('Erro ao buscar tipos de ocorrência');
         this.searchedOccurTypes = [];
         this.modalTotalPages = 0;

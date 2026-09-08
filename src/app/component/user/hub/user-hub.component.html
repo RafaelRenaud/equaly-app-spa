@@ -181,10 +181,11 @@
           </table>
         </div>
         } @if (users.length === 0) {
-        <div class="surface-banner text-center">
-          <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid" />
+        <div class="surface-banner text-center py-5">
+          <img src="assets/not_found.svg" alt="Não encontrado" class="img-fluid w-25" />
           <br /><br />
           <h4>Nada foi encontrado por aqui...</h4>
+          <p class="text-muted">Nenhum item encontrado com os filtros aplicados.</p>
         </div>
         } @if (users.length > 0) {
         <br />

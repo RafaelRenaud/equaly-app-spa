@@ -106,7 +106,6 @@ export class LoginService {
         return this.router.navigateByUrl("/login", { replaceUrl: true });
       })
       .catch((error) => {
-        console.error('Erro no logout da API:', error);
         return this.router.navigateByUrl("/login", { replaceUrl: true });
       });
 }

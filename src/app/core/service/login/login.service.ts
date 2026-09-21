@@ -1,13 +1,12 @@
 import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { LoginRequest } from "../../model/login/login-request.model";
-import { Observable, lastValueFrom } from "rxjs";
-import { LoginResponse } from "../../model/login/login-response.model";
-import { LoginCompanySearchRequest } from "../../model/login/login-company-search-request.model";
-import { LoginCompanySearchResponse } from "../../model/login/login-company-search-response.model";
 import { Router } from "@angular/router";
-import { SessionService } from "../session/session.service";
+import { Observable } from "rxjs";
 import { environment } from "../../../../environments/environment";
+import { LoginCompanySearchResponse } from "../../model/login/login-company-search-response.model";
+import { LoginRequest } from "../../model/login/login-request.model";
+import { LoginResponse } from "../../model/login/login-response.model";
+import { SessionService } from "../session/session.service";
 
 @Injectable({
   providedIn: "root",
@@ -92,23 +91,9 @@ export class LoginService {
   }
 
   logout(): Promise<boolean> {
-    const headers = new HttpHeaders({
-      "Content-Type": "application/json",
-      "X-Application-Key": this.sessionService.getItem("clientKey")!,
-      "Authorization": this.sessionService.getItem("Authorization")!,
-    });
-    
-    return lastValueFrom(this.http.delete(this.authEndpoint.concat("/logout"), { headers }))
-      .finally(() => {
-        localStorage.clear();
-      })
-      .then(() => {
-        return this.router.navigateByUrl("/login", { replaceUrl: true });
-      })
-      .catch((error) => {
-        return this.router.navigateByUrl("/login", { replaceUrl: true });
-      });
-}
+    localStorage.clear();
+    return this.router.navigateByUrl("/login", { replaceUrl: true });
+  }
 
   refresh(): Observable<LoginResponse> {
     let body = new HttpParams().set(

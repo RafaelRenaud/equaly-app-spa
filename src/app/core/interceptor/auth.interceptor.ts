@@ -1,14 +1,13 @@
 import {
-  HttpRequest,
-  HttpHandlerFn,
-  HttpInterceptorFn,
   HttpEvent,
+  HttpInterceptorFn,
+  HttpRequest
 } from "@angular/common/http";
 import { inject } from "@angular/core";
+import { Router } from "@angular/router";
 import { Observable, catchError, switchMap, throwError } from "rxjs";
 import { LoginService } from "../service/login/login.service";
 import { SessionService } from "../service/session/session.service";
-import { Router } from "@angular/router";
 
 const bypassSessionAuth = [
   /^\/authentication\/v2\/oauth\/token$/,
@@ -43,8 +42,8 @@ export const authInterceptor: HttpInterceptorFn = (
   const authReq =
     useSessionAuth && sessionToken
       ? req.clone({
-          setHeaders: { Authorization: sessionToken },
-        })
+        setHeaders: { Authorization: sessionToken },
+      })
       : req;
 
   // Uma rota pública ou com token próprio não deve disparar refresh/logout da sessão.

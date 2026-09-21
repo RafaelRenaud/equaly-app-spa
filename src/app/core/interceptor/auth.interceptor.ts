@@ -20,12 +20,7 @@ function shouldUseSessionAuth(req: HttpRequest<unknown>): boolean {
   // Funciona tanto para URL absoluta quanto relativa e ignora query params.
   const pathname = new URL(req.url, "http://localhost").pathname;
 
-  const isExcluded = bypassSessionAuth.some(route => route.test(pathname));
-
-  // Nunca sobrescreve um Authorization definido pelo próprio service.
-  const hasOwnAuthorization = req.headers.has("Authorization");
-
-  return !isExcluded && !hasOwnAuthorization;
+  return !bypassSessionAuth.some(route => route.test(pathname));
 }
 
 export const authInterceptor: HttpInterceptorFn = (
@@ -39,17 +34,17 @@ export const authInterceptor: HttpInterceptorFn = (
   const useSessionAuth = shouldUseSessionAuth(req);
   const sessionToken = sessionService.getItem("Authorization");
 
-  const authReq =
-    useSessionAuth && sessionToken
-      ? req.clone({
-        setHeaders: { Authorization: sessionToken },
-      })
-      : req;
-
-  // Uma rota pública ou com token próprio não deve disparar refresh/logout da sessão.
+  // Rotas públicas: segue direto, sem refresh/logout.
   if (!useSessionAuth) {
-    return next(authReq);
+    return next(req);
   }
+
+  // Só injeta o header se ele ainda não veio no request.
+  const authReq = req.headers.has("Authorization")
+    ? req
+    : (sessionToken
+        ? req.clone({ setHeaders: { Authorization: sessionToken } })
+        : req);
 
   return next(authReq).pipe(
     catchError(error => {

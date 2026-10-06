@@ -1,7 +1,7 @@
 <div id="home-component">
   <!-- HEADER -->
-  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div>
+  <div class="row g-2 align-items-center">
+    <div class="col-12 col-md-8">
       <h1 class="mb-0">Olá, {{ userNickname }}</h1>
       @if (companyName) {
         <small class="text-muted">{{ companyName }}</small>
@@ -9,7 +9,7 @@
     </div>
 
     @if (hasData) {
-      <div class="d-flex align-items-center gap-2">
+      <div class="col-12 col-md-4 d-flex justify-content-md-end align-items-center gap-2">
         @if (generatedAt) {
           <small class="text-muted d-none d-md-inline">
             <i class="bi bi-clock-history me-1"></i>
@@ -86,9 +86,9 @@
           <div class="surface-container-body">
             <i class="bi bi-graph-up-arrow text-muted"
                style="font-size: 2.5rem;"></i>
-            <h3 class="mt-3 mb-2">Seu dashboard está pronto para abrir</h3>
+            <h3 class="mt-3 mb-2">Acesse seu Dashboard</h3>
             <p class="text-muted mb-3">
-              Veja os indicadores de ocorrências, RNCs e da sua equipe em tempo real.
+              Veja seu painel de indicadores com atualizações em tempo real.
             </p>
             <button type="button" class="btn btn-primary m-0" (click)="openDashboard()">
               <i class="bi bi-graph-up-arrow me-1"></i> Carregar dados
@@ -102,9 +102,9 @@
   <!-- ERRO -->
   @if (hasError) {
     <div class="surface-banner text-center">
-      <img src="assets/relax.svg" alt="Erro" class="img-fluid" />
+      <img src="assets/fixing.svg" alt="Erro" class="img-fluid" />
       <br /><br />
-      <h3>Ops.. Não foi possível abrir a tela inicial</h3>
+      <h3>Ops.. Não foi possível carregar as informações</h3>
       <p class="text-muted">Nossa equipe já está trabalhando para reestabelecer o sistema</p>
     </div>
   }

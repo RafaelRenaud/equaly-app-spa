@@ -2,10 +2,92 @@
   <h1>Olá, {{ userNickname }}</h1>
   <hr />
 
+  @if (renderItems.length === 0) {
   <div class="surface-banner text-center">
     <img src="assets/relax.svg" alt="Sem pendências" class="img-fluid w-25" />
     <br /><br />
     <h3>Tudo certo por aqui!</h3>
     <p class="text-muted">Não há pendências atualmente.</p>
   </div>
+  }
+
+  @if (renderItems.length > 0) {
+  <div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-outline-primary" (click)="reloadAnalytics()">
+      Recarregar
+    </button>
+  </div>
+
+  <div class="row g-4">
+    @for (item of renderItems; track item.displayName) {
+    <!-- KPI: cards compactos -->
+    @if (item.kind === "kpi") {
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted mb-3">{{ item.displayName }}</h6>
+          <div class="row g-3">
+            @for (metric of item.metrics; track metric.key) {
+            <div class="col-6 col-md-4 col-xl-2">
+              <div class="border rounded p-3 text-center h-100">
+                <div class="fs-4 fw-semibold">{{ metric.value }}</div>
+                <div class="small text-muted">
+                  {{ formatMetricKey(metric.key) }}
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Chart: gráfico ApexCharts -->
+    @if (item.kind === "chart") {
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h6 class="card-title text-muted mb-3">{{ item.displayName }}</h6>
+          <apx-chart [series]="item.series" [chart]="item.chart" [labels]="item.labels || []"
+            [xaxis]="item.xaxis || {}">
+          </apx-chart>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- Table: tabela Bootstrap -->
+    @if (item.kind === "table") {
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="card-title text-muted mb-3">{{ item.displayName }}</h6>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  @for (col of item.columns; track col.key) {
+                  <th scope="col">{{ col.label }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of item.rows; track $index) {
+                <tr>
+                  @for (col of item.columns; track col.key) {
+                  <td>{{ row[col.key] ?? "-" }}</td>
+                  }
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+    }
+  </div>
+  }
 </div>

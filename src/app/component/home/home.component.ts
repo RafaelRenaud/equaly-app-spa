@@ -1,9 +1,10 @@
+import { DatePipe } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
 import { Router } from "@angular/router";
 import { ApexChart, NgApexchartsModule } from "ng-apexcharts";
 import {
   Analytics,
-  AnalyticsResponse
+  AnalyticsResponse,
 } from "../../core/model/home-dashboard/home-dashboard.model";
 import { HomeService } from "../../core/service/home/home.service";
 import { LoadingService } from "../../core/service/loading/loading.service";
@@ -11,68 +12,84 @@ import { SessionService } from "../../core/service/session/session.service";
 
 type RenderItem =
   | { kind: "kpi"; displayName: string; metrics: { key: string; value: number }[] }
-  | { kind: "chart"; displayName: string; chart: ApexChart; series: any; labels?: string[]; xaxis?: any }
+  | { kind: "chart"; displayName: string; series: any; chart: ApexChart; labels?: string[]; xaxis?: any }
   | { kind: "table"; displayName: string; columns: { key: string; label: string }[]; rows: any[] };
 
 @Component({
   selector: "app-home",
-  imports: [NgApexchartsModule],
+  imports: [NgApexchartsModule, DatePipe],
   templateUrl: "./home.component.html",
   styleUrl: "./home.component.scss",
 })
 export class HomeComponent implements OnInit {
   userNickname: string | null = null;
+  companyName: string | null = null;
+  generatedAt: Date | null = null;
   renderItems: RenderItem[] = [];
+  hasData = false;
+  hasError = false;
+  idle = true;
 
   constructor(
     private sessionService: SessionService,
     private homeService: HomeService,
     private router: Router,
     private loadingService: LoadingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.userNickname = this.sessionService.getItem("nickname");
+    this.companyName = this.sessionService.getItem("companyName");
+  }
+
+  openDashboard(): void {
+    this.idle = false;
     this.loadAnalytics();
   }
 
   loadAnalytics(): void {
     this.loadingService.show();
+    this.hasError = false;
     this.homeService.getAnalytics().subscribe({
       next: (response: AnalyticsResponse) => {
-        this.renderItems = this.buildRenderItems(response);
+        this.applyResponse(response);
         this.loadingService.hide();
       },
       error: () => {
         this.renderItems = [];
+        this.hasData = false;
+        this.hasError = true;
         this.loadingService.hide();
-        this.router.navigate([], {
-          queryParams: {
-            action: "ERROR",
-            message: "Erro ao consultar página inicial, tente novamente mais tarde.",
-          },
-        });
       },
     });
   }
 
   reloadAnalytics(): void {
     this.loadingService.show();
+    this.hasError = false;
     this.homeService.reloadAnalytics().subscribe({
       next: (response: AnalyticsResponse) => {
-        this.renderItems = this.buildRenderItems(response);
+        this.applyResponse(response);
         this.loadingService.hide();
       },
       error: () => {
+        this.hasError = true;
         this.loadingService.hide();
         this.router.navigate([], {
           queryParams: {
             action: "ERROR",
-            message: "Erro ao consultar página inicial, tente novamente mais tarde.",
+            message: "Erro ao recarregar página inicial, tente novamente mais tarde.",
           },
         });
       },
     });
+  }
+
+  private applyResponse(response: AnalyticsResponse): void {
+    this.renderItems = this.buildRenderItems(response);
+    this.hasData = this.renderItems.length > 0;
+    this.hasError = false;
+    this.generatedAt = response?.generatedAt ? new Date(response.generatedAt) : null;
   }
 
   private buildRenderItems(response: AnalyticsResponse): RenderItem[] {
@@ -91,12 +108,10 @@ export class HomeComponent implements OnInit {
     const payload = block.payload as any;
     if (!payload) return null;
 
-    // KPI payload: { metrics: [{key, value}] }
     if (Array.isArray(payload.metrics)) {
       return { kind: "kpi", displayName: display, metrics: payload.metrics };
     }
 
-    // Distribution payload: { buckets: [{key, label, value}] }
     if (Array.isArray(payload.buckets)) {
       return {
         kind: "chart",
@@ -107,7 +122,6 @@ export class HomeComponent implements OnInit {
       };
     }
 
-    // TimeSeries payload: { points: [{date, metrics: [{key, value}]}] }
     if (Array.isArray(payload.points)) {
       return {
         kind: "chart",
@@ -118,7 +132,6 @@ export class HomeComponent implements OnInit {
       };
     }
 
-    // Ranking payload: { entries: [{id, name, metrics: [{key, value}]}] }
     if (Array.isArray(payload.entries)) {
       const firstMetricKey = payload.entries[0]?.metrics?.[0]?.key ?? "value";
       return {
@@ -135,7 +148,6 @@ export class HomeComponent implements OnInit {
       };
     }
 
-    // Table payload: { columns: [{key, label, dataType}], rows: [...] }
     if (Array.isArray(payload.columns) && Array.isArray(payload.rows)) {
       return {
         kind: "table",
@@ -163,7 +175,6 @@ export class HomeComponent implements OnInit {
     }));
   }
 
-  // helper para template
   formatMetricKey(key: string): string {
     return key
       .replace(/([A-Z])/g, " $1")

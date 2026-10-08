@@ -2,6 +2,7 @@ import { isPlatformBrowser } from "@angular/common";
 import { Inject, Injectable, PLATFORM_ID } from "@angular/core";
 import { JWT } from "../../model/jwt/jwt.model";
 import { JwtService } from "../jwt/jwt.service";
+import { AnalyticsResponse } from "../../model/home-dashboard/home-dashboard.model";
 
 @Injectable({
   providedIn: "root",
@@ -67,30 +68,25 @@ export class SessionService {
     this.safeSetItem("companyId", jwtPayload.company.id.toString());
     this.safeSetItem("companyDisplayName", jwtPayload.company.display_name);
     this.safeSetItem("companyDocument", jwtPayload.company.tax_id);
-    this.safeSetItem(
-      "activeCompany",
-      jwtPayload.company.active.toString()
-    );
-    this.safeSetItem(
-      "departmentId",
-      jwtPayload.department.id.toString()
-    );
-    this.safeSetItem(
-      "activeDepartment",
-      jwtPayload.department.active.toString()
-    );
+    this.safeSetItem("activeCompany", jwtPayload.company.active.toString());
+    this.safeSetItem("departmentId", jwtPayload.department.id.toString());
+    this.safeSetItem("activeDepartment", jwtPayload.department.active.toString());
     this.safeSetItem("departmentName", jwtPayload.department.name);
     this.safeSetItem("username", jwtPayload.user.username);
     this.safeSetItem("nickname", jwtPayload.user.preferred_username);
     this.safeSetItem("email", jwtPayload.user.email);
     this.safeSetItem("name", jwtPayload.user.name);
     this.safeSetItem("userAvatar", jwtPayload.user.picture);
-    this.safeSetItem(
-      "activeUser",
-      jwtPayload.user.active.toString()
-    );
-
+    this.safeSetItem("activeUser", jwtPayload.user.active.toString());
     this.safeSetItem("isDaltonEnabled", jwtPayload.dalton.enabled.toString());
+  }
+
+  saveHomescreenData(analyticsResponse: AnalyticsResponse) {
+    this.safeSetItem("homeAnalyticsData", JSON.stringify(analyticsResponse));
+    this.safeSetItem(
+      "homeAnalyticsDataExpiresAt",
+      new Date(new Date().getTime() + 30 * 60 * 1000).toString()
+    );
   }
 
   getItem(key: string): string | null {

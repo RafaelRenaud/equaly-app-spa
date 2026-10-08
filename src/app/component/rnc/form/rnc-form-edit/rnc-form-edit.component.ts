@@ -23,18 +23,18 @@ import {
 import { forkJoin, of, Subscription } from "rxjs";
 import { catchError, finalize, map } from "rxjs/operators";
 import { FileResponse } from "../../../../core/model/file/file-response.model";
+import { Occur } from "../../../../core/model/occur/occur.model";
 import { CreateUpdateRncForm } from "../../../../core/model/rnc/rnc-form-create-update.model";
 import { RncForm } from "../../../../core/model/rnc/rnc-form.model";
 import { Rnc } from "../../../../core/model/rnc/rnc.model";
 import { UserResponse } from "../../../../core/model/user/user-response.model";
 import { FileService } from "../../../../core/service/file/file.service";
 import { LoadingService } from "../../../../core/service/loading/loading.service";
+import { OccurService } from "../../../../core/service/occur/occur.service";
 import { RncService } from "../../../../core/service/rnc/rnc-service.service";
 import { SessionService } from "../../../../core/service/session/session.service";
 import { UserTypeHeadSearchComponent } from "../../../user/search/user-type-head-search/user-type-head-search.component";
 import { RncMainViewerComponent } from "../../view/rnc-main-viewer/rnc-main-viewer.component";
-import { Occur } from "../../../../core/model/occur/occur.model";
-import { OccurService } from "../../../../core/service/occur/occur.service";
 
 interface UploadProgress {
   current: number;
@@ -101,7 +101,7 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     private occurService: OccurService,
     private fileService: FileService,
     private sessionService: SessionService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -697,25 +697,63 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     this.loadingService.show();
 
-    const data = this.buildFormData(status);
+    let data: CreateUpdateRncForm;
+    try {
+      data = this.buildFormData(status);
+    } catch {
+      this.isSubmitting = false;
+      this.loadingService.hide();
+      this.showAlert(
+        "ERROR",
+        "Não foi possível montar o formulário. Verifique os campos.",
+      );
+      return;
+    }
 
     const request = this.isNewForm
       ? this.rncService.createRncForm(data)
       : this.rncService.updateRncForm(this.rncForm!.id!, data);
 
     request.subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        this.loadingService.hide();
-        this.modalService.dismissAll();
+      next: (response) => {
+        const formId = this.isNewForm
+          ? (response as RncForm)?.id
+          : this.rncForm!.id;
 
-        const message =
+        const finish = (finalMessage: string, type: "SUCCESS" | "WARNING") => {
+          this.isSubmitting = false;
+          this.loadingService.hide();
+          this.modalService.dismissAll();
+          this.router.navigate(["/rncs/pendings"], {
+            queryParams: { action: type, message: finalMessage },
+          });
+        };
+
+        const baseMessage =
           status === "DRAFT_OPENED"
             ? "Rascunho salvo com sucesso!"
             : "Formulário enviado para validação com sucesso!";
 
-        this.router.navigate(["/rncs/pendings"], {
-          queryParams: { action: "SUCCESS", message },
+        // Draft: não envia anexos
+        if (status === "DRAFT_OPENED" || this.attachedFiles.length === 0) {
+          finish(baseMessage, "SUCCESS");
+          return;
+        }
+
+        if (!formId) {
+          finish(baseMessage, "SUCCESS");
+          return;
+        }
+
+        this.uploadPendingAttachments(formId).then((failedCount) => {
+          if (failedCount === 0) {
+            finish(baseMessage, "SUCCESS");
+          } else {
+            finish(
+              `Formulário enviado, mas ${failedCount} arquivo(s) não puderam ser anexados. Tente anexar novamente na tela de edição.`,
+              "WARNING",
+            );
+          }
         });
       },
       error: () => {
@@ -727,74 +765,148 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
     });
   }
 
+  private async uploadPendingAttachments(formId: number): Promise<number> {
+    const filesToUpload = [...this.attachedFiles];
+    if (filesToUpload.length === 0) return 0;
+
+    this.isUploading = true;
+    this.uploadProgress.current = 10;
+    this.uploadProgress.message = "Comprimindo imagens...";
+    this.cdr.detectChanges();
+
+    let failedCount = 0;
+
+    try {
+      const compressedFiles = await Promise.all(
+        filesToUpload.map((file) => this.fileService.compressImage(file)),
+      );
+
+      this.uploadProgress.current = 20;
+      this.uploadProgress.message = "Enviando arquivos...";
+      this.cdr.detectChanges();
+
+      const total = compressedFiles.length;
+      let completed = 0;
+
+      const uploads = compressedFiles.map((compressedFile, index) => {
+        const originalFile = filesToUpload[index];
+        return this.fileService
+          .createFile(formId.toString(), "RNC", compressedFile, originalFile.name)
+          .pipe(
+            map(() => {
+              completed++;
+              const percent = 20 + Math.floor((completed / total) * 80);
+              this.uploadProgress.current = percent;
+              this.cdr.detectChanges();
+              return true;
+            }),
+            catchError(() => {
+              completed++;
+              failedCount++;
+              const percent = 20 + Math.floor((completed / total) * 80);
+              this.uploadProgress.current = percent;
+              this.cdr.detectChanges();
+              return of(false);
+            }),
+          );
+      });
+
+      await forkJoin(uploads).toPromise();
+      this.attachedFiles = failedCount > 0 ? filesToUpload.slice(-failedCount) : [];
+      return failedCount;
+    } catch {
+      this.attachedFiles = filesToUpload;
+      return filesToUpload.length;
+    } finally {
+      this.isUploading = false;
+      this.uploadProgress.current = 0;
+      this.cdr.detectChanges();
+    }
+  }
+
   get today(): string {
     return new Date().toISOString().split("T")[0];
   }
 
   private isFormValid(isDraft: boolean): boolean {
-    const requiredFields = ["problem", "actionPlanDescription", "followUp"];
+    return isDraft ? this.isDraftValid() : this.isSubmitValid();
+  }
 
-    if (isDraft) {
-      for (const field of requiredFields) {
-        const control = this.formGroup.get(field);
-        if (control?.value && control?.invalid) {
-          return false;
-        }
-      }
-
-      const hasActionPlanData = this.hasActionPlanData();
-
-      if (hasActionPlanData) {
-        const descriptionControl = this.formGroup.get("actionPlanDescription");
-        if (!descriptionControl?.value || descriptionControl?.invalid) {
-          return false;
-        }
-      }
-
-      return true;
+  private isDraftValid(): boolean {
+    const baseFields = ["problem", "actionPlanDescription", "followUp"];
+    for (const field of baseFields) {
+      const ctrl = this.formGroup.get(field);
+      if (ctrl?.value && ctrl.invalid) return false;
     }
 
-    for (const field of requiredFields) {
-      const control = this.formGroup.get(field);
-      if (!control?.value || control?.invalid) {
-        return false;
-      }
-    }
-
-    const questions = this.questions.controls;
-    let filledQuestions = 0;
-    for (const q of questions) {
+    for (const q of this.questions.controls) {
       const answer = q.get("answer");
-      if (answer?.value) {
-        filledQuestions++;
-      }
-      if (answer?.value && answer?.invalid) {
-        return false;
-      }
-    }
-    if (filledQuestions < 3) {
-      return false;
+      if (answer?.value && answer.invalid) return false;
     }
 
-    const causes = this.causes.controls;
-    if (causes.length === 0) {
-      return false;
+    for (const c of this.causes.controls) {
+      const hasAny =
+        c.get("category")?.value ||
+        c.get("causeType")?.value ||
+        c.get("description")?.value?.trim();
+      if (!hasAny) continue;
+
+      if (c.get("category")?.invalid) return false;
+      if (c.get("causeType")?.invalid) return false;
+      if (c.get("description")?.invalid) return false;
     }
+
+    if (this.isInternalInvolved) {
+      const ctrl = this.formGroup.get("involvedInternal");
+      if (ctrl?.value && ctrl.invalid) return false;
+    } else {
+      const ctrl = this.formGroup.get("involvedExternal");
+      if (ctrl?.value && ctrl.invalid) return false;
+    }
+
+    if (this.hasActionPlanData()) {
+      const desc = this.formGroup.get("actionPlanDescription");
+      if (!desc?.value || desc.invalid) return false;
+    }
+
+    return true;
+  }
+
+  private isSubmitValid(): boolean {
+    const required = ["problem", "actionPlanDescription", "followUp"];
+    for (const field of required) {
+      const ctrl = this.formGroup.get(field);
+      if (!ctrl?.value || ctrl.invalid) return false;
+    }
+
+    const filledQuestions = this.questions.controls.filter(
+      (q) => !!q.get("answer")?.value,
+    );
+    if (filledQuestions.length < 3) return false;
+    for (const q of filledQuestions) {
+      if (q.get("answer")?.invalid) return false;
+    }
+
+    const filledCauses = this.causes.controls.filter((c) =>
+      !!c.get("description")?.value?.trim(),
+    );
+    if (filledCauses.length === 0) return false;
 
     let rootCount = 0;
-    for (const c of causes) {
-      const category = c.get("category");
-      const causeType = c.get("causeType");
-      const description = c.get("description");
-      if (!category?.value || !causeType?.value || !description?.value) {
-        return false;
-      }
-      if (causeType.value === "ROOT") {
-        rootCount++;
-      }
+    for (const c of filledCauses) {
+      if (c.get("category")?.invalid) return false;
+      if (c.get("causeType")?.invalid) return false;
+      if (c.get("description")?.invalid) return false;
+      if (c.get("causeType")?.value === "ROOT") rootCount++;
     }
-    if (rootCount !== 1) {
-      return false;
+    if (rootCount !== 1) return false;
+
+    if (this.isInternalInvolved) {
+      const ctrl = this.formGroup.get("involvedInternal");
+      if (!ctrl?.value || ctrl.invalid) return false;
+    } else {
+      const ctrl = this.formGroup.get("involvedExternal");
+      if (!ctrl?.value || ctrl.invalid) return false;
     }
 
     return true;
@@ -826,6 +938,21 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
         control.markAsTouched();
       }
     }
+    this.questions.controls.forEach((q) => {
+      const answer = q.get("answer");
+      if (answer?.value && answer.invalid) answer.markAsTouched();
+    });
+    this.causes.controls.forEach((c) => {
+      if (c.get("category")?.value && c.get("category")?.invalid) {
+        c.get("category")?.markAsTouched();
+      }
+      if (c.get("causeType")?.value && c.get("causeType")?.invalid) {
+        c.get("causeType")?.markAsTouched();
+      }
+      if (c.get("description")?.value && c.get("description")?.invalid) {
+        c.get("description")?.markAsTouched();
+      }
+    });
   }
 
   private markAllRequiredAsTouched(): void {
@@ -844,6 +971,10 @@ export class RncFormEditComponent implements OnInit, OnDestroy {
   private buildFormData(
     status: "DRAFT_OPENED" | "AWAITING_VALIDATION",
   ): CreateUpdateRncForm {
+    if (!this.isFormValid(status === "DRAFT_OPENED")) {
+      throw new Error("Formulário inválido — não deveria chegar aqui.");
+    }
+
     const raw = this.formGroup.getRawValue();
 
     const data: CreateUpdateRncForm = {

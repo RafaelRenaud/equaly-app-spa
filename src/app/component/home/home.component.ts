@@ -13,7 +13,8 @@ import { SessionService } from "../../core/service/session/session.service";
 type RenderItem =
   | { kind: "kpi"; displayName: string; metrics: { key: string; value: number }[] }
   | { kind: "chart"; displayName: string; series: any; chart: ApexChart; labels?: string[]; xaxis?: any }
-  | { kind: "table"; displayName: string; columns: { key: string; label: string }[]; rows: any[] };
+  | { kind: "table"; displayName: string; columns: { key: string; label: string }[]; rows: any[] }
+  | { kind: "empty"; displayName: string };
 
 @Component({
   selector: "app-home",
@@ -22,13 +23,16 @@ type RenderItem =
   styleUrl: "./home.component.scss",
 })
 export class HomeComponent implements OnInit {
+  private static readonly CACHE_DATA_KEY = "homeAnalyticsData";
+  private static readonly CACHE_EXPIRES_KEY = "homeAnalyticsDataExpiresAt";
+
   userNickname: string | null = null;
   companyName: string | null = null;
   generatedAt: Date | null = null;
   renderItems: RenderItem[] = [];
   hasData = false;
   hasError = false;
-  idle = true;
+  allEmpty = false;
 
   constructor(
     private sessionService: SessionService,
@@ -40,24 +44,66 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.userNickname = this.sessionService.getItem("nickname");
     this.companyName = this.sessionService.getItem("companyName");
+    this.loadFromCacheOrFetch();
   }
 
-  openDashboard(): void {
-    this.idle = false;
+  private loadFromCacheOrFetch(): void {
+    const cached = this.readValidCache();
+
+    if (cached) {
+      this.applyResponse(cached);
+      return;
+    }
+
     this.loadAnalytics();
+  }
+
+  private readValidCache(): AnalyticsResponse | null {
+    const rawExpires = this.sessionService.getItem(HomeComponent.CACHE_EXPIRES_KEY);
+    const rawData = this.sessionService.getItem(HomeComponent.CACHE_DATA_KEY);
+
+    if (!rawExpires || !rawData) return null;
+
+    const expiresAt = this.parseTimestamp(rawExpires);
+    if (expiresAt === null) return null;
+    if (Date.now() >= expiresAt) return null;
+
+    try {
+      const parsed = JSON.parse(rawData) as AnalyticsResponse;
+      if (!parsed || !Array.isArray(parsed.analytics)) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  private parseTimestamp(raw: string): number | null {
+    const asNumber = Number(raw);
+    if (!Number.isNaN(asNumber) && asNumber > 0) {
+      return asNumber;
+    }
+
+    const asDate = new Date(raw).getTime();
+    if (!Number.isNaN(asDate)) {
+      return asDate;
+    }
+
+    return null;
   }
 
   loadAnalytics(): void {
     this.loadingService.show();
     this.hasError = false;
+
     this.homeService.getAnalytics().subscribe({
       next: (response: AnalyticsResponse) => {
-        this.applyResponse(response);
+        this.persistAndApply(response);
         this.loadingService.hide();
       },
       error: () => {
         this.renderItems = [];
         this.hasData = false;
+        this.allEmpty = false;
         this.hasError = true;
         this.loadingService.hide();
       },
@@ -67,9 +113,10 @@ export class HomeComponent implements OnInit {
   reloadAnalytics(): void {
     this.loadingService.show();
     this.hasError = false;
+
     this.homeService.reloadAnalytics().subscribe({
       next: (response: AnalyticsResponse) => {
-        this.applyResponse(response);
+        this.persistAndApply(response);
         this.loadingService.hide();
       },
       error: () => {
@@ -85,9 +132,15 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  private persistAndApply(response: AnalyticsResponse): void {
+    this.sessionService.saveHomescreenData(response);
+    this.applyResponse(response);
+  }
+
   private applyResponse(response: AnalyticsResponse): void {
     this.renderItems = this.buildRenderItems(response);
     this.hasData = this.renderItems.length > 0;
+    this.allEmpty = this.hasData && this.renderItems.every((item) => item.kind === "empty");
     this.hasError = false;
     this.generatedAt = response?.generatedAt ? new Date(response.generatedAt) : null;
   }
@@ -113,6 +166,9 @@ export class HomeComponent implements OnInit {
     }
 
     if (Array.isArray(payload.buckets)) {
+      if (payload.buckets.length === 0) {
+        return { kind: "empty", displayName: display };
+      }
       return {
         kind: "chart",
         displayName: display,
@@ -123,6 +179,9 @@ export class HomeComponent implements OnInit {
     }
 
     if (Array.isArray(payload.points)) {
+      if (payload.points.length === 0) {
+        return { kind: "empty", displayName: display };
+      }
       return {
         kind: "chart",
         displayName: display,
@@ -133,6 +192,9 @@ export class HomeComponent implements OnInit {
     }
 
     if (Array.isArray(payload.entries)) {
+      if (payload.entries.length === 0) {
+        return { kind: "empty", displayName: display };
+      }
       const firstMetricKey = payload.entries[0]?.metrics?.[0]?.key ?? "value";
       return {
         kind: "chart",
@@ -149,6 +211,9 @@ export class HomeComponent implements OnInit {
     }
 
     if (Array.isArray(payload.columns) && Array.isArray(payload.rows)) {
+      if (payload.rows.length === 0) {
+        return { kind: "empty", displayName: display };
+      }
       return {
         kind: "table",
         displayName: display,

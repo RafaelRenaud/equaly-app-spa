@@ -34,12 +34,11 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="form-floating position-relative">
-                                        <input type="text" class="form-control"
-                                            [class.is-invalid]="isFieldInvalid('occurrenceDate')"
-                                            id="floatingOccurrenceDate" placeholder="Data do Ocorrido"
-                                            formControlName="occurrenceDate" (input)="onDateInput($event)"
-                                            maxlength="10" />
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" id="floatingOccurrenceDate"
+                                            placeholder="Data do Ocorrido"
+                                            [class.is-invalid]="isFieldInvalid('occurrenceDate')" [max]="today"
+                                            formControlName="occurrenceDate" />
                                         <label for="floatingOccurrenceDate">Data do Ocorrido</label>
                                     </div>
                                 </div>

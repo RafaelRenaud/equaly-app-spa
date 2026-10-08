@@ -403,30 +403,18 @@ export class OccurCreateComponent implements OnInit {
   private buildOccurData(status: 'DRAFT_OPENED' | 'AWAITING_REPORT'): CreateUpdateOccur {
     const raw = this.occurrenceForm.getRawValue();
 
-    // Parse do occurType
     const occurTypeId = parseInt(raw.occurrenceType?.split(' - ')[0]) || 0;
-
-    // Parse do inspector
     const inspectorId = raw.qualityInspector ? parseInt(raw.qualityInspector.split(' - ')[0]) : undefined;
-
-    // Coletar notas fiscais não vazias
     const invoiceNotes = [raw.nf1, raw.nf2, raw.nf3, raw.nf4, raw.nf5].filter((n: string) => n && n.trim() !== '');
 
-    // Formatar data
-    let occurredDate = null;
-    if (raw.occurrenceDate && typeof raw.occurrenceDate === 'string' && raw.occurrenceDate.length === 10) {
-      occurredDate = this.formatDateToApi(raw.occurrenceDate);
-    }
+    const occurredDate = this.normalizeDate(raw.occurrenceDate);
 
-    // Construir complaint
     let complaint: CreateUpdateComplaint | undefined = undefined;
     if (raw.complaintType) {
       const shouldIncludeComplaint = raw.complaintDescription && raw.complaintDescription.trim() !== '';
-
       if (shouldIncludeComplaint) {
         const isAnonymous = raw.anonymousComplainer === true;
 
-        // Construir complainant se necessário
         let complainant: Complainant | undefined = undefined;
         if (!isAnonymous && this.shouldValidateComplainant()) {
           const address: Address = {};
@@ -476,6 +464,12 @@ export class OccurCreateComponent implements OnInit {
       complement: raw.complement || undefined,
       complaint: complaint
     };
+  }
+
+  private normalizeDate(value: any): string | null {
+    if (!value) return null;
+    if (typeof value !== 'string') return null;
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
   }
 
   // ==================================================
@@ -867,4 +861,12 @@ export class OccurCreateComponent implements OnInit {
   onTypeheadLoadingChange(): void {
     this.cdr.markForCheck();
   }
+
+  get today(): string {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
 }

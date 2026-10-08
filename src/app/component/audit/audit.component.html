@@ -15,7 +15,7 @@
             <div class="d-flex align-items-center gap-2 mb-2">
               <span class="badge" [class.bg-primary]="audit.actionType === 'CREATE'"
                 [class.bg-warning]="audit.actionType === 'UPDATE'" [class.bg-danger]="audit.actionType === 'DELETE'"
-                [class.bg-info]="audit.actionType === 'READ'">
+                [class.bg-secondary]="audit.actionType === 'READ'">
                 {{ audit.actionType | auditActionTypePipe }}
               </span>
               <span class="text-muted small">

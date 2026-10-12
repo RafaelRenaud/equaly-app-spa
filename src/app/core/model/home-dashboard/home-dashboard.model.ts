@@ -6,6 +6,7 @@
 
 export interface MetricEntry {
   key?: string;
+  label?: string;
   value?: number;
 }
 

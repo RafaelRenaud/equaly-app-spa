@@ -19,6 +19,7 @@ export class HomeService {
     return new HttpHeaders({
       "Content-Type": "application/json",
       "X-Application-Key": this.sessionService.getItem("clientKey")!,
+      "Accept-Language": "pt-BR",
       Authorization: this.sessionService.getItem("Authorization")!,
     });
   }

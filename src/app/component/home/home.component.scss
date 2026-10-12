@@ -1,0 +1,55 @@
+.kpi-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 5px;
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  background-color: rgba(32, 51, 64, 0.08);
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+.card[data-tone] {
+  border-left-width: 4px;
+}
+
+.card[data-tone="warning"] {
+  --kpi-tone: var(--warning-color);
+  --kpi-tone-text: #8a6a1f;
+}
+
+.card[data-tone="danger"] {
+  --kpi-tone: var(--error-color);
+  --kpi-tone-text: #a04848;
+}
+
+.card[data-tone] {
+  border-color: color-mix(in srgb, var(--kpi-tone) 55%, transparent);
+  border-left-color: var(--kpi-tone);
+  background-color: color-mix(in srgb, var(--kpi-tone) 12%, var(--surface-color));
+
+  .kpi-icon {
+    color: var(--kpi-tone-text);
+    background-color: color-mix(in srgb, var(--kpi-tone) 35%, transparent);
+  }
+
+  .kpi-badge {
+    color: var(--kpi-tone-text);
+    background-color: color-mix(in srgb, var(--kpi-tone) 40%, transparent);
+  }
+}
+
+.kpi-badge {
+  font-weight: 600;
+}
+
+.kpi-badge-alert {
+  color: var(--text-color);
+  background-color: var(--warning-color);
+}

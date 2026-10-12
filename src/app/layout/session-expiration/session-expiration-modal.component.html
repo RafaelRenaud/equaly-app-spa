@@ -1,0 +1,28 @@
+<div class="modal-header">
+  <h5 class="modal-title">Sessão prestes a expirar</h5>
+</div>
+<div class="modal-body text-center">
+  Sua sessão expirará em
+  <strong>
+    {{ sessionExpiration.minutesLeft() }}
+    {{ sessionExpiration.minutesLeft() === 1 ? "minuto" : "minutos" }}
+  </strong>.
+  <br /><br />
+  <p class="alert alert-warning">
+    <i class="bi bi-exclamation-square-fill"></i>
+    Reinicie a sessão para continuar usando o sistema sem perder seu trabalho.
+  </p>
+  <br />
+  <img src="assets/warning.svg" class="w-50" alt="Aviso" />
+</div>
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-primary"
+    [disabled]="sessionExpiration.restarting()"
+    (click)="sessionExpiration.restart()"
+  >
+    <i class="bi bi-arrow-repeat"></i>
+    Reiniciar Sessão
+  </button>
+</div>

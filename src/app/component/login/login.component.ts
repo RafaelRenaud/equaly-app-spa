@@ -183,8 +183,7 @@ export class LoginComponent {
         this.sessionService.saveSessionData(
           res.token_type,
           res.access_token,
-          res.refresh_token,
-          res.expires_in
+          res.refresh_token
         );
         this.loadingService.hide();
         this.router.navigate(["/"]);

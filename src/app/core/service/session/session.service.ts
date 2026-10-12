@@ -46,15 +46,10 @@ export class SessionService {
   saveSessionData(
     tokenType: string,
     accessToken: string,
-    refreshToken: string,
-    expirationTime: number
+    refreshToken: string
   ) {
     this.safeSetItem("Authorization", tokenType.concat(accessToken));
     this.safeSetItem("refreshToken", refreshToken);
-    this.safeSetItem(
-      "expiresAt",
-      new Date(new Date().getTime() + (expirationTime - 3600) * 1000).toString()
-    );
 
     const jwtPayload: JWT = this.jwtService.decode(accessToken);
 
@@ -87,6 +82,23 @@ export class SessionService {
       "homeAnalyticsDataExpiresAt",
       new Date(new Date().getTime() + 30 * 60 * 1000).toString()
     );
+  }
+
+  getAccessTokenRemainingMs(): number | null {
+    const authorization = this.safeGetItem("Authorization");
+
+    if (!authorization) {
+      return null;
+    }
+
+    try {
+      const { exp } = this.jwtService.decode(
+        authorization.replace(/^Bearer\s+/i, "")
+      );
+      return exp * 1000 - Date.now();
+    } catch {
+      return null;
+    }
   }
 
   getItem(key: string): string | null {

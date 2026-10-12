@@ -52,6 +52,10 @@ export class OccurPendingComponent implements OnInit {
     this.loadPendencies();
   }
 
+  get hasTabs(): boolean {
+    return this.isInspector || (this.isOpener && this.isDaltonEnabled);
+  }
+
   initializeActiveTab(): void {
     if (this.isOpener) {
       if (this.isDaltonEnabled) {

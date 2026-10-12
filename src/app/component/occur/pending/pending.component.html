@@ -5,7 +5,7 @@
   <div class="surface-container-body">
     <br />
     <!-- Tipos para Opener -->
-    @if (isOpener) {
+    @if (isOpener && hasTabs) {
     <div class="row">
       <div class="col-md text-center">
         <div class="btn-group" role="group">
@@ -47,7 +47,9 @@
     </div>
     }
 
+    @if (hasTabs) {
     <br />
+    }
 
     @if (occurs.length !== 0) {
     <div class="table-responsive">

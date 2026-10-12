@@ -29,6 +29,7 @@ import { UniversalUserService } from "../../../core/service/user/universal-user.
 import { UserService } from "../../../core/service/user/user.service";
 import { CompanySearchComponent } from "../../company/search/company-search.component";
 import { DepartmentSearchComponent } from "../../department/search/department-search.component";
+import { ROLE_DESCRIPTIONS } from "../../../core/model/role/role-descriptions";
 
 @Component({
   selector: "app-user-create",
@@ -46,6 +47,7 @@ import { DepartmentSearchComponent } from "../../department/search/department-se
   standalone: true,
 })
 export class UserCreateComponent implements OnInit {
+  readonly roleDescriptions = ROLE_DESCRIPTIONS;
   isEqualyMasterAdmin = false;
   universalUserExists = false;
   rolesSelected = false;

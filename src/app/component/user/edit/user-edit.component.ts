@@ -26,6 +26,7 @@ import { LoadingService } from "../../../core/service/loading/loading.service";
 import { SessionService } from "../../../core/service/session/session.service";
 import { UserService } from "../../../core/service/user/user.service";
 import { DepartmentSearchComponent } from "../../department/search/department-search.component";
+import { ROLE_DESCRIPTIONS } from "../../../core/model/role/role-descriptions";
 
 @Component({
   selector: "app-user-edit",
@@ -42,6 +43,7 @@ import { DepartmentSearchComponent } from "../../department/search/department-se
   standalone: true,
 })
 export class UserEditComponent implements OnInit {
+  readonly roleDescriptions = ROLE_DESCRIPTIONS;
   user: UserResponse | null = null;
   userRoles: RolesResponse | null = null;
   selectedDepartment: DepartmentResponse | null = null;

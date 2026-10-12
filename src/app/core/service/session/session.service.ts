@@ -111,6 +111,14 @@ export class SessionService {
     return roles.includes(role);
   }
 
+  hasOnlyAwaitingCloseOccurPendencies(): boolean {
+    return (
+      this.hasRole("COMMON_EVENT_OPENER") &&
+      !this.hasRole("COMMON_QUALITY_INSPECTOR") &&
+      this.safeGetItem("isDaltonEnabled") !== "true"
+    );
+  }
+
   getRoles(): string[] {
     const rawRoles = this.safeGetItem("userRoles");
     return rawRoles ? rawRoles.split(",").map((r) => r.trim()) : [];

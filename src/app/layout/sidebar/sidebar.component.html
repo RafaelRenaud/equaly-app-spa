@@ -137,7 +137,7 @@
               <a class="submenu-link" [routerLink]="['/occurs', 'pendings']" routerLinkActive="active"
                 (click)="closeMenu()">
                 <i class="bi bi-card-checklist"></i>
-                <span>Pendências</span>
+                <span>{{ sessionService.hasOnlyAwaitingCloseOccurPendencies() ? "Aguardando Encerramento" : "Pendências" }}</span>
               </a>
             </li>
             }

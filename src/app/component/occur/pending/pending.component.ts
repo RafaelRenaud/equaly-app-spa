@@ -30,6 +30,7 @@ export class OccurPendingComponent implements OnInit {
   public collectionSize: number = 0;
 
   public activeTab: string = '';
+  public title = 'Ocorrências Pendentes';
 
   constructor(
     private sessionService: SessionService,
@@ -42,6 +43,10 @@ export class OccurPendingComponent implements OnInit {
     this.isOpener = this.sessionService.hasRole('COMMON_EVENT_OPENER');
     this.isInspector = this.sessionService.hasRole('COMMON_QUALITY_INSPECTOR');
     this.isDaltonEnabled = this.sessionService.getItem('isDaltonEnabled') === 'true';
+
+    if (this.sessionService.hasOnlyAwaitingCloseOccurPendencies()) {
+      this.title = 'Aguardando Encerramento';
+    }
 
     this.initializeActiveTab();
     this.loadPendencies();

@@ -204,8 +204,8 @@
                   <input class="form-check-input" type="checkbox" value="EQUALY_MASTER_ADMIN" id="equalyMasterAdmin"
                     [checked]="hasRole('EQUALY_MASTER_ADMIN')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="equalyMasterAdmin">
-                    ADMINISTRADOR MASTER EQUALY
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="equalyMasterAdmin"></i>
+                    {{ roleDescriptions.EQUALY_MASTER_ADMIN }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="equalyMasterAdmin"></i>
                   </label>
                 </div>
               </div>
@@ -214,8 +214,8 @@
                   <input class="form-check-input" type="checkbox" value="MASTER_ADMIN" id="masterAdmin"
                     [checked]="hasRole('MASTER_ADMIN')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="masterAdmin">
-                    ADMINISTRADOR MASTER
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="masterAdmin"></i>
+                    {{ roleDescriptions.MASTER_ADMIN }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="masterAdmin"></i>
                   </label>
                 </div>
               </div>
@@ -226,8 +226,8 @@
                   <input class="form-check-input" type="checkbox" value="COMMON_ADMIN" id="commonAdmin"
                     [checked]="hasRole('COMMON_ADMIN')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="commonAdmin">
-                    ADMINISTRADOR
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="commonAdmin"></i>
+                    {{ roleDescriptions.COMMON_ADMIN }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonAdmin"></i>
                   </label>
                 </div>
               </div>
@@ -237,8 +237,8 @@
                   <input class="form-check-input" type="checkbox" value="MASTER_EVENT_OPENER" id="masterEventOpener"
                     [checked]="hasRole('MASTER_EVENT_OPENER')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="masterEventOpener">
-                    AGENTE DE EVENTOS MASTER
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="masterEventOpener"></i>
+                    {{ roleDescriptions.MASTER_EVENT_OPENER }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="masterEventOpener"></i>
                   </label>
                 </div>
               </div>
@@ -248,8 +248,8 @@
                   <input class="form-check-input" type="checkbox" value="COMMON_EVENT_OPENER" id="commonEventOpener"
                     [checked]="hasRole('COMMON_EVENT_OPENER')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="commonEventOpener">
-                    AGENTE DE EVENTOS
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="commonEventOpener"></i>
+                    {{ roleDescriptions.COMMON_EVENT_OPENER }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonEventOpener"></i>
                   </label>
                 </div>
               </div>
@@ -260,8 +260,8 @@
                     id="masterQualityInspector" [checked]="hasRole('MASTER_QUALITY_INSPECTOR')"
                     (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="masterQualityInspector">
-                    AGENTE DE QUALIDADE MASTER
-                    <i class="bi bi-info-square-fill text-info" placement="top"
+                    {{ roleDescriptions.MASTER_QUALITY_INSPECTOR }}
+                    <i class="bi bi-info-square-fill " placement="top"
                       [ngbTooltip]="masterQualityInspector"></i>
                   </label>
                 </div>
@@ -273,8 +273,8 @@
                     id="commonQualityInspector" [checked]="hasRole('COMMON_QUALITY_INSPECTOR')"
                     (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="commonQualityInspector">
-                    AGENTE DE QUALIDADE
-                    <i class="bi bi-info-square-fill text-info" placement="top"
+                    {{ roleDescriptions.COMMON_QUALITY_INSPECTOR }}
+                    <i class="bi bi-info-square-fill " placement="top"
                       [ngbTooltip]="commonQualityInspector"></i>
                   </label>
                 </div>
@@ -285,8 +285,8 @@
                   <input class="form-check-input" type="checkbox" value="COMMON_RNC_REPORTER" id="commonRncReporter"
                     [checked]="hasRole('COMMON_RNC_REPORTER')" (change)="onCheckboxChange($event)" />
                   <label class="form-check-label fw-bold" for="commonRncReporter">
-                    PREENCHEDOR DE RNC
-                    <i class="bi bi-info-square-fill text-info" placement="top" [ngbTooltip]="commonRncReporter"></i>
+                    {{ roleDescriptions.COMMON_RNC_REPORTER }}
+                    <i class="bi bi-info-square-fill " placement="top" [ngbTooltip]="commonRncReporter"></i>
                   </label>
                 </div>
               </div>

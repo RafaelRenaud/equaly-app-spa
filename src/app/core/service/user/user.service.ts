@@ -9,6 +9,7 @@ import { UsersResponse } from "../../model/user/users-response.model";
 import { UserCreateRequest } from "../../model/user/user-create-request.model";
 import { UserEditRequest } from "../../model/user/user-edit-request.model";
 import { RoleResponse } from "../../model/role/role-response.model";
+import { describeRole } from "../../model/role/role-descriptions";
 import { environment } from "../../../../environments/environment";
 
 @Injectable({
@@ -19,17 +20,6 @@ export class UserService {
   private readonly endpoint = `${environment.api.administration}/users`;
 
   constructor(private session: SessionService) { }
-
-  roleNameMapping: Record<string, string> = {
-    EQUALY_MASTER_ADMIN: "ADMINISTRADOR MASTER EQUALY",
-    MASTER_ADMIN: "ADMINISTRADOR MASTER",
-    COMMON_ADMIN: "ADMINISTRADOR",
-    MASTER_EVENT_OPENER: "AGENTE DE EVENTOS MASTER",
-    COMMON_EVENT_OPENER: "AGENTE DE EVENTOS",
-    MASTER_QUALITY_INSPECTOR: "AGENTE DE QUALIDADE MASTER",
-    COMMON_QUALITY_INSPECTOR: "AGENTE DE QUALIDADE",
-    COMMON_RNC_REPORTER: "PREENCHEDOR DE RNC",
-  };
 
   getUser(id: string): Observable<UserResponse> {
     const headers = new HttpHeaders({
@@ -207,13 +197,13 @@ export class UserService {
 
   parseRoles(rolesResponse: RoleResponse[]): string[] {
     return rolesResponse.map(
-      (role) => this.roleNameMapping[role.name] || role.name
+      (role) => describeRole(role.name)
     );
   }
 
   parseStringRoles(rolesResponse: string[]): string[] {
     return rolesResponse.map(
-      (role) => this.roleNameMapping[role] || role
+      (role) => describeRole(role)
     );
   }
 

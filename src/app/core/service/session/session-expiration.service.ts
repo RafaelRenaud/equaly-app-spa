@@ -3,6 +3,7 @@ import { Inject, Injectable, PLATFORM_ID, signal } from "@angular/core";
 import { NgbModal, NgbModalRef } from "@ng-bootstrap/ng-bootstrap";
 import { finalize } from "rxjs";
 import { SessionExpirationModalComponent } from "../../../layout/session-expiration/session-expiration-modal.component";
+import { LoadingService } from "../loading/loading.service";
 import { LoginService } from "../login/login.service";
 import { SessionService } from "./session.service";
 
@@ -23,6 +24,7 @@ export class SessionExpirationService {
   constructor(
     private sessionService: SessionService,
     private loginService: LoginService,
+    private loadingService: LoadingService,
     private modalService: NgbModal,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
@@ -42,10 +44,16 @@ export class SessionExpirationService {
 
   restart(): void {
     this.restarting.set(true);
+    this.loadingService.show();
 
     this.loginService
       .refresh()
-      .pipe(finalize(() => this.restarting.set(false)))
+      .pipe(
+        finalize(() => {
+          this.restarting.set(false);
+          this.loadingService.hide();
+        })
+      )
       .subscribe({
         next: (response) => {
           this.sessionService.saveSessionData(
